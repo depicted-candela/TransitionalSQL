@@ -4,7 +4,7 @@
 
 -- Drop the user if it already exists (optional, for a clean start)
 BEGIN
-   EXECUTE IMMEDIATE 'DROP USER basic_oracle_uniqueness CASCADE';
+   EXECUTE IMMEDIATE 'DROP USER essential_functions_dmlbasics CASCADE';
 EXCEPTION
    WHEN OTHERS THEN
       IF SQLCODE != -1918 THEN -- ORA-01918: user '...' does not exist
@@ -14,25 +14,25 @@ END;
 /
 
 -- Create the user (this is your schema)
-CREATE USER basic_oracle_uniqueness
+CREATE USER essential_functions_dmlbasics
 IDENTIFIED BY 123                    -- <<< CHANGE THIS PASSWORD!
 DEFAULT TABLESPACE USERS             -- Or your preferred default tablespace
 TEMPORARY TABLESPACE TEMP
 QUOTA UNLIMITED ON USERS;            -- Or a specific quota on the tablespace
 
 -- Grant necessary privileges
-GRANT CONNECT, RESOURCE TO basic_oracle_uniqueness;
+GRANT CONNECT, RESOURCE TO essential_functions_dmlbasics;
 -- RESOURCE role includes: CREATE CLUSTER, CREATE INDEXTYPE, CREATE OPERATOR,
 -- CREATE PROCEDURE, CREATE SEQUENCE, CREATE TABLE, CREATE TRIGGER, CREATE TYPE.
 
 -- If you plan to create views:
-GRANT CREATE VIEW TO basic_oracle_uniqueness;
+GRANT CREATE VIEW TO essential_functions_dmlbasics;
 
 -- If you plan to use database links (not in your script, but for completeness):
-GRANT CREATE DATABASE LINK TO basic_oracle_uniqueness;
+GRANT CREATE DATABASE LINK TO essential_functions_dmlbasics;
 
 -- If you need to run ALTER SESSION (like for TIME_ZONE):
-GRANT ALTER SESSION TO basic_oracle_uniqueness;
+GRANT ALTER SESSION TO essential_functions_dmlbasics;
 
 -- HIGHLY IMPORTANT: Defines your time zone for inner calculations. This should work if 'Etc/GMT-5' is in your DB's list
 ALTER SESSION SET TIME_ZONE = 'Etc/GMT-5';
