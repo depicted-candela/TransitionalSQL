@@ -1,7 +1,7 @@
         -- 1. From PostgreSQL to SQL ORACLE with ORACLE DB
 
 
---  Disadvantages and Pitfalls
+--  2 Disadvantages and Pitfalls
 
 --      3.1 Exercise 2.1: Data Type Pitfalls and Misunderstandings
 --          1. VARCHAR2 Size & Semantics: An EmployeeRoster firstName column is
@@ -55,7 +55,7 @@
 -- 2. NVL2 TypeMismatch: Consider NVL2(hireDate, SYSDATE + 7, 'Not Hired
 -- Yet'). hireDate is DATE. What is the likely data type of the result if hireDate
 -- is NOT NULL?
-SELECT SYSDATE + 7 FROM DUAL; -- returns DATE
+-- SELECT SYSDATE + 7 FROM DUAL; -- returns DATE
 -- What if it IS NULL? What’s the potential issue and how can Or-
 -- acle try to resolve it (possibly leading to errors)?
 -- Answer: the returned value will be 'Not Hired Yet', but since such value is not

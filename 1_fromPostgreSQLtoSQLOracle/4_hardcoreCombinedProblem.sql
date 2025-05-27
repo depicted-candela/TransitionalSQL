@@ -46,3 +46,26 @@
 -- age/interval functions), conditional logic (CASE is similar, DECODE is new), NULL
 -- handling (NVL/COALESCE vs. PG COALESCE), and Top-N queries (ROWNUM vs. PG
 -- LIMIT).
+
+SET DEFINE OFF;
+/*This turn down setters like & within strings
+and SET DEFINE ON; turns on setters like & within strings*/
+SELECT * FROM (
+    SELECT 
+        employeeId, 
+        CONCAT(FIRSTNAME, ', ', LASTNAME) EMPLOYEENAME, 
+        jobTitle, 
+        DEPARTMENTNAME, 
+        TO_CHAR(HIREDATE, 'Month DD, YYYY') HIRE_DISPLAY,
+        ROUND(MONTHS_BETWEEN(SYSDATE, HIREDATE) / 12) YEARSOFSERVICE,
+        NVL2(BIO, SUBSTR(BIO, 0, 30), TO_NCHAR('No Bio on File')) BIOEXTRACT,
+        CASE 
+            WHEN COMMISSIONRATE IS NOT NULL THEN 'Sales \ Technical Skills Review'
+            ELSE DECODE(MANAGERID, 102, 'Project Leadership Potentential', 'Core Technical Deep Dive')
+        END REVIEWFOCUS
+    FROM EMPLOYEEROSTER 
+    WHERE DEPARTMENTNAME = 'IT' AND JOBTITLE = 'Programmer'
+    ORDER BY HIREDATE DESC
+) WHERE ROWNUM < 3;
+
+SET DEFINE ON;
