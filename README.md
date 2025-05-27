@@ -1,4 +1,4 @@
-# Server Programming with Oracle PL/SQL: A Transition Guide for PostgreSQL Users
+# Server Programming with Oracle (DB 23 ai) PL/SQL: A Transition Guide for PostgreSQL Users
 
 Welcome to the "Server Programming with Oracle PL/SQL" course! This repository contains learning materials designed to help individuals proficient in PostgreSQL and analytical SQL transition to server-side programming using Oracle Database and its powerful procedural language extension, PL/SQL.
 

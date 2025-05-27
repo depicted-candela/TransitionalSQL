@@ -1,7 +1,7 @@
-        -- 1. From PostgreSQL to SQL ORACLE with ORACLE DB
+-- 1. From PostgreSQL to SQL ORACLE with ORACLE DB
 
 
---  2 Meanings, Values, Relations, and Advantages
+--  1 Meanings, Values, Relations, and Advantages
 
 --      2.1 Exercise 1.1: Understanding Oracle Data Types & Bridging from
 -- PostgreSQL
@@ -44,58 +44,93 @@
 
 -- 3. DATE Type:
 -- • Retrieve employeeId and hireDate for ’Steven King’. Note the format.
-
+-- SELECT employeeId, hireDate, TO_CHAR(hireDate, 'YYYY-MM-DD HH24:MI:SS') formatted_Date
+-- FROM basic_oracle_uniqueness.EmployeeRoster
+-- WHERE firstName = 'Steven' AND lastName = 'King';
+-- Despite dates appear as DD/MM/YYYY in the table, they're presented as 17-JUN-03
+-- as a format
 -- • PostgreSQL’s DATE type stores only date. Oracle’s DATE stores date and
 -- time. What PostgreSQL type is Oracle’s DATE most analogous to? How
 -- could this difference impact data migration or queries if not handled care-
 -- fully?
 -- Answer: the PostgreSQL type for Oracle's DATE is TIMESTAMP. DATE in PGL
--- does not have The migrations 
--- must be casting or destructuring values from types to construct the expected
--- type. Because Oracle's date
+-- does not have accuracy for times, Oracle's DATE without time are set to mid
+-- night. Thus, the migrations must be castings or destructurings with specfic 
+-- types to construct the expected type for the best design.
 
 -- 4. TIMESTAMP Variations:
 -- • From ProductCatalog, select productName, lastStockCheck(TIMESTAMP),
 -- nextShipmentDue(TIMESTAMP WITH TIME ZONE), and localEntryTime
 -- (TIMESTAMP WITH LOCAL TIME ZONE) for ’Oracle Database 19c’.
+-- SELECT PRODUCTNAME, LASTSTOCKCHECK, NEXTSHIPMENTDUE, LOCALENTRYTIME
+-- FROM basic_oracle_uniqueness.ProductCatalog WHERE PRODUCTNAME = 'Oracle Database 19c';
 -- • Briefly explain the advantage of each TIMESTAMP variant chosen for these
 -- columns. (You may want to run ALTER SESSION SET NLS_TIMESTAMP_FORMAT
 -- = 'YYYY-MM-DD HH24:MI:SS.FF';and ALTER SESSION SET NLS_TIMESTAMP_TZ_FORMAT
 -- = 'YYYY-MM-DD HH24:MI:SS.FF TZR'; for clarity).
+-- Answer: the advantages of Last Srock Check is for analytical logging of active
+-- workers; next shipment due is useful to understand when the sender will send
+-- new materials in their time to understand better when things will happend; and
+-- localentrytime will serve to understand patterns between shipment due and 
+-- local entry time if they're required
 
 --      2.2 Exercise 1.2: DUALTableandNULLHandling(NVL,NVL2, COALESCE)
 
 -- 1. DUAL Table:
 -- • What is the DUAL table in Oracle? Give two common use cases.
+-- Answer: is the way to assign constants to queries using ORACLE SQL internals
+-- coming from a unifier table. Is not necessary with PL/SQL.
 -- • In PostgreSQL, SELECT 1+1; works. How do you achieve this in Oracle
 -- and why is DUAL needed?
+-- SELECT 1+1 AS query_constant; -- does not need the DUAL table, just make the calculation
+-- SELECT 1+1 FROM DUAL; -- Makes an internal process to centralize things repeatly used
 
 -- 2. NVL Function:
 -- • Display employeeId, firstName, salary, commissionRate, and a ”Guar-
 -- anteed Pay” which is salary + (salary * commissionRate). If commissionRate
 -- is NULL, it should be treated as 0. Use NVL.
--- • How does NVL(expr1, expr2)compare to PostgreSQL’s COALESCE(expr1,
--- expr2)?
+-- SELECT employeeId, firstName, salary, commissionRate, 
+-- salary + salary * NVL(commissionRate, 0) GuaranteedPay
+-- FROM EMPLOYEEROSTER;
+-- • How does NVL(expr1, expr2) compare to PostgreSQL’s COALESCE(expr1, expr2)?
+-- Answer: is almost the same behavior and COALESCE is verbose but unlimited.
+-- NVL and NVL2 are optimized for case handling for a single comparison and for
+-- two values not necessarily the first argument.
 
 -- 3. NVL2 Function:
 -- • Display employeeId, firstName, and a commissionStatus. If commissionRate
 -- is NOT NULL, commissionStatus should be ’Eligible for Commission
--- Bonus’. If commissionRate IS NULL, it should be ’Salary Only’. Use
--- NVL2.
--- • How would you achieve the NVL2logic using standard SQL constructs known
+-- Bonus’. If commissionRate IS NULL, it should be ’Salary Only’. Use NVL2.
+-- SELECT EMPLOYEEID, FIRSTNAME, NVL2(COMMISSIONRATE, 'Elegible for Commission Bonus', 'Salary Only') COMMISION_STATUS
+-- FROM EMPLOYEEROSTER;
+-- • How would you achieve the NVL2 logic using standard SQL constructs known
 -- from PostgreSQL (like CASE)?
+-- Answer: the verbose option shoule be CASE WHEN COMMISSIONRATE IS NOT THEN 'Elegible for Commission Bonus' ELSE 'Salary Only'
+-- note the verbosity
 
 -- 4. COALESCE Function:
 -- • From ProductCatalog, display productId, productName, and the notes.
--- If notesis NULL, show ’No additional notes’. If notesis NULL and supplierInfo
+-- If notes is NULL, show ’No additional notes’. If notes is NULL and supplierInfo
 -- also happens to be NULL (not in current data, but imagine), show ’Critical
 -- info missing’. Use COALESCE.
+-- SELECT 
+--     PRODUCTID, 
+--     PRODUCTNAME, 
+--     NOTES, 
+--     COALESCE(TO_NCHAR(NOTES), SUPPLIERINFO, TO_NCHAR('Critical info missing')) AS co 
+-- FROM PRODUCTCATALOG;
 
 --      2.3 Exercise 1.3: Conditional Logic (DECODE, CASE) & Comments
+
 -- 1. DECODE vs. CASE:
 -- • What is a key syntactical difference between Oracle’s DECODE function and
 -- the standard CASE expression when performing multiple comparisons?
+-- Answer: creates an analytical less verbose thread rather than a complex
+-- CASE WHERE END nested series of statements, is clener and readable. Also
+-- simplifies the case when NULL = NULL, making such comparison as TRUE, rather
+-- than UNKNOWN with CASE
 -- • Which is generally more readable and flexible for complex conditions?
+--
 
 -- 2. DECODE Function:
 -- • Using DECODEon EmployeeRoster, display firstName, jobTitle. Add
