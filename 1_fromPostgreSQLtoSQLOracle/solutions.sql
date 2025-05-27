@@ -1,0 +1,276 @@
+        -- 1. From PostgreSQL to SQL ORACLE with ORACLE DB
+
+
+--  2 Meanings, Values, Relations, and Advantages
+
+--      2.1 Exercise 1.1: Understanding Oracle Data Types & Bridging from
+-- PostgreSQL
+
+-- 1. VARCHAR2 vs. NVARCHAR2:
+-- • Explain the core difference between VARCHAR2 and NVARCHAR2 in Oracle.
+-- Answer: they differ because NVARCHAR2 accepts more characters than latin or
+-- custom characters for simplified english, it accepts asian characters,
+-- germanic special symbols, the russian and hindi languages, etc 
+-- • The EmployeeRostertable has firstName(VARCHAR2) and bio(NVARCHAR2).
+-- Why might bio be NVARCHAR2 while firstName (in many Western con-
+-- texts) might be VARCHAR2?
+-- Answer: it's normal that multinational enterprises centralizing clients
+-- asks for the english version of their names to save the memory that
+-- VARCHAR2 allows; nevertheless, the best deescription that somebody could
+-- about himself it's normally done with the native or most used language,
+-- that's way bio must be NVARCHAR2
+-- • In PostgreSQL, you commonly use VARCHAR or TEXT. How does VARCHAR2
+-- relate, and what Oracle-specific considerations are there for character data?
+-- Answer: VARCHAR is for varying characters with a limited scoped of characters
+-- but varying, TEXT also allows multilanguage characters without memory limits,
+-- property not achieved by NVARCHAR2 but performed with CLOB.
+-- Though there exists something making more special to VARCHAR2: its overloaded definition using
+-- limits by bytes or number of characters, the first one more oriented to 
+-- memory intesive tasks but limiting the size of a word if characters are too
+-- high in size, using the maximum number of characters is another way making
+-- more flexible character writing for international projects.
+
+-- 2. NUMBER Type:
+-- • Oracle’s NUMBER type is used for employeeId and salary in EmployeeRoster.
+-- Illustrate how NUMBER definition (NUMBER(6) vs NUMBER(10,2)) achieves
+-- this.
+-- The first pattern is an integer number from 0 up to 999999, the second one
+-- goes from 00000000.00 up to 99999999.99 modeling monetary values
+-- • What PostgreSQL types (e.g., INTEGER, NUMERIC) would correspond to
+-- these uses? What is an advantage of Oracle’s unified NUMBER type?
+-- There exists to much definitions to get the definitions that the patterns 
+-- in NUMBER gives: REAL, INTEGER, DOUBLE, NUMERIC, many variations of INT. 
+-- Oracle's NUMBER is a highly overloaded method for 4 numeric patterns
+
+-- 3. DATE Type:
+-- • Retrieve employeeId and hireDate for ’Steven King’. Note the format.
+
+-- • PostgreSQL’s DATE type stores only date. Oracle’s DATE stores date and
+-- time. What PostgreSQL type is Oracle’s DATE most analogous to? How
+-- could this difference impact data migration or queries if not handled care-
+-- fully?
+-- Answer: the PostgreSQL type for Oracle's DATE is TIMESTAMP. DATE in PGL
+-- does not have The migrations 
+-- must be casting or destructuring values from types to construct the expected
+-- type. Because Oracle's date
+
+-- 4. TIMESTAMP Variations:
+-- • From ProductCatalog, select productName, lastStockCheck(TIMESTAMP),
+-- nextShipmentDue(TIMESTAMP WITH TIME ZONE), and localEntryTime
+-- (TIMESTAMP WITH LOCAL TIME ZONE) for ’Oracle Database 19c’.
+-- • Briefly explain the advantage of each TIMESTAMP variant chosen for these
+-- columns. (You may want to run ALTER SESSION SET NLS_TIMESTAMP_FORMAT
+-- = 'YYYY-MM-DD HH24:MI:SS.FF';and ALTER SESSION SET NLS_TIMESTAMP_TZ_FORMAT
+-- = 'YYYY-MM-DD HH24:MI:SS.FF TZR'; for clarity).
+
+--      2.2 Exercise 1.2: DUALTableandNULLHandling(NVL,NVL2, COALESCE)
+
+-- 1. DUAL Table:
+-- • What is the DUAL table in Oracle? Give two common use cases.
+-- • In PostgreSQL, SELECT 1+1; works. How do you achieve this in Oracle
+-- and why is DUAL needed?
+
+-- 2. NVL Function:
+-- • Display employeeId, firstName, salary, commissionRate, and a ”Guar-
+-- anteed Pay” which is salary + (salary * commissionRate). If commissionRate
+-- is NULL, it should be treated as 0. Use NVL.
+-- • How does NVL(expr1, expr2)compare to PostgreSQL’s COALESCE(expr1,
+-- expr2)?
+
+-- 3. NVL2 Function:
+-- • Display employeeId, firstName, and a commissionStatus. If commissionRate
+-- is NOT NULL, commissionStatus should be ’Eligible for Commission
+-- Bonus’. If commissionRate IS NULL, it should be ’Salary Only’. Use
+-- NVL2.
+-- • How would you achieve the NVL2logic using standard SQL constructs known
+-- from PostgreSQL (like CASE)?
+
+-- 4. COALESCE Function:
+-- • From ProductCatalog, display productId, productName, and the notes.
+-- If notesis NULL, show ’No additional notes’. If notesis NULL and supplierInfo
+-- also happens to be NULL (not in current data, but imagine), show ’Critical
+-- info missing’. Use COALESCE.
+
+--      2.3 Exercise 1.3: Conditional Logic (DECODE, CASE) & Comments
+-- 1. DECODE vs. CASE:
+-- • What is a key syntactical difference between Oracle’s DECODE function and
+-- the standard CASE expression when performing multiple comparisons?
+-- • Which is generally more readable and flexible for complex conditions?
+
+-- 2. DECODE Function:
+-- • Using DECODEon EmployeeRoster, display firstName, jobTitle. Add
+-- a new column jobLevel. If jobTitle is ’President’, jobLevel is ’Top
+-- Tier’. If ’Administration VP’ or ’Finance Manager’, it’s ’Mid Tier’. If ’Pro-
+-- grammer’, it’s ’Staff’. Otherwise, ’Other’.
+
+-- 3. CASE Expression:
+-- • Rewrite the query from (1.3.2) using a CASE expression (use a searched
+-- CASE for clarity).
+-- • From ProductCatalog, display productName, unitPrice, and a priceTag.
+-- If unitPrice= 0, priceTagis ’Free’. If unitPrice> 0 AND unitPrice
+-- <= 100, priceTag is ’Affordable’. If unitPrice > 100, priceTag is ’Pre-
+-- mium’. Use a CASE expression.
+-- 4. Comments:
+-- • Add a single-line comment above your CASE expression query explaining
+-- its purpose.
+-- • Add a multi-line comment at the beginning of your SQL script file for this
+-- exercise set, stating the Oracle concepts being practiced.
+
+--      2.4 Exercise 1.4: ROWNUM Pseudo-column
+-- 1. ROWNUM Basics:
+-- • What is ROWNUM in Oracle? When is its value assigned to a row in a query’s
+-- execution?
+-- • How does ROWNUM fundamentally differ from PostgreSQL’s LIMIT clause in
+-- behavior, especially concerning ORDER BY?
+-- 2. Top-N Query:
+-- • Select the firstName, lastName, and salary of the 3 employees with the
+-- highest salaries from EmployeeRoster. Ensure ROWNUM is used correctly
+-- for this.
+-- 3. Pagination Emulation (Conceptual):
+-- • Explain how you would select the employees who are, say, the 4th and 5th
+-- highest paid (i.e., rows 4-5 in a list sorted by salary descending). You must
+-- use ROWNUM.
+
+
+--  Disadvantages and Pitfalls
+
+-- 3.1 Exercise 2.1: Data Type Pitfalls and Misunderstandings
+-- 1. VARCHAR2 Size & Semantics: An EmployeeRoster firstName column is
+-- VARCHAR2(10 BYTE). What happens if you try to insert ’Christophe’ (10 chars,
+-- 10 bytes in ASCII)? What if you try to insert ’René’ (4 chars, but ’é’ can be 2 bytes
+-- in UTF8)? What is the pitfall if NLS_LENGTH_SEMANTICS is BYTE when dealing
+-- with multi-byte characters?
+-- 2. NUMBER Precision/Scale:
+-- • If salary in EmployeeRoster was defined only as NUMBER (no preci-
+-- sion/scale) and you inserted 12345.678912345, what would be stored?
+-- What’s a potential pitfall of omitting precision/scale for financial data?
+-- • If commissionRate is NUMBER(4,2) and you attempt to insert 0.125 or
+-- 10.50. What happens in each case? What if you try to insert 123.45?
+-- 3. Oracle DATE Time Component: A PostgreSQL user accustomed to DATE being
+-- date-only inserts TO_DATE('2023-11-10', 'YYYY-MM-DD')into hireDate
+-- (Oracle DATE). They later run SELECT * FROM EmployeeRoster WHERE hireDate
+-- = TO_DATE('2023-11-10 10:00:00', 'YYYY-MM-DD HH24:MI:SS');. Will
+-- they find the record? Why or why not? What’s the pitfall?
+-- 4. TIMESTAMPWITHLOCALTIMEZONE(TSLTZ):localEntryTimein ProductCatalog
+-- is TIMESTAMP WITH LOCAL TIME ZONE.
+-- • Session A (Time Zone ’America/New_York’) inserts TIMESTAMP '2023-11-10
+-- 10:00:00 America/New_York'.
+-- • Session B (Time Zone ’Europe/London’) queries this exact row. What time
+-- will Session B see (conceptually, considering typical UTC offsets)?
+-- • What is a potential pitfall if the database’s DBTIMEZONE is different from
+-- the application server’s OS time zone, and TSLTZ data is inserted using
+-- SYSTIMESTAMP without explicit time zone specification?
+-- 3.2 Exercise 2.2: NULL Handling Function Caveats
+-- 1. NVLTypeConversion: What happens if you use NVL(salary, 'Not Available')
+-- where salary is NUMBER(10,2)? Why is this a pitfall? How should it be cor-
+-- rected if the goal is a string output?
+-- 2. NVL2TypeMismatch: Consider NVL2(hireDate, SYSDATE + 7, 'Not Hired
+-- Yet'). hireDate is DATE. What is the likely data type of the result if hireDate
+-- is NOT NULL? What if it IS NULL? What’s the potential issue and how can Or-
+-- acle try to resolve it (possibly leading to errors)?
+-- 3. COALESCEArgumentEvaluation: While COALESCEreturns the first non-NULL
+-- expression, all expressions provided to it must be of data types that are implicitly
+-- convertible to a common data type, determined by the first non-NULL expres-
+-- sion. What error might occur with COALESCE(numericColumn, dateColumn,
+-- 'textFallback') if numericColumn is NULL but dateColumn is not?
+-- 3.3 Exercise 2.3: DECODE and ROWNUM Logic Traps
+-- 1. DECODE’sNULLHandling: DECODE(colA, colB, 'Match', 'No Match').
+-- If both colA and colB are NULL, what does this return? How does this differ
+-- from CASE WHEN colA = colB THEN 'Match' ELSE 'No Match' END?
+-- When could DECODE’s behavior be a pitfall?
+-- 2. ROWNUM for Pagination - Incorrect Attempt: A developer wants to display the
+-- 3rd and 4th products from ProductCatalog (in order of productId). They
+-- write:
+-- 1 SELECT productName FROM ProductCatalog WHERE ROWNUM BETWEEN 3 AND 4
+-- ORDER BY productId;
+-- Why will this query return no rows?
+-- 3. ROWNUM with ORDER BY - Misconception: What is the output of the fol-
+-- lowing query? Is it guaranteed to be the two products whose names are last
+-- alphabetically? Explain.
+-- 1 SELECT productName, ROWNUM FROM ProductCatalog WHERE ROWNUM <= 2 ORDER
+-- BY productName DESC;
+
+
+--  4 Contrasting with Ineﬀicient Common Solutions
+
+--      4.1 Exercise 3.1: Suboptimal Logic vs. Oracle SQL Eﬀiciency
+-- 1. Client-SideNULLHandling: A developer fetches firstNameand commissionRate
+-- from EmployeeRoster. In their application code (e.g., Java/Python), they loop
+-- through results: if commissionRate is null, they display ”$0.00”, otherwise
+-- they display the actual rate.
+-- • Show the eﬀicient Oracle SQL way to produce a commissionDisplay col-
+-- umn directly using an Oracle NULL handling function.
+-- • What is the loss of advantage (e.g., performance, network traﬀic) with the
+-- client-side approach?
+-- 2. Client-SideConditionalLogic: For each product in ProductCatalog, if productCategory
+-- is ’Software’, display ’Digital Good’. If ’Hardware’, display ’Physical Good’. Oth-
+-- erwise, ’Misc Good’. This logic is currently in client code.
+-- • Demonstrate the eﬀicient Oracle SQL way using a CASE expression.
+-- • Why is performing this categorization in SQL generally better than in client
+-- code for reporting?
+
+--      4.2 Exercise 3.2: Ineﬀicient ROWNUM Usage and DUAL Misconcep-
+-- tions
+-- 1. Ineﬀicient DUAL Usage: A process needs to log the current timestamp and the
+-- current user performing an action. The developer writes:
+-- 1 -- Get timestamp
+-- 2 SELECT SYSTIMESTAMP FROM DUAL; -- Result captured by app
+-- 3 -- Get user
+-- 4 SELECT USER FROM DUAL; -- Result captured by app
+-- Show the eﬀicient way. What Oracle value is lost by the ineﬀicient approach?
+-- 2. Incorrect Top-N with ROWNUM: To find the 3 cheapest products *that are not
+-- free* from ProductCatalog, a developer writes:
+-- 1 SELECT productName, unitPrice
+-- 2 FROM ProductCatalog
+-- 3 WHERE unitPrice > 0 AND ROWNUM <= 3 -- Attempt to filter non-free
+-- first, then take top 3
+-- 4 ORDER BY unitPrice ASC;
+-- Explain why this is not guaranteed to give the 3 overall cheapest non-free prod-
+-- ucts. Present the eﬀicient, correct Oracle-idiomatic way.
+
+
+--  5 Hardcore Combined Problem
+
+--      5.1 Exercise 4.1: Multi-Concept Oracle Challenge for ”Employee Per-
+-- formance Review Prep”
+-- Scenario: Management needs a preliminary report for performance reviews. The re-
+-- port should identify the top 2 longest-serving ’Programmer’ employees from the ’IT’
+-- department. For these employees, provide a ”Review Focus” and details about their
+-- bio and tenure.
+-- Requirements:
+-- 1. Selection: Target ’Programmer’ employees in the ’IT’ department only.
+-- 2. Output Columns:
+-- • employeeId (NUMBER)
+-- • employeeName (VARCHAR2, format: ’LastName, FirstName’)
+-- • jobTitle (VARCHAR2)
+-- • department (VARCHAR2)
+-- • hireDateDisplay (VARCHAR2, formatted as ’Month DD, YYYY’, e.g.,
+-- ’January 03, 2006’)
+-- • yearsOfService(NUMBER, calculated to one decimal place from hireDate
+-- to SYSDATE. Use MONTHS_BETWEEN and DUAL for SYSDATE if needed in
+-- calculation context, though SYSDATE can be used directly).
+-- • bioExtract (NVARCHAR2: If bio is not NULL, show the first 30 char-
+-- acters of bio followed by ’...’. If bio is NULL, display ’No Bio on File’. Use
+-- NVL or COALESCE and string functions).
+-- • reviewFocus (VARCHAR2):
+-- – Use a CASE expression.
+-- – If commissionRate IS NOT NULL, focus is ’Sales & Technical Skills
+-- Review’.
+-- – Else (if commissionRate IS NULL):
+-- ∗ Use DECODE on managerId. If managerId is 102, focus is ’Project
+-- Leadership Potential’.
+-- ∗ Otherwise (for other managers or NULL managerId for program-
+-- mers), focus is ’Core Technical Deep Dive’.
+-- 3. Top-NLogic: The final output must be strictly limited to the top 2 longest-serving
+-- employees (earliest hireDate) based on the above criteria. Use ROWNUM cor-
+-- rectly for this.
+-- 4. Comments: Include a brief multi-line comment explaining the report’s purpose
+-- and a single-line comment for the ROWNUM filtering logic.
+-- 5. DUAL Table (Implicit/Explicit): Use of SYSDATE implicitly involves concepts
+-- related to DUAL’s role in providing such values.
+-- 11
+-- Bridging from PostgreSQL: This problem involves concepts like string manipula-
+-- tion (SUBSTR, concatenation), date calculations (MONTHS_BETWEEN vs. PostgreSQL
+-- age/interval functions), conditional logic (CASE is similar, DECODE is new), NULL
+-- handling (NVL/COALESCE vs. PG COALESCE), and Top-N queries (ROWNUM vs. PG
+-- LIMIT).
