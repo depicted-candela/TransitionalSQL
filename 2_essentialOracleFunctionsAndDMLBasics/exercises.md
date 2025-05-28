@@ -808,7 +808,7 @@ Well done on working through (or preparing to work through) these exercises! Pra
 
 Having solidified your understanding of Oracle's date and string manipulation, set operations, and DML/TCL, you are now well-prepared to tackle more advanced and powerful Oracle SQL features.
 
-**Your next learning adventures in "The Sequential and Complete Transitional Course from PostgreSQL to ORACLE SQL with ORACLE DB 21ai" include:**
+**Your next learning adventures in *Server Programming with Oracle (DB 23 ai) PL/SQL: A Transition Guide for PostgreSQL Users* include:**
 
 *   **Hierarchical Queries (`CONNECT BY`, `LEVEL`, `PRIOR`)**
 *   **Analytic (Window) Functions (Practicing Oracle Syntax for `RANK`, `LAG`, `SUM() OVER()`, etc.)**
