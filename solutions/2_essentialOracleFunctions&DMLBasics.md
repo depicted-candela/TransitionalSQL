@@ -1,129 +1,255 @@
 <style>
+  @keyframes slideUp {
+    from { 
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulseGlow {
+    0% { box-shadow: 0 0 0 0 rgba(86, 156, 214, 0.3); }
+    70% { box-shadow: 0 0 0 10px rgba(86, 156, 214, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(86, 156, 214, 0); }
+  }
+
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
-    color: #d4d4d4; /* --night-text-primary */
-    background-color: #1e1e1e; /* --night-bg-primary */
+    color: #d4d4d4;
+    background-color: #1e1e1e;
     margin: 0;
     padding: 20px;
+    overflow-x: hidden;
   }
+
   .container {
     max-width: 900px;
     margin: auto;
-    background-color: #2d2d2d; /* --night-bg-secondary */
+    background-color: #2d2d2d;
     padding: 30px;
     border-radius: 8px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.6); /* Darker shadow for depth */
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    border: 1px solid transparent;
+    animation: slideUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    opacity: 0;
+    transition: 
+      transform 0.3s ease,
+      box-shadow 0.3s ease,
+      border-color 0.3s ease;
   }
-  h1, h2, h3, h4 { /* Added h4 for exercise titles */
-    color: #569cd6; /* --night-heading-primary (VS Code-like blue) */
+
+  .container:hover {
+    border-color: #569cd6;
+    box-shadow: 
+      0 0 20px rgba(0,0,0,0.6),
+      0 0 30px rgba(86, 156, 214, 0.3);
+    transform: translateY(-3px);
   }
+
+  .container:active {
+    animation: pulseGlow 0.5s ease-out;
+  }
+
+  /* Staggered content animations */
+  .container > * {
+    opacity: 0;
+    animation: slideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .container > h1 { animation-delay: 0.2s; }
+  .container > h2 { animation-delay: 0.3s; }
+  .container > h3 { animation-delay: 0.4s; }
+  .container > h4 { animation-delay: 0.5s; }
+  .container > p { animation-delay: 0.6s; }
+  .container > ul { animation-delay: 0.7s; }
+  .container > pre { animation-delay: 0.8s; }
+  .container > .solution-explanation { animation-delay: 0.9s; }
+  .container > .exercise-solution-block { animation-delay: 1.0s; }
+
+  h1, h2, h3, h4 {
+    color: #569cd6;
+    transition: color 0.3s ease;
+  }
+
   h1 {
-    border-bottom: 2px solid #FF9900; /* --night-accent-primary (Orange accent) */
+    border-bottom: 2px solid #FF9900;
     padding-bottom: 10px;
     font-size: 2.5em;
     text-align: center;
   }
-  h2 { /* For main solution section title */
+
+  h2 {
     font-size: 2em;
     margin-top: 40px;
-    border-bottom: 1px solid #FF9900; /* Accent border for Solutions H2 */
+    border-bottom: 1px solid #FF9900;
     padding-bottom: 10px;
     text-align: center;
+    transition: all 0.3s ease;
   }
-  h3 { /* For Exercise Block titles within solutions */
+
+  h2:hover {
+    text-shadow: 0 0 8px rgba(255, 153, 0, 0.3);
+  }
+
+  h3 {
     font-size: 1.6em;
-    color: #4ec9b0; /* --night-accent-secondary (Teal/cyan) */
+    color: #4ec9b0;
     margin-top: 30px;
     border-bottom: 1px dashed #444;
     padding-bottom: 6px;
   }
-  h4 { /* For individual exercise solution titles (e.g., Exercise 1.1.1 Solution) */
+
+  h4 {
     font-size: 1.3em;
-    color: #ce9178; /* A subtle brownish-orange for emphasis */
+    color: #ce9178;
     margin-top: 25px;
     margin-bottom: 10px;
   }
+
   p, li {
     font-size: 1em;
     margin-bottom: 10px;
-    color: #cccccc; /* --night-text-secondary */
+    color: #cccccc;
   }
+
   ul {
     padding-left: 20px;
   }
+
   code {
     font-family: 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
-    background-color: #1a1a1a; /* --night-code-bg (Very dark) */
+    background-color: #1a1a1a;
     padding: 3px 7px;
     border-radius: 4px;
     font-size: 0.95em;
-    color: #d4d4d4; /* Light text for code */
-    border: 1px solid #3a3a3a; /* Subtle border for inline code */
+    color: #d4d4d4;
+    border: 1px solid #3a3a3a;
+    transition: all 0.3s ease;
   }
+
+  code:hover {
+    border-color: #569cd6;
+    box-shadow: 0 0 8px rgba(86, 156, 214, 0.3);
+  }
+
   pre {
-    background-color: #1a1a1a; /* --night-code-bg */
+    background-color: #1a1a1a;
     padding: 15px;
     border-radius: 5px;
     overflow-x: auto;
-    border: 1px solid #444444; /* --night-border-subtle */
-    color: #d4d4d4; /* Ensure preformatted text is also light */
+    border: 1px solid #444444;
+    color: #d4d4d4;
     margin-top: 5px;
     margin-bottom: 15px;
+    transition: all 0.3s ease;
   }
+
+  pre:hover {
+    border-color: #4ec9b0;
+    box-shadow: 0 0 15px rgba(78, 201, 176, 0.2);
+  }
+
   pre code {
     background-color: transparent;
     padding: 0;
     border-radius: 0;
     font-size: 0.9em;
-    border: none; /* No border for code within pre */
+    border: none;
   }
+
   .solution-explanation {
-    background-color: #252526; /* Slightly different dark shade for explanations */
+    background-color: #252526;
     padding: 10px 15px;
     margin-top: 5px;
     margin-bottom: 15px;
-    border-left: 3px solid #4ec9b0; /* Teal accent for explanation boxes */
+    border-left: 3px solid #4ec9b0;
     border-radius: 4px;
     font-size: 0.95em;
+    transition: all 0.3s ease;
   }
+
+  .solution-explanation:hover {
+    transform: translateX(5px);
+    box-shadow: 3px 0 10px rgba(78, 201, 176, 0.2);
+  }
+
   .solution-explanation p {
-      margin-bottom: 5px;
-      color: #b0b0b0; /* Slightly lighter grey for explanation text */
+    margin-bottom: 5px;
+    color: #b0b0b0;
   }
-  .solution-explanation code { /* Inline code within explanations */
-      background-color: #333;
-      color: #dcdcdc;
+
+  .solution-explanation code {
+    background-color: #333;
+    color: #dcdcdc;
   }
-  .exercise-solution-block { /* Wrapper for each individual exercise solution */
+
+  .exercise-solution-block {
     margin-bottom: 25px;
     padding-bottom: 15px;
     border-bottom: 1px solid #3a3a3a;
+    transition: all 0.3s ease;
   }
+
+  .exercise-solution-block:hover {
+    border-bottom-color: #569cd6;
+  }
+
   .exercise-solution-block:last-child {
-      border-bottom: none;
+    border-bottom: none;
   }
 
   .highlight-primary {
-    color: #569cd6; /* Match primary heading color */
+    color: #569cd6;
     font-weight: bold;
+    text-shadow: 0 0 8px rgba(86, 156, 214, 0.3);
   }
+
   .highlight-secondary {
-    color: #FF9900; /* Orange accent */
+    color: #FF9900;
     font-weight: bold;
+    text-shadow: 0 0 8px rgba(255, 153, 0, 0.2);
   }
+
   .emphasize {
     font-style: italic;
     font-weight: bold;
-    color: #ce9178; /* A subtle brownish-orange for emphasis */
+    color: #ce9178;
+    transition: all 0.3s ease;
   }
+
+  .emphasize:hover {
+    text-shadow: 0 0 8px rgba(206, 145, 120, 0.3);
+  }
+
   a {
-    color: #60AFFF; /* Brighter blue for links */
+    color: #60AFFF;
     text-decoration: none;
+    transition: all 0.3s ease;
   }
+
   a:hover {
     text-decoration: underline;
-    color: #90CAF9; /* Lighter blue on hover */
+    color: #90CAF9;
+    text-shadow: 0 0 8px rgba(144, 202, 249, 0.3);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .container {
+      padding: 20px;
+    }
+    
+    h1 {
+      font-size: 2em;
+    }
+    
+    h2 {
+      font-size: 1.6em;
+    }
   }
 </style>
 
