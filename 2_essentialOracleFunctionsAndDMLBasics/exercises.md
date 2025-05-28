@@ -1,9 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oracle SQL Practice</title>
 <style>
   body {
     font-family: 'Oracle Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -220,8 +214,7 @@
     animation: fadeIn 0.5s ease-out forwards;
   }
 </style>
-</head>
-<body>
+
 <div class="container">
 
 # Oracle SQL Practice: Mastering Dates, Strings, Sets, and DML/TCL
@@ -615,10 +608,9 @@ COMMIT;
 <h5>Exercise 2.2.1: String Function Pitfalls in Oracle</h5>
 <p><strong>Problem:</strong></p>
 <ul>
-    <li>a. A developer attempts <code>SELECT CONCAT(firstName, ' ', lastName, ' (', jobTitle, ')') FROM Employees;</code>. What error occurs and why? How should it be written?</li>
-    <li>b. A query <code>WHERE jobTitle = 'Developer'</code> is intended to find all types of developers (e.g., 'Senior Developer', 'Developer Lead'). Why will this fail? What Oracle functions/operators should be used for substring or pattern matching?</li>
-    <li>c. Oracle treats empty strings (<code>''</code>) in <code>VARCHAR2</code> columns as <code>NULL</code>. A developer writes <code>SELECT firstName || details || lastName FROM someTable</code> where <code>details</code> can sometimes be an empty string from source data that becomes <code>NULL</code>. What is the result compared to PostgreSQL where <code>''</code> is not <code>NULL</code>?</li>
-    <li>d. If <code>SUBSTR(string, start_pos, length)</code> is used and <code>start_pos</code> is 0 or negative, or <code>length</code> is negative, how does Oracle's <code>SUBSTR</code> behave? Contrast with PostgreSQL's <code>SUBSTRING</code> if known behavior differs.</li>
+    <li>a. A query <code>WHERE jobTitle = 'Developer'</code> is intended to find all types of developers (e.g., 'Senior Developer', 'Developer Lead'). Why will this fail? What Oracle functions/operators should be used for substring or pattern matching?</li>
+    <li>b. Oracle treats empty strings (<code>''</code>) in <code>VARCHAR2</code> columns as <code>NULL</code>. A developer writes <code>SELECT firstName || details || lastName FROM someTable</code> where <code>details</code> can sometimes be an empty string from source data that becomes <code>NULL</code>. What is the result compared to PostgreSQL where <code>''</code> is not <code>NULL</code>?</li>
+    <li>c. If <code>SUBSTR(string, start_pos, length)</code> is used and <code>start_pos</code> is 0 or negative, or <code>length</code> is negative, how does Oracle's <code>SUBSTR</code> behave? Contrast with PostgreSQL's <code>SUBSTRING</code> if known behavior differs.</li>
 </ul>
 </div>
 </div>
@@ -689,7 +681,7 @@ COMMIT;
 <div class="exercise-category-box">
 <h4>(i) Meanings, Values, Relations, and Advantages</h4>
 <div class="problem-description">
-<h5>Exercise 4.1.1: Oracle DML & Transaction Control Basics</h5>
+<h5>Exercise 4.1.1: Oracle DML and Transaction Control Basics</h5>
 <p><strong>Problem:</strong></p>
 <ul>
     <li>a. <strong>INSERT:</strong> Add a new department 'Operations' (departmentId 60) located in 'Chicago' to the <code>Departments</code> table.</li>
@@ -824,5 +816,3 @@ Having solidified your understanding of Oracle's date and string manipulation, s
 Keep up the excellent work, and continue exploring the vast capabilities of Oracle SQL!
 
 </div>
-</body>
-</html>

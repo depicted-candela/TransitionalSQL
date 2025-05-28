@@ -1,98 +1,54 @@
-        -- 1. From PostgreSQL to SQL ORACLE with ORACLE DB
+                -- 2. String Functions (Practice in Oracle)
 
 
---  (ii) Disadvantages and Pitfalls
+--      (i) Meanings, Values, Relations, and Advantages
+--              Exercise 2.1.1: Basic Oracle String Manipulation
+-- Problem:
+-- a. Concatenate the firstName, a space, and the lastName of employee Bob Johnson (employeeId 102) using the || operator. Also show it using nested 
+-- CONCAT functions. Explain why || is generally preferred in Oracle.
+-- SELECT FIRSTNAME || ' ' || LASTNAME FULLNAME, CONCAT(CONCAT(FIRSTNAME, ' '), LASTNAME) CONCAT_FULLNAME 
+-- FROM ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES WHERE EMPLOYEEID = 102;
+-- The second approach is highly verbose
+-- b. For employee Alice Smith (employeeId 101), extract the username part (before '@') from her email address. Use SUBSTR and INSTR.
+-- SELECT SUBSTR(EMAIL, 0, INSTR(EMAIL, '@') - 1), EMAIL
+-- FROM ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES 
+-- WHERE EMPLOYEEID = 101;
+-- c. Find the length of Frank Miller's (employeeId 106) jobTitle after removing leading/trailing spaces. Use LENGTH and TRIM.
+-- SELECT FIRSTNAME, LASTNAME, LENGTH(TRIM(FIRSTNAME||LASTNAME)) FranksLength
+-- FROM ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES WHERE EMPLOYEEID = 106;
+-- d. Display the projectName for projectId 1 ('Omega System Upgrade') with 'System' replaced by 'Platform'. Use REPLACE.
+-- SELECT REPLACE(PROJECTNAME, 'System', 'Platform') REPLACEMENT
+-- FROM ESSENTIAL_FUNCTIONS_DMLBASICS.PROJECTS WHERE PROJECTID = 1;
+-- e. (Oracle Specific Nuance for INSTR) Find the starting position of the second occurrence of 'e' (case-insensitive) in the firstName 'Eve' (employeeId 105). 
+-- Use INSTR with its occurrence parameter. How might you achieve case-insensitivity directly in INSTR or by combining functions?
+-- Answer: must be used LOWER in variable sides of a comparison
 
---      3.1 Exercise 2.1: Data Type Pitfalls and Misunderstandings
---          1. VARCHAR2 Size & Semantics: An EmployeeRoster firstName column is
--- VARCHAR2(10 BYTE). 
--- • What happens if you try to insert ’Christophe’ (10 chars, 10 bytes in ASCII)?
--- It will works because memory is enough to store 10 bytes
--- • What if you try to insert ’René’ (4 chars, but ’é’ can be 2 bytes in UTF8)?
--- It will succeed because were used 5 of 10 bytes.
--- • What is the pitfall if NLS_LENGTH_SEMANTICS is BYTE when dealing
--- with multi-byte characters?
--- Complex characters like ones from the chinese language will fail
--- if they exceed the stablished setted memory, thus the limit in BYTES must be 
--- just for very simplified texts like standardized names for default english
---          2. NUMBER Precision/Scale:
--- • If salary in EmployeeRoster was defined only as NUMBER (no preci-
--- sion/scale) and you inserted 12345.678912345, what would be stored?
--- What’s a potential pitfall of omitting precision/scale for financial data?
--- Answer: the decimal part of such real number will be ignored and the 
--- precision for generalized financial analysis will fail
--- • If commissionRate is NUMBER(4,2) and you attempt to insert 0.125 or
--- 10.50. What happens in each case? What if you try to insert 123.45?
--- Answer: 0.125 will be stored as 0.12, 10.50 as 10.50, 123.45 as 123.4
--- 3. Oracle DATE Time Component: A PostgreSQL user accustomed to DATE being
--- date-only inserts TO_DATE('2023-11-10', 'YYYY-MM-DD') into hireDate
--- (Oracle DATE). They later run SELECT * FROM EmployeeRoster WHERE hireDate
--- = TO_DATE('2023-11-10 10:00:00', 'YYYY-MM-DD HH24:MI:SS');. Will
--- they find the record? Why or why not? What’s the pitfall?
--- Answer: will fail because values created with DATE in ORACLE are setted
--- to midnight if time was not previously provided  
--- 4. TIMESTAMPWITHLOCALTIMEZONE(TSLTZ):localEntryTimein ProductCatalog
--- is TIMESTAMP WITH LOCAL TIME ZONE.
--- • Session A (Time Zone ’America/New_York’) inserts TIMESTAMP '2023-11-10
--- 10:00:00 America/New_York'.
--- • Session B (Time Zone ’Europe/London’) queries this exact row. What time
--- will Session B see (conceptually, considering typical UTC offsets)?
--- Answer: will see Time Zone ’Europe/London’ because the variable is 
--- TIMESTAMP WITH LOCAL TIME ZONE.
--- • What is a potential pitfall if the database’s DBTIMEZONE is different from
--- the application server’s OS time zone, and TSLTZ data is inserted using
--- SYSTIMESTAMP without explicit time zone specification?
--- Answer: the time stored will be generalized to the application server's OS
--- time zone and the fine grained Time Zone for regionalized databases would
--- be unmeaningful
+--      (ii) Disadvantages and Pitfalls
+--              Exercise 2.2.1: String Function Pitfalls in Oracle
+-- Problem:
+-- a. A query WHERE jobTitle = 'Developer' is intended to find all types of developers (e.g., 'Senior Developer', 'Developer Lead'). Why will this fail? 
+-- What Oracle functions/operators should be used for substring or pattern matching?
+-- SELECT * FROM ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES WHERE JOBTITLE LIKE '%Developer%';                -- All these ways are correct but the first one is
+-- SELECT * FROM ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES WHERE INSTR(LOWER(JOBTITLE), 'developer');        -- the best
+-- SELECT * FROM ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES WHERE INSTR(LOWER(JOBTITLE), 'developer') > 0;
+-- b. Oracle treats empty strings ('') in VARCHAR2 columns as NULL. A developer writes SELECT firstName || details || lastName FROM someTable where details can 
+-- sometimes be an empty string from source data that becomes NULL. What is the result compared to PostgreSQL where '' is not NULL?
+-- Answer: Oracle differs of PGL not nulling a completely concatenated operation if just one is null, instead treat it as the empty version of PostgreSQL
+-- c. If SUBSTR(string, start_pos, length) is used and start_pos is 0 or negative, or length is negative, how does Oracle's SUBSTR behave? Contrast with 
+-- PostgreSQL's SUBSTRING if known behavior differs.
+-- Answer: 0 as start_pos means the string beginning with the same behavior with 1; with < 0 means starting from the end counting such negative number from 
+-- the end; negative lenghts give NULL as result
 
---      3.2 Exercise 2.2: NULL Handling Function Caveats
--- 1. NVL Type Conversion: What happens if you use NVL(salary, 'Not Available')
--- where salary is NUMBER(10,2)? 
--- Answer: data types are not coherent for the same NVL
--- Why is this a pitfall? How should it be corrected if the goal is a string output?
--- Answer: salary must be casted to string
--- 2. NVL2 TypeMismatch: Consider NVL2(hireDate, SYSDATE + 7, 'Not Hired
--- Yet'). hireDate is DATE. What is the likely data type of the result if hireDate
--- is NOT NULL?
--- SELECT SYSDATE + 7 FROM DUAL; -- returns DATE
--- What if it IS NULL? What’s the potential issue and how can Or-
--- acle try to resolve it (possibly leading to errors)?
--- Answer: the returned value will be 'Not Hired Yet', but since such value is not
--- casted to DATE, an error will appear
--- 3. COALESCE ArgumentEvaluation: While COALESCE returns the first non-NULL
--- expression, all expressions provided to it must be of data types that are implicitly
--- convertible to a common data type, determined by the first non-NULL expres-
--- sion. What error might occur with COALESCE(numericColumn, dateColumn,
--- 'textFallback') if numericColumn is NULL but dateColumn is not?
--- Answer: both numeric column and the last vale are not implicitly convertible to the 
--- common type DATE
-
---      3.3 Exercise 2.3: DECODE and ROWNUM Logic Traps
--- 1. DECODE’s NULL Handling: DECODE(colA, colB, 'Match', 'No Match').
--- If both colA and colB are NULL, what does this return? 
--- Answer: 'No Match'
--- How does this differ from CASE WHEN colA = colB THEN 'Match' ELSE 'No Match' END?
--- Answer: DECODE treats NULL = NULL as true while CASE do it as unknown
--- When could DECODE’s behavior be a pitfall?
--- Answer: when comparisons more complex than equalities are necessary, portability
--- is required or the ANSI logic (NULL = NULL as unknown) is required
--- 2. ROWNUM for Pagination - Incorrect Attempt: A developer wants to display the
--- 3rd and 4th products from ProductCatalog (in order of productId). They
--- write:
-SELECT productName 
-FROM ProductCatalog 
-WHERE ROWNUM BETWEEN 3 AND 4
-ORDER BY productId;
--- Why will this query return no rows?
--- Answer: the query returns nothing because the filter filters after to the
--- creation of the ranking number, thus nothing is selected because there
--- is nothing to select
--- 3. ROWNUM with ORDER BY - Misconception: What is the output of the fol-
--- lowing query? 
-SELECT productName, ROWNUM FROM ProductCatalog WHERE ROWNUM <= 10 ORDER
-BY productName DESC;
--- Is it guaranteed to be the two products whose names are last
--- alphabetically? Explain.
--- Answer: it's not guaranteed because the ORDER is made previous to the
--- filter
+--      (iii) Contrasting with Inefficient Common Solutions
+--              Exercise 2.3.1: Complex String Parsing - Iterative SUBSTR/INSTR vs. REGEXP_SUBSTR
+-- Problem:
+-- The Projects table has projectName 'Omega System Upgrade, Phase 2, Alpha Release'. You need to extract the third comma-separated value ('Alpha Release' after 
+-- trimming).
+-- Inefficient/Complex Common Solution: A developer might use multiple nested calls to INSTR to find the positions of the first, second, and third commas, and 
+-- then SUBSTR to extract the segment, followed by TRIM. This can become very complex and error-prone.
+-- Show conceptually how this might look (you don't need to write the fully working deeply nested version if it's too verbose, just outline the logic).
+-- Explain its disadvantages (readability, maintainability, error-proneness).
+-- Present the efficient and often clearer Oracle-idiomatic solution using REGEXP_SUBSTR.
+-- SELECT LTRIM(SUBSTR(PROJECTNAME, INSTR(PROJECTNAME, ',', 1, 2) + 1, LENGTH(PROJECTNAME))) EXTRACTED, PROJECTNAME
+-- FROM ESSENTIAL_FUNCTIONS_DMLBASICS.PROJECTS 
+-- WHERE PROJECTNAME = 'Omega System Upgrade, Phase 2, Alpha Release';

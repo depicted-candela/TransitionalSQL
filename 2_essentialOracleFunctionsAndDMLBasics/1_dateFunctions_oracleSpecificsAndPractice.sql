@@ -94,7 +94,14 @@
 -- Show this inefficient approach.
 -- Explain why it's inefficient in Oracle, especially if startDate is indexed.
 -- Provide the efficient, Oracle-idiomatic solution using date range comparisons that can leverage indexes.
-SELECT * 
-FROM ESSENTIAL_FUNCTIONS_DMLBASICS.PROJECTS 
-WHERE EXTRACT(YEAR FROM startDate) = 2023 or TO_CHAR(startDate, 'YYYY') = '2023';
--- A query to be sargable needs
+-- SELECT * 
+-- FROM ESSENTIAL_FUNCTIONS_DMLBASICS.PROJECTS 
+-- WHERE EXTRACT(YEAR FROM startDate) = 2023 or TO_CHAR(startDate, 'YYYY') = '2023';
+-- A query to be sargable needs the left value (the one stored in the table) to be
+-- directly comparable with a constant value, note that both comparisons at left
+-- are not comparable
+-- SELECT STARTDATE
+-- FROM ESSENTIAL_FUNCTIONS_DMLBASICS.PROJECTS
+-- WHERE 
+--     STARTDATE >= TO_DATE('2023-01-01', 'YYYY-MM-DD') 
+--     AND STARTDATE < TO_DATE('2024-01-01', 'YYYY-MM-DD');

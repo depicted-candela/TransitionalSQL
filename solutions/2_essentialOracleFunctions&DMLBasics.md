@@ -411,68 +411,58 @@ WHERE startDate >= TO_DATE('2023-01-01', 'YYYY-MM-DD')
 ### Solutions for Exercise Block 2: String Functions *(Practice in Oracle)*
 
 <div class="exercise-solution-block">
-<h4>Solution for Exercise 2.1.1: Basic Oracle String Manipulation</h4>
-<pre><code class="language-sql">
--- a. Concatenation
-SELECT
-    firstName || ' ' || lastName AS fullName_operator,
-    CONCAT(CONCAT(firstName, ' '), lastName) AS fullName_function
-FROM Employees
-WHERE employeeId = 102;
-</code></pre>
-<div class="solution-explanation">
-<p><strong>Explanation for (a):</strong> The <code>||</code> operator is standard SQL for concatenation and is preferred in Oracle because Oracle's <code>CONCAT(str1, str2)</code> function only accepts two arguments, requiring nested calls for more strings, which is less readable.</p>
-</div>
-<pre><code class="language-sql">
--- b. Extract username
-SELECT
-    email,
-    SUBSTR(email, 1, INSTR(email, '@') - 1) AS username
-FROM Employees
-WHERE employeeId = 101;
+  <h4>Solution for Exercise 2.1.1: Basic Oracle String Manipulation</h4>
+  <pre><code class="language-sql">
+  -- a. Concatenation
+  SELECT
+      firstName || ' ' || lastName AS fullName_operator,
+      CONCAT(CONCAT(firstName, ' '), lastName) AS fullName_function
+  FROM Employees
+  WHERE employeeId = 102;
+  </code></pre>
+  <div class="solution-explanation">
+  <p><strong>Explanation for (a):</strong> The <code>||</code> operator is standard SQL for concatenation and is preferred in Oracle because Oracle's <code>CONCAT(str1, str2)</code> function only accepts two arguments, requiring nested calls for more strings, which is less readable.</p>
+  </div>
+  <pre><code class="language-sql">
+    -- b. Extract username
+    SELECT
+        email,
+        SUBSTR(email, 1, INSTR(email, '@') - 1) AS username
+    FROM Employees
+    WHERE employeeId = 101;
 
--- c. Length of trimmed jobTitle
-SELECT
-    jobTitle AS originalJobTitle,
-    TRIM(jobTitle) AS trimmedJobTitle,
-    LENGTH(TRIM(jobTitle)) AS lengthOfTrimmedTitle
-FROM Employees
-WHERE employeeId = 106; -- Frank Miller, jobTitle ' Developer '
+    -- c. Length of trimmed jobTitle
+    SELECT
+        jobTitle AS originalJobTitle,
+        TRIM(jobTitle) AS trimmedJobTitle,
+        LENGTH(TRIM(jobTitle)) AS lengthOfTrimmedTitle
+    FROM Employees
+    WHERE employeeId = 106; -- Frank Miller, jobTitle ' Developer '
 
--- d. Replace substring
-SELECT
-    projectName,
-    REPLACE(projectName, 'System', 'Platform') AS modifiedProjectName
-FROM Projects
-WHERE projectId = 1;
+    -- d. Replace substring
+    SELECT
+        projectName,
+        REPLACE(projectName, 'System', 'Platform') AS modifiedProjectName
+    FROM Projects
+    WHERE projectId = 1;
 
--- e. INSTR for Nth occurrence, case-insensitive
-SELECT
-    firstName,
-    INSTR(firstName, 'e', 1, 2) AS pos_second_e_sensitive,
-    INSTR(LOWER(firstName), 'e', 1, 2) AS pos_second_e_insensitive
-FROM Employees
-WHERE employeeId = 105; -- Eve Davis
-</code></pre>
-<div class="solution-explanation">
-<p><strong>Explanation for (e):</strong> <code>INSTR(string, substring, [start_position_Nth], [occurrence_Nth])</code>. <code>INSTR</code> is case-sensitive by default. To make it case-insensitive, convert both strings to the same case (e.g., using <code>LOWER()</code>). Oracle's <code>INSTR</code> is more powerful than PostgreSQL's <code>POSITION()</code> or <code>strpos()</code> which only find the first occurrence.</p>
-</div>
+    -- e. INSTR for Nth occurrence, case-insensitive
+    SELECT
+        firstName,
+        INSTR(firstName, 'e', 1, 2) AS pos_second_e_sensitive,
+        INSTR(LOWER(firstName), 'e', 1, 2) AS pos_second_e_insensitive
+    FROM Employees
+    WHERE employeeId = 105; -- Eve Davis
+  </code></pre>
+  <div class="solution-explanation">
+    <p><strong>Explanation for (e):</strong> <code>INSTR(string, substring, [start_position_Nth], [occurrence_Nth])</code>. <code>INSTR</code> is case-sensitive by default. To make it case-insensitive, convert both strings to the same case (e.g., using <code>LOWER()</code>). Oracle's <code>INSTR</code> is more powerful than PostgreSQL's <code>POSITION()</code> or <code>strpos()</code> which only find the first occurrence.</p>
+  </div>
 </div>
 
 <div class="exercise-solution-block">
 <h4>Solution for Exercise 2.2.1: String Function Pitfalls in Oracle</h4>
 <div class="solution-explanation">
-<p><strong>a. CONCAT with more than two arguments:</strong></p>
-<p>Attempt: <code>SELECT CONCAT(firstName, ' ', lastName, ' (', jobTitle, ')') FROM Employees;</code></p>
-<p>Result: <code>ORA-00909: invalid number of arguments</code>. Oracle's <code>CONCAT</code> only accepts two arguments.</p>
-<p><strong>Correct way using <code>||</code>:</strong></p>
-</div>
-<pre><code class="language-sql">
-SELECT firstName || ' ' || lastName || ' (' || jobTitle || ')' AS fullDescription
-FROM Employees WHERE employeeId = 101;
-</code></pre>
-<div class="solution-explanation">
-<p><strong>b. Exact match vs. pattern matching:</strong></p>
+<p><strong>a. Exact match vs. pattern matching:</strong></p>
 <p><code>WHERE jobTitle = 'Developer'</code> fails to find 'Senior Developer'. Use <code>LIKE '%Developer%'</code>, <code>INSTR(jobTitle, 'Developer') > 0</code>, or <code>REGEXP_LIKE(jobTitle, 'Developer')</code> for pattern matching.</p>
 
 <p><strong>c. Empty string <code>''</code> as NULL in Oracle VARCHAR2 concatenation:</strong></p>

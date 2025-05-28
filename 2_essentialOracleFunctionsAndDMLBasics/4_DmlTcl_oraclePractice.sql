@@ -1,71 +1,82 @@
-        -- 1. From PostgreSQL to SQL ORACLE with ORACLE DB
+        -- 3. Data Manipulation Language (DML) & Transaction Control (Practice in Oracle)
 
 
---  5 Hardcore Combined Problem
+--  (i) Meanings, Values, Relations, and Advantages
 
---      5.1 Exercise 4.1: Multi-Concept Oracle Challenge for ”Employee Per-
--- formance Review Prep”
--- Scenario: Management needs a preliminary report for performance reviews. The re-
--- port should identify the top 2 longest-serving ’Programmer’ employees from the ’IT’
--- department. For these employees, provide a ”Review Focus” and details about their
--- bio and tenure.
--- Requirements:
--- 1. Selection: Target ’Programmer’ employees in the ’IT’ department only.
--- 2. Output Columns:
--- • employeeId (NUMBER)
--- • employeeName (VARCHAR2, format: ’LastName, FirstName’)
--- • jobTitle (VARCHAR2)
--- • department (VARCHAR2)
--- • hireDateDisplay (VARCHAR2, formatted as ’Month DD, YYYY’, e.g.,
--- ’January 03, 2006’)
--- • yearsOfService(NUMBER, calculated to one decimal place from hireDate
--- to SYSDATE. Use MONTHS_BETWEEN and DUAL for SYSDATE if needed in
--- calculation context, though SYSDATE can be used directly).
--- • bioExtract (NVARCHAR2: If bio is not NULL, show the first 30 char-
--- acters of bio followed by ’...’. If bio is NULL, display ’No Bio on File’. Use
--- NVL or COALESCE and string functions).
--- • reviewFocus (VARCHAR2):
--- – Use a CASE expression.
--- – If commissionRate IS NOT NULL, focus is ’Sales & Technical Skills
--- Review’.
--- – Else (if commissionRate IS NULL):
--- ∗ Use DECODE on managerId. If managerId is 102, focus is ’Project
--- Leadership Potential’.
--- ∗ Otherwise (for other managers or NULL managerId for program-
--- mers), focus is ’Core Technical Deep Dive’.
--- 3. Top-NLogic: The final output must be strictly limited to the top 2 longest-serving
--- employees (earliest hireDate) based on the above criteria. Use ROWNUM cor-
--- rectly for this.
--- 4. Comments: Include a brief multi-line comment explaining the report’s purpose
--- and a single-line comment for the ROWNUM filtering logic.
--- 5. DUAL Table (Implicit/Explicit): Use of SYSDATE implicitly involves concepts
--- related to DUAL’s role in providing such values.
--- 11
--- Bridging from PostgreSQL: This problem involves concepts like string manipula-
--- tion (SUBSTR, concatenation), date calculations (MONTHS_BETWEEN vs. PostgreSQL
--- age/interval functions), conditional logic (CASE is similar, DECODE is new), NULL
--- handling (NVL/COALESCE vs. PG COALESCE), and Top-N queries (ROWNUM vs. PG
--- LIMIT).
+--      Exercise 4.1.1: Oracle DML and Transaction Control Basics
+-- Problem:
+-- a. INSERT: Add a new department 'Operations' (departmentId 60) located in 'Chicago' to the Departments table.
+-- INSERT INTO ESSENTIAL_FUNCTIONS_DMLBASICS.DEPARTMENTS (DEPARTMENTID, DEPARTMENTNAME, LOCATIONCITY) VALUES (60, 'Operations', 'Chicago');
+-- b. SAVEPOINT: Create a savepoint named pre_salary_update.
+-- SAVEPOINT pre_salary_update;
+-- -- c. UPDATE: Increase the salary of all employees in the 'Technology' department (departmentId 10) by 5%. Use the ROUND function to ensure the new salary has 
+-- -- two decimal places.
+-- UPDATE ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES e
+-- SET SALARY = e.SALARY * 1.05
+-- WHERE DEPARTMENTID = 10;
+-- SELECT * FROM ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES;
+-- d. DELETE: Remove any assignments from ProjectAssignments for employee Frank Miller (employeeId 106). Then, delete Frank Miller from the Employees table.
+-- DELETE FROM ESSENTIAL_FUNCTIONS_DMLBASICS.PROJECTASSIGNMENTS WHERE EMPLOYEEID = 106;
+-- DELETE FROM ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES
+-- WHERE EMPLOYEEID = 106;
+-- SELECT * FROM ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES WHERE EMPLOYEEID = 106;
+-- SELECT * FROM ESSENTIAL_FUNCTIONS_DMLBASICS.PROJECTASSIGNMENTS WHERE EMPLOYEEID = 106;
+-- e. ROLLBACK TO SAVEPOINT: It was decided not to delete Frank Miller yet. Rollback the changes to pre_salary_update. Verify Frank Miller and his assignments 
+-- are back, but the salary updates for Tech employees persist. *(Adjust savepoint placement if necessary for intended demonstration)*
+-- ROLLBACK;
+-- SELECT * FROM ESSENTIAL_FUNCTIONS_DMLBASICS.PROJECTASSIGNMENTS WHERE EMPLOYEEID = 106;
+-- SELECT * FROM ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES WHERE EMPLOYEEID = 106;
+-- f. COMMIT: Make the salary updates permanent.
+-- UPDATE ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES e
+-- SET SALARY = ROUND(e.SALARY * 1.05, 2)
+-- WHERE DEPARTMENTID = 10;
+-- COMMIT;
+-- SELECT * FROM ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES;
+-- g. MERGE (Oracle Specific Advantage): Use the EmployeeUpdatesForMerge table (populated earlier) to update existing employees or insert new ones into the 
+-- Employees table.
 
-SET DEFINE OFF;
-/*This turn down setters like & within strings
-and SET DEFINE ON; turns on setters like & within strings*/
-SELECT * FROM (
-    SELECT 
-        employeeId, 
-        CONCAT(FIRSTNAME, ', ', LASTNAME) EMPLOYEENAME, 
-        jobTitle, 
-        DEPARTMENTNAME, 
-        TO_CHAR(HIREDATE, 'Month DD, YYYY') HIRE_DISPLAY,
-        ROUND(MONTHS_BETWEEN(SYSDATE, HIREDATE) / 12) YEARSOFSERVICE,
-        NVL2(BIO, SUBSTR(BIO, 0, 30), TO_NCHAR('No Bio on File')) BIOEXTRACT,
-        CASE 
-            WHEN COMMISSIONRATE IS NOT NULL THEN 'Sales \ Technical Skills Review'
-            ELSE DECODE(MANAGERID, 102, 'Project Leadership Potentential', 'Core Technical Deep Dive')
-        END REVIEWFOCUS
-    FROM EMPLOYEEROSTER 
-    WHERE DEPARTMENTNAME = 'IT' AND JOBTITLE = 'Programmer'
-    ORDER BY HIREDATE DESC
-) WHERE ROWNUM < 3;
+-- If an employeeId from EmployeeUpdatesForMerge exists in Employees, update their jobTitle, salary, and departmentId.
+-- If an employeeId does not exist, insert a new employee record: firstName='NewEmp', lastName='ViaMerge', email as employeeId || '@merge.com', and other 
+-- details from EmployeeUpdatesForMerge, hireDate as SYSDATE.
+-- Explain the advantage of MERGE over separate UPDATE and INSERT statements (atomicity, performance, readability). Contrast with PostgreSQL's INSERT ... 
+-- ON CONFLICT.
+-- SAVEPOINT previous_to_merge;
+-- MERGE INTO ESSENTIAL_FUNCTIONS_DMLBASICS.Employees e
+-- USING ESSENTIAL_FUNCTIONS_DMLBASICS.EmployeeUpdatesForMerge u
+--     ON (e.employeeId = u.employeeId)
+-- WHEN MATCHED THEN
+--     UPDATE SET
+--         e.jobTitle = u.newJobTitle,
+--         e.salary = u.newSalary,
+--         e.departmentId = u.newDepartmentId
+-- WHEN NOT MATCHED THEN
+--     INSERT (employeeId, firstName, lastName, email, jobTitle, salary, departmentId, hireDate)
+--     VALUES (u.employeeId, 'NewEmp', 'ViaMerge', u.employeeId || '@merge.com', u.newJobTitle, u.newSalary, u.newDepartmentId, SYSDATE);
+-- COMMIT;
 
-SET DEFINE ON;
+--  (ii) Disadvantages and Pitfalls
+
+--      Exercise 4.2.1: DML and Transaction Pitfalls
+-- Problem:
+-- a. A developer issues UPDATE Employees SET commissionPct = 0.05 WHERE departmentId = 30; but forgets to COMMIT. They then run a report query in the *same 
+-- session* that relies on commissionPct. What value will the report see? What if another session runs the report? What happens if the first session closes 
+-- without COMMIT?
+-- b. An intern accidentally runs DELETE FROM Projects; (without a WHERE clause). What is the immediate action they should take if this was unintended and no 
+-- COMMIT has been issued?
+-- c. A MERGE statement's ON clause is ON (target.departmentId = source.departmentId). If departmentId is not unique in the source table for a given 
+-- departmentId in the target, what error might occur and why?
+-- d. A transaction starts, a savepoint S1 is created, some DML (DML1) occurs, another savepoint S2 is created, more DML (DML2) occurs. If ROLLBACK TO S1 is 
+-- issued, what is the state of DML1 and DML2? What happens to savepoint S2?
+
+
+--  (iii) Contrasting with Inefficient Common Solutions
+
+--      Exercise 4.3.1: Conditional Insert/Update - MERGE vs. Separate UPDATE then INSERT (with NOT EXISTS)
+-- Problem: You need to synchronize data from EmployeeUpdatesForMerge into Employees. If an employee exists (matched by employeeId), update their jobTitle and 
+-- salary. If not, insert them.
+-- Less Efficient/More Complex Common Solution: A developer might write two separate SQL statements:
+-- An UPDATE statement for existing employees (perhaps using EXISTS or an updatable join).
+-- An INSERT ... SELECT statement for new employees, using NOT EXISTS or a LEFT JOIN ... WHERE IS NULL to identify those not already present.
+-- Show this two-statement SQL approach.
+-- Explain its disadvantages (multiple table scans, potential for race conditions if not perfectly isolated, more complex logic).
+-- Present the efficient, Oracle-idiomatic solution using MERGE.

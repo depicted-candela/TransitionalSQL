@@ -355,7 +355,7 @@ This section dives into fundamental building blocks for data manipulation and qu
 <strong>Oracle's Date Realm:</strong> In Oracle, the `DATE` data type is a bit of a time traveler – it <em>always</em> stores both date and time components, down to the second. This is a key difference from PostgreSQL's `DATE` type, which only holds the date. For time-zoned precision, Oracle offers `TIMESTAMP WITH TIME ZONE` and `TIMESTAMP WITH LOCAL TIME ZONE`.
 </div>
 
-*   **Meanings & Values:**
+*   **MEANINGS & VALUES:**
     *   **Getting Current Time:** Functions like `SYSDATE` and `SYSTIMESTAMP` provide the database server's current date/time and timestamp with time zone, respectively. `CURRENT_DATE` and `CURRENT_TIMESTAMP` reflect the session's time zone settings.
         *   *If your data needs a timestamp, like a new stamp, these functions are your champ.*
     *   **Conversions (`TO_DATE`, `TO_CHAR`):** These are vital for converting strings to Oracle `DATE` types (`TO_DATE`) and `DATE` types to formatted strings (`TO_CHAR`). Oracle's format models are powerful and specific. PostgreSQL users will find `TO_DATE` and `TO_CHAR` familiar, but Oracle's strictness with format models and the behavior of its `DATE` type are crucial distinctions.
@@ -373,8 +373,8 @@ This section dives into fundamental building blocks for data manipulation and qu
 
 ### <span>1.2 String Functions (Practice in Oracle)</span>
 
-*   **Meanings & Values:** String functions manipulate character data. Most are standard SQL, but Oracle's implementation and common practices (like preferring `||` for concatenation) are key.
-    *   **Concatenation (`||`, `CONCAT`):** Joins strings. Oracle's `CONCAT(str1, str2)` only takes two arguments, making `||` more convenient for multiple strings. PostgreSQL's `CONCAT` can take multiple arguments, and `||` also works.
+*   **MEANINGS & VALUES:** String functions manipulate character data. Most are standard SQL, but Oracle's implementation and common practices (like preferring `||` for concatenation) are key.
+    *   **Concatenation (`||`, `CONCAT`):** Joins strings. Oracle's `CONCAT(str1, str2)` only takes two or more arguments, not making `||` more convenient for multiple strings. PostgreSQL's `CONCAT` can take multiple arguments, and `||` also works.
         *   *To join strings with glee, `||` sets them free; `CONCAT` works too, but just for two!*
     *   **Substring Extraction (`SUBSTR`):** Extracts a portion of a string. Oracle's `SUBSTR(string, start_position, [length])` is 1-based; negative `start_position` counts from the end. PostgreSQL's `SUBSTRING` is similar.
     *   **Finding Substrings (`INSTR`):** Returns the position of a substring. Oracle's `INSTR(string, substring, [start_position], [occurrence_Nth])` is powerful, allowing searches for specific occurrences. PostgreSQL's `POSITION` or `strpos` find the first occurrence.
@@ -392,7 +392,7 @@ This section dives into fundamental building blocks for data manipulation and qu
 
 ### <span>1.3 Set Operators (Practice in Oracle)</span>
 
-*   **Meanings & Values:** Set operators combine the results of two or more `SELECT` statements. They operate on entire rows and, by default (except for `UNION ALL`), return distinct rows.
+*   **MEANINGS & VALUES:** Set operators combine the results of two or more `SELECT` statements. They operate on entire rows and, by default (except for `UNION ALL`), return distinct rows.
     *   **`UNION`:** Combines results, removing duplicates.
     *   **`UNION ALL`:** Combines results, keeping all duplicates.
     *   **`INTERSECT`:** Returns rows common to all result sets.
@@ -408,7 +408,7 @@ This section dives into fundamental building blocks for data manipulation and qu
 
 ### <span>1.4 Data Manipulation Language (DML) & Transaction Control (Practice in Oracle)</span>
 
-*   **Meanings & Values:**
+*   **MEANINGS & VALUES:**
     *   **DML Statements:** These are used to manage data within schema objects.
         *   `INSERT`: Adds new rows to a table.
         *   `UPDATE`: Modifies existing rows in a table.
@@ -472,7 +472,7 @@ These functions and statements rarely work in isolation. They often interact wit
 *   **Oracle `DATE` vs. PostgreSQL `DATE` & `TIMESTAMP`:** This is fundamental. Oracle's `DATE` (date + time) means functions like `TRUNC(myDate)` are often needed to compare just the date part, whereas in PostgreSQL, if `myDateColumn` is `DATE` type, `myDateColumn = '2023-01-01'` works as expected. For PostgreSQL's `TIMESTAMP` behavior, Oracle's `TIMESTAMP` types are the closer analog.
 *   **`TO_DATE`/`TO_CHAR`:** Both RDBMS have these. Oracle is generally stricter about format models. PostgreSQL is sometimes more lenient with string-to-date casting if the format is unambiguous (e.g. 'YYYY-MM-DD'). Relying on Oracle's NLS (National Language Support) settings for implicit date conversion is risky; always use explicit `TO_DATE` with a format model.
 *   **`INTERVAL` Syntax:** PostgreSQL: `myDate + INTERVAL '1 year 2 months'` equivalent to Oracle: `myDate + INTERVAL '1-2' YEAR TO MONTH` or `ADD_MONTHS(myDate, 14)`. Oracle's `INTERVAL` literals are more structured.
-*   **String Concatenation `||` vs `CONCAT`:** Oracle's `CONCAT` takes only two arguments; PostgreSQL's `CONCAT` takes multiple. `||` is preferred in both for simplicity and wider argument support (implicitly in Oracle).
+*   **String Concatenation `||` vs `CONCAT`:** Oracle's `CONCAT` takes only two or more arguments; PostgreSQL's `CONCAT` takes also multiple. `||` is not preferred in both for simplicity and wider argument support (implicitly in Oracle).
 *   **`MINUS` vs. `EXCEPT`:** Functionally identical, just different keywords.
 *   **`MERGE` vs. `INSERT ... ON CONFLICT`:** Both provide "upsert" functionality. Oracle's `MERGE` has a more general `USING <source>` clause (can be a complex query) and separate `WHEN MATCHED` / `WHEN NOT MATCHED` blocks which can also include a `DELETE` clause. PostgreSQL's `INSERT ... ON CONFLICT` is tied to a unique constraint or index.
 *   **Empty String `''` as `NULL`:** In Oracle, a `VARCHAR2` empty string (`''`) is treated as `NULL`. In PostgreSQL, `''` is a distinct empty string, not `NULL`. This significantly affects string concatenation and `NULL` checks.
