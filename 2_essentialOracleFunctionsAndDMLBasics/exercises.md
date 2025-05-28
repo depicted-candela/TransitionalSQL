@@ -1,3 +1,9 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle SQL Practice</title>
 <style>
   body {
     font-family: 'Oracle Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -214,7 +220,8 @@
     animation: fadeIn 0.5s ease-out forwards;
   }
 </style>
-
+</head>
+<body>
 <div class="container">
 
 # Oracle SQL Practice: Mastering Dates, Strings, Sets, and DML/TCL
@@ -682,7 +689,7 @@ COMMIT;
 <div class="exercise-category-box">
 <h4>(i) Meanings, Values, Relations, and Advantages</h4>
 <div class="problem-description">
-<h5>Exercise 4.1.1: Oracle DML and Transaction Control Basics</h5>
+<h5>Exercise 4.1.1: Oracle DML & Transaction Control Basics</h5>
 <p><strong>Problem:</strong></p>
 <ul>
     <li>a. <strong>INSERT:</strong> Add a new department 'Operations' (departmentId 60) located in 'Chicago' to the <code>Departments</code> table.</li>
@@ -817,3 +824,5 @@ Having solidified your understanding of Oracle's date and string manipulation, s
 Keep up the excellent work, and continue exploring the vast capabilities of Oracle SQL!
 
 </div>
+</body>
+</html>

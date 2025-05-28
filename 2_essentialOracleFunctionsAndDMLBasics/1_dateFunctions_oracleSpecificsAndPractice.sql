@@ -80,7 +80,21 @@
 -- d. Oracle's DATE type stores both date and time. A query WHERE hireDate = TO_DATE('2020-01-15', 'YYYY-MM-DD') is used to find employees hired on 
 -- January 15, 2020. Why might this query miss employees hired on that day? What is a correct way to find all employees hired on a specific day, 
 -- regardless of time?
-SELECT * FROM ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES
-WHERE HIREDATE < TO_DATE('2021-01-16', 'YYYY-MM-DD') AND HIREDATE >= TO_DATE('2021-01-15', 'YYYY-MM-DD');
+-- SELECT * FROM ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES
+-- WHERE HIREDATE < TO_DATE('2021-01-16', 'YYYY-MM-DD') AND HIREDATE >= TO_DATE('2021-01-15', 'YYYY-MM-DD');
 -- Because TO_DATE('2021-01-15', 'YYYY-MM-DD') is fine grained in ORACLE SQL, a query using it will just return
 -- hirings made on the midnight
+
+--  (iii) Contrasting with Inefficient Common Solutions
+--      Exercise 1.3.1: Date Range Queries - Inefficient vs. Efficient
+-- Problem:
+
+-- A developer needs to find all projects that had a startDate within the calendar year 2023.
+-- Inefficient Approach: They write a query using EXTRACT(YEAR FROM startDate) = 2023 or TO_CHAR(startDate, 'YYYY') = '2023'.
+-- Show this inefficient approach.
+-- Explain why it's inefficient in Oracle, especially if startDate is indexed.
+-- Provide the efficient, Oracle-idiomatic solution using date range comparisons that can leverage indexes.
+SELECT * 
+FROM ESSENTIAL_FUNCTIONS_DMLBASICS.PROJECTS 
+WHERE EXTRACT(YEAR FROM startDate) = 2023 or TO_CHAR(startDate, 'YYYY') = '2023';
+-- A query to be sargable needs
