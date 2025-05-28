@@ -1,35 +1,46 @@
 <style>
-    :root {
-        /* --- Night Mode Palette --- */
-        --primary-color: #5dade2; /* Lighter, less saturated Blue for headers */
-        --secondary-color: #85c1e9; /* Brighter Blue for sub-headers, accents */
-        --accent-color: #f5b041; /* Slightly softer Orange/Yellow, still vibrant */
-        --background-color: #1e1e22; /* Dark Gray/Off-black */
-        --text-color: #d5d8dc; /* Light Gray/Off-white */
-
-        --code-background: #2c313a; /* Darker Gray for code blocks */
-        --code-border: #4a5162; /* Medium Dark Gray for code borders */
-        --inline-code-text: #b0bdc4; /* Lighter gray for inline code text */
-
-        --table-border: #566573; /* Medium Gray for table borders */
-        --table-header-bg: var(--secondary-color); /* Using the lighter blue */
-        --table-header-text: #1a1a1a; /* Dark text for contrast on light blue header */
-        --table-cell-bg: #2a2e34; /* Slightly lighter than main BG for cells */
-
-        --header-font: 'Helvetica Neue', Arial, sans-serif;
+:root {
+        /* --- Oracle Night Mode Palette --- */
+        --primary-color: #4db8ff; /* Oracle brand blue */
+        --secondary-color: #6bd4ff; /* Lighter Oracle blue */
+        --accent-color: #ff8c00; /* Oracle accent orange */
+        --background-color: #1a1a24; /* Deep blue-black */
+        --text-color: #e0e0e0; /* Soft white text */
+        
+        --code-background: #1e1e2e; /* Dark blue-gray */
+        --code-border: #3a3a5a; /* Medium blue-gray */
+        --inline-code-text: #f0f0f0; /* Bright code text */
+        
+        --table-border: #4a4a6a; /* Blue-gray border */
+        --table-header-bg: rgba(77, 184, 255, 0.15); /* Oracle blue tint */
+        --table-header-text: var(--secondary-color); /* Light blue text */
+        --table-cell-bg: #252535; /* Slightly lighter than main BG */
+        
+        --header-font: 'Oracle Sans', 'Helvetica Neue', Arial, sans-serif;
         --body-font: 'Georgia', Times, serif;
-        --code-font: 'Consolas', 'Monaco', 'Courier New', monospace;
+        --code-font: 'Oracle Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+        
+        /* Animation variables */
+        --transition-speed: 0.4s;
+        --hover-scale: 1.02;
+        --glow-intensity: 0.6;
+    }
 
-        /* Specific box colors for night mode */
-        --oracle-specific-bg: #4d4021; /* Dark, desaturated gold/brown */
-        --oracle-specific-border: #f39c12; /* Original orange accent */
-        --postgresql-bridge-bg: #2a4b37; /* Dark, desaturated green */
-        --postgresql-bridge-border: #2ecc71; /* Original green accent */
-        --caution-bg: #5d3a37; /* Dark, desaturated red/maroon */
-        --caution-border: #e74c3c; /* Original red accent */
+    @keyframes slideUp {
+        from { 
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to { 
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
-        --footnote-color: #a0a0a0; /* Dimmer light gray for footnotes */
-        --box-shadow-color: rgba(0,0,0,0.4); /* More pronounced shadow for dark mode */
+    @keyframes containerGlow {
+        0% { box-shadow: 0 0 5px rgba(77, 184, 255, 0); }
+        50% { box-shadow: 0 0 20px rgba(77, 184, 255, var(--glow-intensity)); }
+        100% { box-shadow: 0 0 5px rgba(77, 184, 255, 0); }
     }
 
     body {
@@ -39,11 +50,61 @@
         line-height: 1.7;
         margin: 0;
         padding: 25px;
+        background-image: 
+            radial-gradient(circle at 10% 20%, #2a2a3a 0%, transparent 20%),
+            radial-gradient(circle at 90% 80%, #2a2a3a 0%, transparent 20%);
+        overflow-x: hidden;
     }
 
+    .container {
+        max-width: 950px;
+        margin: 2rem auto;
+        background-color: #252535;
+        padding: 35px;
+        border-radius: 8px;
+        box-shadow: 0 4px 30px rgba(0, 0, 30, 0.5);
+        border: 1px solid transparent;
+        animation: 
+            slideUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+            containerGlow 3s ease-in-out 1s infinite;
+        transition: 
+            transform var(--transition-speed) ease,
+            box-shadow var(--transition-speed) ease,
+            border-color var(--transition-speed) ease;
+        opacity: 0; /* Start invisible for animation */
+    }
+
+    .container:hover {
+        border: 1px solid var(--primary-color);
+        box-shadow: 
+            0 0 25px rgba(77, 184, 255, 0.3),
+            0 4px 30px rgba(0, 0, 30, 0.6);
+        transform: translateY(-5px);
+    }
+
+    .container:active {
+        animation: containerGlow 0.5s ease-out;
+    }
+
+    /* Content animations with staggered delays */
+    .container > * {
+        opacity: 0;
+        animation: slideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .container > h1 { animation-delay: 0.3s; }
+    .container > h2 { animation-delay: 0.4s; }
+    .container > h3 { animation-delay: 0.5s; }
+    .container > p { animation-delay: 0.6s; }
+    .container > pre { animation-delay: 0.7s; }
+    .container > table { animation-delay: 0.8s; }
+    .container > .oracle-specific { animation-delay: 0.9s; }
+
+    /* Rest of your styles (h1, h2, code blocks, etc.) */
     h1, h2, h3, h4 {
         font-family: var(--header-font);
         color: var(--primary-color);
+        transition: color var(--transition-speed) ease;
     }
 
     h1 {
@@ -52,6 +113,7 @@
         font-size: 2.8em;
         text-align: center;
         letter-spacing: 1px;
+        text-shadow: 0 2px 4px rgba(0, 100, 200, 0.2);
     }
 
     h2 {
@@ -60,10 +122,17 @@
         border-bottom: 2px solid var(--accent-color);
         margin-top: 35px;
         padding-bottom: 8px;
+        transform-origin: left;
+        transition: transform 0.2s ease;
+    }
+
+    h2:hover {
+        transform: scaleX(1.01);
     }
 
     subsection {
-        color:rgb(73, 129, 137);
+        color: rgb(73, 129, 137);
+        transition: color var(--transition-speed) ease;
     }
 
     h3 {
@@ -72,14 +141,16 @@
         margin-top: 25px;
         border-left: 4px solid var(--primary-color);
         padding-left: 10px;
+        transition: all var(--transition-speed) ease;
     }
 
     p, li {
         font-size: 1.15em;
         margin-bottom: 12px;
+        animation: fadeIn 0.5s ease-out forwards;
     }
 
-    code { /* Inline code */
+    code {
         font-family: var(--code-font);
         background-color: var(--code-background);
         padding: 3px 6px;
@@ -87,25 +158,37 @@
         border: 1px solid var(--code-border);
         color: var(--inline-code-text);
         font-size: 0.95em;
+        transition: all var(--transition-speed) ease;
     }
 
-    pre { /* Fenced code blocks */
+    code:hover {
+        background-color: #252540;
+        border-color: var(--primary-color);
+    }
+
+    pre {
         background-color: var(--code-background);
         border: 1px solid var(--code-border);
-        border-left: 5px solid var(--secondary-color); /* Accent border on the left */
+        border-left: 5px solid var(--secondary-color);
         border-radius: 5px;
         padding: 18px;
         overflow-x: auto;
         box-shadow: 2px 2px 8px var(--box-shadow-color);
         font-size: 1em;
+        transition: all var(--transition-speed) ease;
     }
 
-    pre code { /* Code inside pre */
+    pre:hover {
+        border-color: var(--primary-color);
+        box-shadow: 2px 2px 12px rgba(0, 100, 200, 0.3);
+    }
+
+    pre code {
         font-family: var(--code-font);
         background-color: transparent;
         border: none;
         padding: 0;
-        color: inherit; /* Inherits light text color from pre */
+        color: inherit;
         font-size: inherit;
     }
 
@@ -114,23 +197,33 @@
         border-collapse: collapse;
         margin-top: 25px;
         box-shadow: 2px 2px 8px var(--box-shadow-color);
+        transition: transform var(--transition-speed) ease;
+    }
+
+    table:hover {
+        transform: scale(1.005);
     }
 
     th, td {
         border: 1px solid var(--table-border);
         padding: 12px;
         text-align: left;
+        transition: background-color var(--transition-speed) ease;
     }
 
     th {
         background-color: var(--table-header-bg);
-        color: var(--table-header-text); /* Dark text on light blue header */
+        color: var(--table-header-text);
         font-family: var(--header-font);
         font-size: 1.1em;
     }
 
     td {
-        background-color: var(--table-cell-bg); /* Dark background for table cells */
+        background-color: var(--table-cell-bg);
+    }
+
+    tr:hover td {
+        background-color: #2e2e3e;
     }
 
     .oracle-specific {
@@ -139,6 +232,13 @@
         padding: 12px 15px;
         margin: 18px 0;
         border-radius: 4px;
+        transition: all var(--transition-speed) ease;
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    .oracle-specific:hover {
+        transform: translateX(5px);
+        box-shadow: 3px 0 10px rgba(255, 140, 0, 0.2);
     }
 
     .postgresql-bridge {
@@ -147,6 +247,12 @@
         padding: 12px 15px;
         margin: 18px 0;
         border-radius: 4px;
+        transition: all var(--transition-speed) ease;
+    }
+
+    .postgresql-bridge:hover {
+        transform: translateX(5px);
+        box-shadow: 3px 0 10px rgba(0, 193, 118, 0.2);
     }
 
     .caution {
@@ -155,23 +261,83 @@
         padding: 12px 15px;
         margin: 18px 0;
         border-radius: 4px;
+        transition: all var(--transition-speed) ease;
+    }
+
+    .caution:hover {
+        transform: translateX(5px);
+        box-shadow: 3px 0 10px rgba(230, 76, 60, 0.2);
     }
 
     .rhyme {
         font-style: italic;
-        color: var(--primary-color); /* Light blue on dark background */
+        color: var(--primary-color);
         margin-left: 25px;
         padding: 5px 0;
-        border-left: 3px dotted var(--accent-color); /* Orange dots */
+        border-left: 3px dotted var(--accent-color);
         padding-left: 10px;
+        transition: all var(--transition-speed) ease;
     }
 
-    /* Ensure footnotes are styled well for night mode */
+    .rhyme:hover {
+        color: var(--secondary-color);
+        border-left-color: var(--primary-color);
+        transform: translateX(3px);
+    }
+
     p > small {
         display: block;
         margin-top: 8px;
         font-size: 0.9em;
-        color: var(--footnote-color); /* Lighter gray for footnotes */
+        color: var(--footnote-color);
+        transition: color var(--transition-speed) ease;
+    }
+
+    /* Keyframes for animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(77, 184, 255, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(77, 184, 255, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(77, 184, 255, 0); }
+    }
+
+    /* Smooth scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* Special Oracle SQL elements */
+    .sql-keyword {
+        color: var(--accent-color);
+        font-weight: bold;
+    }
+
+    .sql-function {
+        color: var(--secondary-color);
+    }
+
+    .sql-comment {
+        color: #7f7f9f;
+        font-style: italic;
+    }
+        /* Enhanced glow for interactive elements */
+    pre:hover, table:hover, .oracle-specific:hover {
+        box-shadow: 0 0 15px rgba(77, 184, 255, 0.3);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .container {
+            padding: 20px;
+            margin: 1rem auto;
+        }
+        :root {
+            --glow-intensity: 0.3; /* Less intense glow on mobile */
+        }
     }
 </style>
 

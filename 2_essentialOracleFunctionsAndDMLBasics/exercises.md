@@ -1,125 +1,217 @@
 <style>
   body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
-    color: #d4d4d4; /* --night-text-primary */
-    background-color: #1e1e1e; /* --night-bg-primary */
+    font-family: 'Oracle Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.65;
+    color: #e0e0e0; /* Soft white text */
+    background-color: #1a1a24; /* Deep blue-black background */
     margin: 0;
     padding: 20px;
+    background-image: radial-gradient(circle at 10% 20%, #2a2a3a 0%, transparent 20%),
+                      radial-gradient(circle at 90% 80%, #2a2a3a 0%, transparent 20%);
+    transition: all 0.3s ease-in-out;
   }
+  
   .container {
-    max-width: 900px;
+    max-width: 950px;
     margin: auto;
-    background-color: #2d2d2d; /* --night-bg-secondary */
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.6); /* Darker shadow for depth */
+    background-color: #252535; /* Slightly lighter than body */
+    padding: 35px;
+    border-radius: 6px;
+    box-shadow: 0 4px 30px rgba(0, 0, 30, 0.5);
+    border: 1px solid #3a3a4a; /* Subtle border */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
+  
+  .container:hover {
+    box-shadow: 0 6px 35px rgba(0, 80, 150, 0.3);
+  }
+  
   h1, h2, h3 {
-    color: #569cd6; /* --night-heading-primary (VS Code-like blue) */
+    color: #4db8ff; /* Oracle brand blue */
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: color 0.2s ease;
   }
+  
   h1 {
-    border-bottom: 2px solid #FF9900; /* --night-accent-primary (Orange accent) */
-    padding-bottom: 10px;
-    font-size: 2.5em;
+    border-bottom: 2px solid #ff8c00; /* Oracle accent orange */
+    padding-bottom: 12px;
+    font-size: 2.6em;
     text-align: center;
+    margin-bottom: 30px;
+    text-shadow: 0 2px 4px rgba(0, 100, 200, 0.2);
   }
+  
   h2 {
-    font-size: 1.8em;
-    margin-top: 30px;
+    font-size: 1.9em;
+    margin-top: 35px;
+    border-left: 4px solid #4db8ff;
+    padding-left: 15px;
   }
-  h3 { /* Default h3 color, will be overridden in boxes */
-    font-size: 1.4em;
-    color: #4ec9b0; /* --night-accent-secondary (Teal/cyan) */
+  
+  h3 {
+    font-size: 1.5em;
+    color: #6bd4ff; /* Lighter blue for h3 */
   }
+  
   p, li {
-    font-size: 1em;
-    margin-bottom: 10px;
-    color: #cccccc; /* --night-text-secondary */
+    font-size: 1.05em;
+    margin-bottom: 12px;
+    color: #d0d0e0; /* Slightly brighter text */
   }
+  
   code {
-    font-family: 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
-    background-color: #1a1a1a; /* --night-code-bg (Very dark) */
-    padding: 3px 7px;
+    font-family: 'Oracle Mono', 'Consolas', 'Monaco', monospace;
+    background-color: #1e1e2e; /* Dark blue-gray */
+    padding: 3px 8px;
     border-radius: 4px;
     font-size: 0.95em;
-    color: #d4d4d4; /* Light text for code */
-    border: 1px solid #3a3a3a; /* Subtle border for inline code */
+    color: #f0f0f0;
+    border: 1px solid #3a3a5a;
+    transition: all 0.2s ease;
   }
+  
+  code:hover {
+    background-color: #252540;
+  }
+  
   pre {
-    background-color: #1a1a1a; /* --night-code-bg */
-    padding: 15px;
-    border-radius: 5px;
+    background-color: #1e1e2e;
+    padding: 18px;
+    border-radius: 6px;
     overflow-x: auto;
-    border: 1px solid #444444; /* --night-border-subtle */
-    color: #d4d4d4; /* Ensure preformatted text is also light */
+    border: 1px solid #3a3a5a;
+    box-shadow: inset 0 1px 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
   }
+  
+  pre:hover {
+    border-color: #4db8ff;
+    box-shadow: inset 0 1px 15px rgba(0, 100, 200, 0.2);
+  }
+  
   pre code {
     background-color: transparent;
     padding: 0;
     border-radius: 0;
-    font-size: 0.9em;
-    border: none; /* No border for code within pre */
+    font-size: 0.92em;
+    border: none;
+    color: #f0f0f0;
   }
-  .info-box, .tip-box, .objective-box {
-    padding: 15px;
-    margin: 20px 0;
-    border-radius: 5px;
+  
+  /* Oracle-themed boxes */
+  .info-box, .tip-box, .objective-box, .sql-box {
+    padding: 18px 20px;
+    margin: 25px 0;
+    border-radius: 6px;
     border-left: 5px solid;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
+  
   .info-box {
-    background-color: #263238; /* Dark Blue-Grey */
-    border-color: #00ACC1; /* Cyan */
+    background-color: rgba(0, 100, 150, 0.1);
+    border-color: #4db8ff; /* Oracle blue */
   }
+  
   .info-box h3 {
-    color: #4DD0E1; /* Light Cyan */
+    color: #4db8ff;
     margin-top: 0;
   }
-  .info-box p, .info-box li {
-    color: #CFD8DC; /* Lighter text for info box */
-  }
+  
   .tip-box {
-    background-color: #3E2723; /* Dark Brown */
-    border-color: #FFB300; /* Amber */
+    background-color: rgba(255, 140, 0, 0.08);
+    border-color: #ff8c00; /* Oracle orange */
   }
+  
   .tip-box h3 {
-    color: #FFCA28; /* Light Amber */
+    color: #ff8c00;
     margin-top: 0;
   }
-  .tip-box p, .tip-box li {
-    color: #FFE0B2; /* Lighter text for tip box */
-  }
+  
   .objective-box {
-    background-color: #1B5E20; /* Dark Green */
-    border-color: #4CAF50; /* Green */
+    background-color: rgba(0, 150, 100, 0.08);
+    border-color: #00c176; /* Oracle green */
   }
+  
   .objective-box h3 {
-    color: #81C784; /* Light Green */
+    color: #00c176;
     margin-top: 0;
   }
-  .objective-box p, .objective-box li {
-    color: #C8E6C9; /* Lighter text for objective box */
+  
+  .sql-box {
+    background-color: rgba(77, 184, 255, 0.05);
+    border-color: #4db8ff;
+    border-left-width: 8px;
   }
+  
+  .sql-box h3 {
+    color: #4db8ff;
+    margin-top: 0;
+  }
+  
+  .sql-box pre {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+  
   .highlight-primary {
-    color: #569cd6; /* Match primary heading color */
-    font-weight: bold;
+    color: #4db8ff;
+    font-weight: 500;
+    text-shadow: 0 0 8px rgba(77, 184, 255, 0.3);
   }
+  
   .highlight-secondary {
-    color: #FF9900; /* Orange accent */
-    font-weight: bold;
+    color: #ff8c00;
+    font-weight: 500;
   }
+  
   .emphasize {
     font-style: italic;
-    font-weight: bold;
-    color: #ce9178; /* A subtle brownish-orange for emphasis */
+    color: #6bd4ff; /* Light Oracle blue */
+    border-bottom: 1px dotted #6bd4ff;
+    padding-bottom: 1px;
   }
+  
   a {
-    color: #60AFFF; /* Brighter blue for links */
+    color: #4db8ff;
     text-decoration: none;
+    transition: all 0.2s ease;
+    font-weight: 500;
   }
+  
   a:hover {
+    color: #6bd4ff;
     text-decoration: underline;
-    color: #90CAF9; /* Lighter blue on hover */
+    text-shadow: 0 0 8px rgba(77, 184, 255, 0.3);
+  }
+  
+  /* Special Oracle SQL elements */
+  .sql-keyword {
+    color: #ff8c00; /* Oracle orange for keywords */
+    font-weight: bold;
+  }
+  
+  .sql-function {
+    color: #6bd4ff; /* Light blue for functions */
+  }
+  
+  .sql-comment {
+    color: #7f7f9f; /* Gray for comments */
+    font-style: italic;
+  }
+  
+  /* Smooth scroll behavior */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Fade-in animation for content */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .container > * {
+    animation: fadeIn 0.5s ease-out forwards;
   }
 </style>
 
@@ -152,12 +244,12 @@ If you're journeying from PostgreSQL, you'll find these drills particularly help
 
 Before diving in, ensure you're comfortable with the following concepts:
 
-*   **From "The Original PostgreSQL Course Sequence":**
+*   **From the PostgreSQL-based "SQL Sequentially" course:**
     *   Core SQL: `SELECT`, `FROM`, `WHERE`, `JOIN` (various types), `GROUP BY`, `HAVING`, `ORDER BY`.
     *   Basic understanding of string and date functions in PostgreSQL.
     *   Familiarity with PostgreSQL Set Operators (`EXCEPT`, `INTERSECT`, `UNION`).
     *   Fundamental DML (`INSERT`, `UPDATE`, `DELETE`) and Transaction Control (`BEGIN`, `COMMIT`, `ROLLBACK`).
-*   **From "The Sequential and Complete Transitional Course from PostgreSQL to ORACLE SQL":**
+*   **From the ORACLE-based "Transitional SQL" course:**
     *   **Key Differences & Core Syntax:**
         *   Oracle Data Types: `VARCHAR2`, `NUMBER`, `DATE` (and its time component), `TIMESTAMP`, `CLOB`, `BLOB`.
         *   The `DUAL` Table.
@@ -176,7 +268,21 @@ A comprehensive dataset is required to work through these exercises. The Oracle 
     <li>
         <strong>Execute in Oracle:</strong> Run these scripts in your Oracle DB 21ai environment. You can use tools like:
         <ul>
-            <li><strong>SQL Developer:</strong> Copy and paste the script into a worksheet and run it (F5 or the "Run Script" button).</li>
+            <li><strong>SQL Developer or SQL*Plus:</strong> Run firstly <strong>NewSchema.sql</strong> in the SQL terminal to create the new schema for the exercises. See <strong>NewSchema.md</strong> for a better explanation
+            And then modify the .sql file in the section <strong>Dataset Definition (DDL)</strong> in the following way
+            <pre><code class="language-sql">
+              BEGIN
+                EXECUTE IMMEDIATE 'DROP TABLE EmployeeUpdatesForMerge';
+              EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
+            </code></pre>
+            shuld be
+            <pre><code class="language-sql">
+              BEGIN
+                EXECUTE IMMEDIATE 'DROP TABLE basic_oracle_uniqueness.EmployeeUpdatesForMerge';
+              EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
+            </code></pre>
+            And the same for all tables always when they're mentioned
+            <li><strong>SQL Developer:</strong> Copy and paste the script into a worksheet the created .sql and run it (F5 or the "Run Script" button).</li>
             <li><strong>SQL*Plus:</strong> Save the script to a <code>.sql</code> file (e.g., <code>setupLabData.sql</code>) and run it from the SQL*Plus command line using <code>@path/to/your/setupLabData.sql</code>.</li>
             <li><strong>Oracle Live SQL:</strong> Paste the DDL and DML into the SQL Worksheet and click "Run".</li>
         </ul>
