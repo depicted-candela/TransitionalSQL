@@ -355,34 +355,34 @@ This section dives into fundamental building blocks for data manipulation and qu
 <strong>Oracle's Date Realm:</strong> In Oracle, the `DATE` data type is a bit of a time traveler – it <em>always</em> stores both date and time components, down to the second. This is a key difference from PostgreSQL's `DATE` type, which only holds the date. For time-zoned precision, Oracle offers `TIMESTAMP WITH TIME ZONE` and `TIMESTAMP WITH LOCAL TIME ZONE`.
 </div>
 
-*   **MEANINGS & VALUES:**
-    *   **Getting Current Time:** Functions like `SYSDATE` and `SYSTIMESTAMP` provide the database server's current date/time and timestamp with time zone, respectively. `CURRENT_DATE` and `CURRENT_TIMESTAMP` reflect the session's time zone settings.
-        *   *If your data needs a timestamp, like a new stamp, these functions are your champ.*
-    *   **Conversions (`TO_DATE`, `TO_CHAR`):** These are vital for converting strings to Oracle `DATE` types (`TO_DATE`) and `DATE` types to formatted strings (`TO_CHAR`). Oracle's format models are powerful and specific. PostgreSQL users will find `TO_DATE` and `TO_CHAR` familiar, but Oracle's strictness with format models and the behavior of its `DATE` type are crucial distinctions.
-        *   *To change a date's disguise, `TO_CHAR` is wise; from string to date, `TO_DATE` won't wait.*
-    *   **Date Arithmetic & Manipulation:** Functions like `ADD_MONTHS` (add/subtract months), `MONTHS_BETWEEN` (calculate months between dates), `LAST_DAY` (find month's end), `NEXT_DAY` (find next specified weekday), `TRUNC` (truncate date/time parts), and `ROUND` (round date/time parts) offer precise control.
-        *   *`ADD_MONTHS` makes dates grow, `MONTHS_BETWEEN` shows the flow.*
-    *   **Date Arithmetic with Numbers and Intervals:**
-        *   `date + number`: Adds days to a date.
-        *   `date - number`: Subtracts days from a date.
-        *   `date1 - date2`: Returns the difference in days.
-        *   `INTERVAL` types (`INTERVAL YEAR TO MONTH`, `INTERVAL DAY TO SECOND`): For adding or subtracting precise time periods. PostgreSQL's `INTERVAL` syntax is more flexible with string parsing (e.g., `'5 days 3 hours'`), while Oracle's is more structured.
-            *   *An interval in Oracle, quite an oracle, precise in its time, a truly fine sign.*
+**MEANINGS & VALUES:**
+*   **Getting Current Time:** Functions like `SYSDATE` and `SYSTIMESTAMP` provide the database server's current date/time and timestamp with time zone, respectively. `CURRENT_DATE` and `CURRENT_TIMESTAMP` reflect the session's time zone settings.
+    *   *If your data needs a timestamp, like a new stamp, these functions are your champ.*
+*   **Conversions (`TO_DATE`, `TO_CHAR`):** These are vital for converting strings to Oracle `DATE` types (`TO_DATE`) and `DATE` types to formatted strings (`TO_CHAR`). Oracle's format models are powerful and specific. PostgreSQL users will find `TO_DATE` and `TO_CHAR` familiar, but Oracle's strictness with format models and the behavior of its `DATE` type are crucial distinctions.
+    *   *To change a date's disguise, `TO_CHAR` is wise; from string to date, `TO_DATE` won't wait.*
+*   **Date Arithmetic & Manipulation:** Functions like `ADD_MONTHS` (add/subtract months), `MONTHS_BETWEEN` (calculate months between dates), `LAST_DAY` (find month's end), `NEXT_DAY` (find next specified weekday), `TRUNC` (truncate date/time parts), and `ROUND` (round date/time parts) offer precise control.
+    *   *`ADD_MONTHS` makes dates grow, `MONTHS_BETWEEN` shows the flow.*
+*   **Date Arithmetic with Numbers and Intervals:**
+    *   `date + number`: Adds days to a date.
+    *   `date - number`: Subtracts days from a date.
+    *   `date1 - date2`: Returns the difference in days.
+    *   `INTERVAL` types (`INTERVAL YEAR TO MONTH`, `INTERVAL DAY TO SECOND`): For adding or subtracting precise time periods. PostgreSQL's `INTERVAL` syntax is more flexible with string parsing (e.g., `'5 days 3 hours'`), while Oracle's is more structured.
+        *   *An interval in Oracle, quite an oracle, precise in its time, a truly fine sign.*
 
 <p><small>For a comprehensive list and details, see Oracle SQL Language Reference for Date and Time Functions.</small></p>
 
 ### <span>1.2 String Functions (Practice in Oracle)</span>
 
-*   **MEANINGS & VALUES:** String functions manipulate character data. Most are standard SQL, but Oracle's implementation and common practices (like preferring `||` for concatenation) are key.
-    *   **Concatenation (`||`, `CONCAT`):** Joins strings. Oracle's `CONCAT(str1, str2)` only takes two or more arguments, not making `||` more convenient for multiple strings. PostgreSQL's `CONCAT` can take multiple arguments, and `||` also works.
-        *   *To join strings with glee, `||` sets them free; `CONCAT` works too, but just for two!*
-    *   **Substring Extraction (`SUBSTR`):** Extracts a portion of a string. Oracle's `SUBSTR(string, start_position, [length])` is 1-based; negative `start_position` counts from the end. PostgreSQL's `SUBSTRING` is similar.
-    *   **Finding Substrings (`INSTR`):** Returns the position of a substring. Oracle's `INSTR(string, substring, [start_position], [occurrence_Nth])` is powerful, allowing searches for specific occurrences. PostgreSQL's `POSITION` or `strpos` find the first occurrence.
-        *   *To find where letters reside, `INSTR` is your guide.*
-    *   **Length (`LENGTH`):** Returns the number of characters in a string.
-    *   **Case Conversion (`UPPER`, `LOWER`):** Converts to uppercase or lowercase.
-    *   **Trimming (`TRIM`, `LTRIM`, `RTRIM`):** Removes leading, trailing, or both types of specified characters (or spaces by default).
-    *   **Replacing Substrings (`REPLACE`):** Replaces all occurrences of a substring with another.
+**MEANINGS & VALUES:** String functions manipulate character data. Most are standard SQL, but Oracle's implementation and common practices (like preferring `||` for concatenation) are key.
+*   **Concatenation (`||`, `CONCAT`):** Joins strings. Oracle's `CONCAT(str1, str2)` only takes two or more arguments, not making `||` more convenient for multiple strings. PostgreSQL's `CONCAT` can take multiple arguments, and `||` also works.
+        *   *To join strings with glee, `||` sets them free; `CONCAT` works too, for no less than two!*
+*   **Substring Extraction (`SUBSTR`):** Extracts a portion of a string. Oracle's `SUBSTR(string, start_position, [length])` is 1-based; negative `start_position` counts from the end. PostgreSQL's `SUBSTRING` is similar.
+*   **Finding Substrings (`INSTR`):** Returns the position of a substring. Oracle's `INSTR(string, substring, [start_position], [occurrence_Nth])` is powerful, allowing searches for specific occurrences. PostgreSQL's `POSITION` or `strpos` find the first occurrence.
+    *   *To find where letters reside, `INSTR` is your guide.*
+*   **Length (`LENGTH`):** Returns the number of characters in a string.
+*   **Case Conversion (`UPPER`, `LOWER`):** Converts to uppercase or lowercase.
+*   **Trimming (`TRIM`, `LTRIM`, `RTRIM`):** Removes leading, trailing, or both types of specified characters (or spaces by default).
+*   **Replacing Substrings (`REPLACE`):** Replaces all occurrences of a substring with another.
 
 <div class="postgresql-bridge">
 <strong>PostgreSQL Parallels:</strong> Most string functions like `SUBSTRING` (Oracle: `SUBSTR`), `POSITION` (Oracle: `INSTR` for first occurrence), `LENGTH`, `TRIM`, `UPPER`, `LOWER`, `REPLACE`, and `CONCAT`/`||` are familiar from PostgreSQL. The main differences lie in function names for some (e.g., `SUBSTR` vs. `SUBSTRING`), the behavior of `CONCAT`, and the advanced parameters of Oracle's `INSTR`.
@@ -392,13 +392,13 @@ This section dives into fundamental building blocks for data manipulation and qu
 
 ### <span>1.3 Set Operators (Practice in Oracle)</span>
 
-*   **MEANINGS & VALUES:** Set operators combine the results of two or more `SELECT` statements. They operate on entire rows and, by default (except for `UNION ALL`), return distinct rows.
-    *   **`UNION`:** Combines results, removing duplicates.
-    *   **`UNION ALL`:** Combines results, keeping all duplicates.
-    *   **`INTERSECT`:** Returns rows common to all result sets.
-    *   **`MINUS` (Oracle Specific):** Returns distinct rows from the first query that are *not* in the second. This is Oracle's equivalent to PostgreSQL's `EXCEPT`.
-        *   *What's in A, but B says nay? `MINUS` shows the way!*
-    *   **Value:** These operators produce a single result set. The columns in each `SELECT` statement must match in number and have compatible data types.
+**MEANINGS & VALUES:** Set operators combine the results of two or more `SELECT` statements. They operate on entire rows and, by default (except for `UNION ALL`), return distinct rows.
+*   **`UNION`:** Combines results, removing duplicates.
+*   **`UNION ALL`:** Combines results, keeping all duplicates.
+*   **`INTERSECT`:** Returns rows common to all result sets.
+*   **`MINUS` (Oracle Specific):** Returns distinct rows from the first query that are *not* in the second. This is Oracle's equivalent to PostgreSQL's `EXCEPT`.
+    *   *What's in A, but B says nay? `MINUS` shows the way!*
+*   **Value:** These operators produce a single result set. The columns in each `SELECT` statement must match in number and have compatible data types.
 
 <div class="postgresql-bridge">
 <strong>PostgreSQL Parallels:</strong> `UNION`, `UNION ALL`, and `INTERSECT` work identically in Oracle and PostgreSQL. The key difference is `MINUS` in Oracle versus `EXCEPT` in PostgreSQL. They achieve the same outcome.
@@ -408,19 +408,24 @@ This section dives into fundamental building blocks for data manipulation and qu
 
 ### <span>1.4 Data Manipulation Language (DML) & Transaction Control (Practice in Oracle)</span>
 
-*   **MEANINGS & VALUES:**
-    *   **DML Statements:** These are used to manage data within schema objects.
-        *   `INSERT`: Adds new rows to a table.
-        *   `UPDATE`: Modifies existing rows in a table.
-        *   `DELETE`: Removes rows from a table.
-        *   `SELECT`: Retrieves data (though often categorized separately as DQL, it's fundamental to DML for subqueries and verification).
-        *   `MERGE` (Oracle Specific): A powerful statement that conditionally inserts or updates rows. If a row exists, it's updated; if not, it's inserted. This is a single, atomic operation. PostgreSQL offers similar functionality with `INSERT ... ON CONFLICT ... DO UPDATE/NOTHING`.
-            *   *To update or create, `MERGE` seals the fate!*
-    *   **Transaction Control Language (TCL):** Manages changes made by DML statements.
-        *   `COMMIT`: Makes DML changes permanent in the database.
-        *   `ROLLBACK`: Undoes DML changes made since the last `COMMIT` or to a specific `SAVEPOINT`.
-        *   `SAVEPOINT name`: Sets a marker within a transaction to which you can later `ROLLBACK`.
-    *   **Value:** DML statements modify the state of the database. TCL ensures data integrity and allows for recovery from errors by controlling the atomicity and durability of these changes.
+**MEANINGS & VALUES:**
+*   **DML Statements:** These are used to manage data within schema objects.
+    *   `INSERT`: Adds new rows to a table.
+    *   `UPDATE`: Modifies existing rows in a table.
+    *   `DELETE`: Removes rows from a table.
+    *   `SELECT`: Retrieves data (though often categorized separately as DQL, it's fundamental to DML for subqueries and verification).
+    *   `MERGE` (Oracle Specific): A powerful statement that conditionally inserts or updates rows. If a row exists, it's updated; if not, it's inserted. This is a single, atomic operation. PostgreSQL offers similar functionality with `INSERT ... ON CONFLICT ... DO UPDATE/NOTHING`.
+        *   *To update or create, `MERGE` seals the fate!*
+*   **Transaction Control Language (TCL):** Manages changes made by DML statements.
+    *   `COMMIT`: Makes DML changes permanent in the database.
+    *   `ROLLBACK`: Undoes DML changes made since the last `COMMIT` or to a specific `SAVEPOINT`.
+    *   `SAVEPOINT name`: Sets a marker within a transaction to which you can later `ROLLBACK`.
+*   **Automated Nature of COMMIT:** how do you prefer the behavior of COMMITs
+    *   `SET AUTOCOMMIT ON`: Each DML statement is committed immediately
+    *   `SET AUTOCOMMIT OFF`: Standard behavior, requires explicit `COMMIT/ROLLBACK`
+    *   `SET AUTOCOMMIT <n>`: Commits after every 'n' successful DML statements
+    *   `SET AUTOCOMMIT IMMEDIATE`: Same as ON 
+*   **Value:** DML statements modify the state of the database. TCL ensures data integrity and allows for recovery from errors by controlling the atomicity and durability of these changes.
 
 <div class="postgresql-bridge">
 <strong>PostgreSQL Parallels:</strong> `INSERT`, `UPDATE`, `DELETE`, `SELECT`, `COMMIT`, `ROLLBACK`, and `SAVEPOINT` are core SQL concepts known from PostgreSQL. Oracle's `MERGE` statement is a significant addition for upsert operations, analogous to PostgreSQL's `INSERT ... ON CONFLICT`. A key behavioral difference is that some Oracle tools or DDL commands might auto-commit, whereas PostgreSQL typically requires explicit commits.
@@ -725,7 +730,7 @@ This section focuses on key transition points for users familiar with PostgreSQL
 ### <span style="color: #e67e22;">X.2 String Concatenation: `CONCAT` Differences and `''` as `NULL`</span>
 
 *   **PostgreSQL:** `CONCAT('a', 'b', 'c')` -> `'abc'`. `'' || 'x'` -> `'x'`. `NULL || 'x'` -> `NULL`.
-*   **Oracle:** `CONCAT('a', 'b')` -> `'ab'`. `CONCAT('a', 'b', 'c')` -> Error. `||` is preferred: `'a' || 'b' || 'c'` -> `'abc'`.
+*   **Oracle:** `CONCAT('a', 'b')` -> `'ab'`. `CONCAT('a', 'b', 'c')` -> `'abc'`. `||` is preferred: `'a' || 'b' || 'c'` -> `'abc'`.
     *   The big gotcha: `''` (empty string) is treated as `NULL` in Oracle for `VARCHAR2`.
         *   `'A' || '' || 'B'` in Oracle results in `'AB'` (because `''` is `NULL`, and `NULL` in Oracle concatenation acts like an empty string, not propagating `NULL`).
         *   `'A' || NULL || 'B'` in Oracle also results in `'AB'`.
