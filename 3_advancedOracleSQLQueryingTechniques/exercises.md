@@ -160,7 +160,7 @@
     }
 
     p, li { /* li styling will be general, specific ul/ol li will override/add if needed */
-        font-size: 1.15em;
+        font-size: 1.1em;
         margin-bottom: 12px;
     }
 

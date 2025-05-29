@@ -158,7 +158,7 @@
     }
 
     p, li {
-        font-size: 1.15em;
+        font-size: 1.1em;
         margin-bottom: 12px;
     }
 
@@ -191,7 +191,7 @@
     ul ul {
         margin-top: 8px;    /* Add some space above the nested list */
         margin-bottom: 8px; /* Add some space below the nested list */
-        font-size: 0.9rem;
+        font-size: 1rem;
         /* padding-left: 0; is inherited from the general 'ul' rule, which is fine.
         The indentation of the nested list items will be handled by the parent li's padding
         and the nested li's own padding, aligning the sub-bullet with the parent's text. */
@@ -239,7 +239,7 @@
     /* Style for the third-degree list items themselves */
     ul ul ul li {
         margin-bottom: 6px; /* Even smaller margin for third-level items */
-        /* font-size: 0.95em; /* Optional: slightly smaller font for third-level text */
+        font-size: 0.95em; /* Optional: slightly smaller font for third-level text */
     }
 
     /* Style for the ::before pseudo-element of third-degree list items */
@@ -271,7 +271,7 @@
         border-radius: 4px;
         border: 1px solid var(--code-border);
         color: var(--inline-code-text);
-        font-size: 0.95em;
+        font-size: 0.9em;
         transition: all var(--transition-speed) ease;
     }
 
@@ -472,7 +472,7 @@
     }
     .footnotes ol {
         padding-left: 20px;
-        font-size: 0.95em;
+        font-size: 0.8em;
         color: var(--footnote-color);
     }
     .footnotes li {

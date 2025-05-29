@@ -58,10 +58,10 @@ SELECT PRODUCTID, PRODUCTNAME FROM ESSENTIAL_FUNCTIONS_DMLBASICS.PRODUCTCATALOGB
 -- NOT IN can also have pitfalls with NULL values in the subquery/list.
 -- Explain potential issues with NOT IN especially if the subquery for NOT IN could return NULL.
 -- Show how MINUS offers a clear and robust alternative, especially if the "approved list" is also derived from a query.
--- CREATE TABLE ESSENTIAL_FUNCTIONS_DMLBASICS.ApprovedDepartments (departmentId NUMBER PRIMARY KEY);
--- INSERT INTO ESSENTIAL_FUNCTIONS_DMLBASICS.ApprovedDepartments (departmentId) VALUES (20);
--- INSERT INTO ESSENTIAL_FUNCTIONS_DMLBASICS.ApprovedDepartments (departmentId) VALUES (40);
--- COMMIT;
+CREATE TABLE ESSENTIAL_FUNCTIONS_DMLBASICS.ApprovedDepartments (departmentId NUMBER PRIMARY KEY);
+INSERT INTO ESSENTIAL_FUNCTIONS_DMLBASICS.ApprovedDepartments (departmentId) VALUES (20);
+INSERT INTO ESSENTIAL_FUNCTIONS_DMLBASICS.ApprovedDepartments (departmentId) VALUES (40);
+COMMIT;
 SELECT DISTINCT departmentId -- Less efficient way
 FROM Employees
 WHERE departmentId IS NOT NULL

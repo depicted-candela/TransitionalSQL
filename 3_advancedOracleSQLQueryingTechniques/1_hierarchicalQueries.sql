@@ -9,6 +9,8 @@
 -- Bridging Focus: PostgreSQL users would typically use a WITH RECURSIVE CTE for this. Demonstrate the Oracle CONNECT BY syntax as a 
 -- more concise alternative for this common task.
 -- Concepts: START WITH, CONNECT BY PRIOR, LEVEL, LPAD (for formatting).
+SET AUTOCOMMIT OFF;
+
 SELECT 
     LEVEL, JOBTITLE, MANAGERID,
     EMPLOYEEID, LPAD(' ', LEVEL*2) || EMPLOYEENAME INDENTED_NAME
