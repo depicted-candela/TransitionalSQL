@@ -293,44 +293,36 @@ WHERE employeeId = 101;
 
 <div class="exercise-solution-block">
 <h4>Solution for Exercise 1.1.2: Oracle Date Arithmetic and Interval Functions</h4>
-<pre><code class="language-sql">
--- a.
+<pre><code class="language-sql">-- a.
 SELECT ADD_MONTHS(hireDate, 6) AS sixMonthsAfterHire
 FROM Employees WHERE employeeId = 101;
-
 -- b.
 SELECT MONTHS_BETWEEN(
            (SELECT hireDate FROM Employees WHERE employeeId = 101), -- Alice (later hire date)
            (SELECT hireDate FROM Employees WHERE employeeId = 102)  -- Bob (earlier hire date)
        ) AS monthsDifferenceBobToAlice
 FROM DUAL; -- Result will be positive if first date is later.
-
 -- c.
 SELECT LAST_DAY(hireDate) AS lastDayOfHireMonth
 FROM Employees WHERE employeeId = 101;
-
 -- d.
 SELECT NEXT_DAY(hireDate, 'FRIDAY') AS nextFridayAfterHire
 FROM Employees WHERE employeeId = 101;
 -- Note: 'FRIDAY' interpretation depends on NLS_DATE_LANGUAGE.
-
 -- e.
 SELECT
     TRUNC(hireDate, 'YYYY') AS truncatedToYear, -- or 'YEAR'
     ROUND(hireDate, 'YYYY') AS roundedToYear    -- or 'YEAR'
 FROM Employees WHERE employeeId = 101;
-
 -- f.
 SELECT hireDate + 10 AS tenDaysAfterHire
 FROM Employees WHERE employeeId = 101;
-
 -- g.
 SELECT
     (SELECT hireDate FROM Employees WHERE employeeId = 102) -
     (SELECT hireDate FROM Employees WHERE employeeId = 101)
     AS dateDifferenceInDays
 FROM DUAL; -- Result is negative as Bob (102) was hired before Alice (101).
-
 -- h.
 SELECT
     deadlineTimestamp,
@@ -430,7 +422,6 @@ WHERE startDate >= TO_DATE('2023-01-01', 'YYYY-MM-DD')
         SUBSTR(email, 1, INSTR(email, '@') - 1) AS username
     FROM Employees
     WHERE employeeId = 101;
-
     -- c. Length of trimmed jobTitle
     SELECT
         jobTitle AS originalJobTitle,
@@ -438,14 +429,12 @@ WHERE startDate >= TO_DATE('2023-01-01', 'YYYY-MM-DD')
         LENGTH(TRIM(jobTitle)) AS lengthOfTrimmedTitle
     FROM Employees
     WHERE employeeId = 106; -- Frank Miller, jobTitle ' Developer '
-
     -- d. Replace substring
     SELECT
         projectName,
         REPLACE(projectName, 'System', 'Platform') AS modifiedProjectName
     FROM Projects
     WHERE projectId = 1;
-
     -- e. INSTR for Nth occurrence, case-insensitive
     SELECT
         firstName,
@@ -519,8 +508,7 @@ WHERE projectId = 99;
 
 <div class="exercise-solution-block">
 <h4>Solution for Exercise 3.1.1: Oracle Set Operators - MINUS, INTERSECT, UNION</h4>
-<pre><code class="language-sql">
--- a. Products in A but not B (MINUS)
+<pre><code class="language-sql">-- a. Products in A but not B (MINUS)
 SELECT productId, productName FROM ProductCatalogA
 MINUS
 SELECT productId, productName FROM ProductCatalogB;
@@ -529,8 +517,7 @@ SELECT productId, productName FROM ProductCatalogB;
 <p><strong>Explanation for (a):</strong> Oracle's <code>MINUS</code> is functionally identical to PostgreSQL's <code>EXCEPT</code>. Both return distinct rows from the first query not in the second.
 <strong>Advantage:</strong> Clear, declarative way to find differences.</p>
 </div>
-<pre><code class="language-sql">
--- b. Products common to A and B (INTERSECT)
+<pre><code class="language-sql">-- b. Products common to A and B (INTERSECT)
 SELECT productId, productName FROM ProductCatalogA
 INTERSECT
 SELECT productId, productName FROM ProductCatalogB;
@@ -539,8 +526,7 @@ SELECT productId, productName FROM ProductCatalogB;
 <p><strong>Explanation for (b):</strong> <code>INTERSECT</code> returns distinct rows present in both query result sets. Identical in Oracle and PostgreSQL.
 <strong>Advantage:</strong> Clear, declarative way to find commonalities.</p>
 </div>
-<pre><code class="language-sql">
--- c. All unique products from A or B (UNION)
+<pre><code class="language-sql">-- c. All unique products from A or B (UNION)
 SELECT productId, productName FROM ProductCatalogA
 UNION
 SELECT productId, productName FROM ProductCatalogB;
@@ -584,12 +570,10 @@ SELECT productId, productName FROM ProductCatalogB;
 <div class="exercise-solution-block">
 <h4>Solution for Exercise 3.3.1: Finding Disjoint Sets - MINUS vs. Multiple NOT IN/NOT EXISTS</h4>
 <p><strong>Less Efficient/More Complex Common Solution (NOT IN):</strong></p>
-<pre><code class="language-sql">
--- Setup temp table for illustration if needed:
+<pre><code class="language-sql">-- Setup temp table for illustration if needed:
 -- CREATE TABLE ApprovedDepartments (departmentId NUMBER PRIMARY KEY);
 -- INSERT INTO ApprovedDepartments VALUES (20);
 -- INSERT INTO ApprovedDepartments VALUES (40); COMMIT;
-
 SELECT DISTINCT departmentId
 FROM Employees
 WHERE departmentId IS NOT NULL
@@ -600,8 +584,7 @@ WHERE departmentId IS NOT NULL
 <strong>Value Lost:</strong> Correctness with <code>NULL</code>s in exclusion list; readability can suffer.</p>
 </div>
 <p><strong>Efficient and Clear Oracle-Idiomatic Solution using MINUS:</strong></p>
-<pre><code class="language-sql">
-SELECT DISTINCT departmentId
+<pre><code class="language-sql">SELECT DISTINCT departmentId
 FROM Employees
 WHERE departmentId IS NOT NULL
 MINUS
@@ -618,9 +601,7 @@ WHERE departmentId IS NOT NULL; -- Explicitly exclude NULLs from the approved se
     <li><strong>Multiple Columns:</strong> Naturally handles multi-column comparisons for set difference.</li>
 </ol>
 <p><strong>Oracle Value:</strong> <code>MINUS</code> is a powerful, declarative tool for set-based comparisons.</p>
-<pre><code class="language-sql">
--- DROP TABLE ApprovedDepartments; -- Cleanup if created
-</code></pre>
+<pre><code class="language-sql">-- DROP TABLE ApprovedDepartments; -- Cleanup if created</code></pre>
 </div>
 </div>
 
@@ -630,8 +611,7 @@ WHERE departmentId IS NOT NULL; -- Explicitly exclude NULLs from the approved se
 
 <div class="exercise-solution-block">
 <h4>Solution for Exercise 4.1.1: Oracle DML and Transaction Control Basics</h4>
-<pre><code class="language-sql">
--- a. INSERT
+<pre><code class="language-sql">-- a. INSERT
 INSERT INTO Departments (departmentId, departmentName, locationCity)
 VALUES (60, 'Operations', 'Chicago');
 -- Verify: SELECT * FROM Departments WHERE departmentId = 60;
@@ -721,8 +701,7 @@ COMMIT; -- Commit the MERGE operation.
 <div class="exercise-solution-block">
 <h4>Solution for Exercise 4.3.1: Conditional Insert/Update - MERGE vs. Separate UPDATE then INSERT</h4>
 <p><strong>Less Efficient/More Complex Common Solution (Separate SQL Statements):</strong></p>
-<pre><code class="language-sql">
--- Step 1: Update existing employees
+<pre><code class="language-sql">-- Step 1: Update existing employees
 UPDATE Employees e
 SET (jobTitle, salary, departmentId) = (
     SELECT u.newJobTitle, u.newSalary, u.newDepartmentId
@@ -734,7 +713,6 @@ WHERE EXISTS (
     FROM EmployeeUpdatesForMerge u
     WHERE u.employeeId = e.employeeId
 );
-
 -- Step 2: Insert new employees
 INSERT INTO Employees (employeeId, firstName, lastName, email, jobTitle, salary, departmentId, hireDate)
 SELECT
@@ -759,8 +737,7 @@ WHERE NOT EXISTS (
 <p><strong>Value Lost:</strong> Potential performance, atomicity in a single statement, conciseness.</p>
 </div>
 <p><strong>Efficient, Oracle-Idiomatic Solution using MERGE:</strong></p>
-<pre><code class="language-sql">
-MERGE INTO Employees e
+<pre><code class="language-sql">MERGE INTO Employees e
 USING EmployeeUpdatesForMerge u
     ON (e.employeeId = u.employeeId)
 WHEN MATCHED THEN
@@ -786,121 +763,73 @@ WHEN NOT MATCHED THEN
 <h3 style="color: #FF9900;">Solution: The Performance Recognition Initiative</h3>
 
 <h4>Part 1: Pre-analysis (Set Operators & ROWNUM)</h4>
-<pre><code class="language-sql">
--- 1.a. Identify employeeIds of all current non-managers using MINUS
-PROMPT 'Non-Managers (employeeId):';
-SELECT employeeId FROM Employees
-MINUS
-SELECT managerId FROM Employees WHERE managerId IS NOT NULL;
-
--- 1.b. Top 3 longest-serving eligible employees
-PROMPT 'Top 3 longest-serving eligible employees:';
-SELECT firstName, lastName, hireDate, salary
-FROM (
-    SELECT e.firstName, e.lastName, e.hireDate, e.salary
-    FROM Employees e
-    WHERE e.hireDate <= TO_DATE('2022-06-30', 'YYYY-MM-DD')
-      AND e.departmentId IN (10, 30)
-      AND e.salary < 90000
-      AND e.email LIKE '%@example.com'
-      AND e.employeeId NOT IN (SELECT DISTINCT m.managerId FROM Employees m WHERE m.managerId IS NOT NULL) -- Must not be a manager
-    ORDER BY e.hireDate ASC -- Earliest hireDate first for longest-serving
+<pre><code class="language-sql">DROP TABLE IF EXISTS ESSENTIAL_FUNCTIONS_DMLBASICS.TLS;
+SAVEPOINT temp_table;
+CREATE TABLE ESSENTIAL_FUNCTIONS_DMLBASICS.TLS (EMPLOYEEID NUMBER(3) PRIMARY KEY, FULLNAME CHARACTER(20), SERVICEYEARS NUMBER(4,2), SERVICEKICKER NUMBER(4));
+INSERT INTO ESSENTIAL_FUNCTIONS_DMLBASICS.TLS (EMPLOYEEID, FULLNAME, SERVICEYEARS, SERVICEKICKER)
+WITH NOT_MANAGERS AS (
+    SELECT EMPLOYEEID FROM ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES
+        MINUS
+    SELECT MANAGERID FROM ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES
+), CRITERIAS AS (
+    SELECT
+        DECODE(e.JOBTITLE, 'Developer', 2000, 'Sales', 1500, 1000) AS BASEPAYMENT,
+        e.EMPLOYEEID, e.HIREDATE, TRIM(e.FIRSTNAME || ' ' || e.LASTNAME) AS FULLNAME
+    FROM ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES e
+    WHERE EXISTS(SELECT 1 FROM NOT_MANAGERS nm WHERE e.EMPLOYEEID = nm.EMPLOYEEID)
+        AND e.HIREDATE <= TO_DATE('2022-06-30', 'YYYY-MM-DD')
+        AND e.DEPARTMENTID IN (10, 20) 
+        AND e.SALARY < 90000 
+        AND e.EMAIL LIKE '%@example.com'
+), KICKED_SALARIES AS (
+    SELECT ROUND(((MONTHS_BETWEEN(SYSDATE, HIREDATE) / 12) * 100) + BASEPAYMENT) AS SERVICEKICKER, cr.EMPLOYEEID, cr.FULLNAME, cr.HIREDATE
+    FROM CRITERIAS cr
+), TOP_LONGEST_SERVING AS (
+    SELECT ks.EMPLOYEEID, ks.SERVICEKICKER, ROUND(MONTHS_BETWEEN(SYSTIMESTAMP, ks.HIREDATE) / 12, 2) SERVICEYEARS, ks.FULLNAME FROM KICKED_SALARIES ks ORDER BY HIREDATE ASC FETCH NEXT 3 ROWS ONLY
 )
-WHERE ROWNUM <= 3;
+
+SELECT EMPLOYEEID, FULLNAME, SERVICEYEARS, SERVICEKICKER FROM TOP_LONGEST_SERVING;
+COMMIT;
+SELECT * FROM ESSENTIAL_FUNCTIONS_DMLBASICS.TLS;
 </code></pre>
 
 <h4>Part 2: Transactional Processing (DML & Transaction Control)</h4>
 <div class="solution-explanation">
 <p><em>Note: The following PL/SQL block implements the transactional logic. <code>SET SERVEROUTPUT ON</code> is needed to see DBMS_OUTPUT messages. You might want to <code>DELETE FROM AuditLog WHERE operationType = 'RECOGNIZE'; COMMIT;</code> before re-runs for clean testing.</em></p>
 </div>
-<pre><code class="language-sql">
-SET SERVEROUTPUT ON;
-DECLARE
-    v_recognized_count NUMBER := 0;
-    v_recognition_payment NUMBER;
-    v_base_payment NUMBER;
-    v_service_kicker NUMBER;
-    v_years_service NUMBER;
-    v_current_comm_pct NUMBER;
-    v_new_comm_pct NUMBER;
-    v_audit_details CLOB;
-    v_emp_fullname VARCHAR2(101);
+<pre><code class="language-sql">-- Start a transaction. Create a savepoint named recognition_initiative_start.
+SET AUTOCOMMIT OFF;
+SAVEPOINT recognition_initiative_start;d
+MERGE INTO ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES e
+USING ESSENTIAL_FUNCTIONS_DMLBASICS.TLS tls
+ON (e.EMPLOYEEID = tls.EMPLOYEEID)
+WHEN MATCHED THEN
+  UPDATE SET e.COMMISSIONPCT = NVL(e.COMMISSIONPCT, 0) + 0.01 WHERE tls.SERVICEKICKER > 1200;
 
-    CURSOR c_eligible_employees IS
-        SELECT e.employeeId, e.firstName, e.lastName, e.hireDate, e.salary, e.commissionPct, e.departmentId, e.jobTitle, e.email
-        FROM Employees e
-        WHERE e.hireDate <= TO_DATE('2022-06-30', 'YYYY-MM-DD')
-          AND e.departmentId IN (10, 30)
-          AND e.salary < 90000
-          AND e.email LIKE '%@example.com'
-          AND e.employeeId NOT IN (SELECT DISTINCT m.managerId FROM Employees m WHERE m.managerId IS NOT NULL)
-        FOR UPDATE OF e.commissionPct;
-
-BEGIN
-    SAVEPOINT recognition_initiative_start;
-    DBMS_OUTPUT.PUT_LINE('Transaction started. Savepoint recognition_initiative_start created.');
-
-    FOR emp_rec IN c_eligible_employees LOOP
-        -- Calculate Base Payment
-        IF INSTR(LOWER(emp_rec.jobTitle), 'developer') > 0 THEN
-            v_base_payment := 2000;
-        ELSIF INSTR(LOWER(emp_rec.jobTitle), 'sales') > 0 THEN
-            v_base_payment := 1500;
-        ELSE
-            v_base_payment := 1000;
-        END IF;
-
-        -- Calculate Service Kicker
-        v_years_service := MONTHS_BETWEEN(SYSDATE, emp_rec.hireDate) / 12;
-        v_service_kicker := FLOOR(v_years_service) * 100; -- Only full years
-
-        -- Total Recognition Payment
-        v_recognition_payment := ROUND(v_base_payment + v_service_kicker, 0);
-
-        -- Update commissionPct
-        v_current_comm_pct := NVL(emp_rec.commissionPct, 0);
-        v_new_comm_pct := v_current_comm_pct; 
-
-        IF v_recognition_payment > 1200 THEN
-            v_new_comm_pct := LEAST(v_current_comm_pct + 0.01, 0.25);
-            UPDATE Employees
-            SET commissionPct = v_new_comm_pct
-            WHERE CURRENT OF c_eligible_employees;
-        END IF;
-
-        -- Log to AuditLog
-        v_emp_fullname := emp_rec.firstName || ' ' || emp_rec.lastName;
-        v_audit_details := 'Recognition: EmpID=' || TO_CHAR(emp_rec.employeeId) ||
-                           ' (Name: ' || v_emp_fullname || ')' ||
-                           ', Payment=$' || TO_CHAR(v_recognition_payment, '9999990.00') ||
-                           ', NewCommPct=' || TO_CHAR(v_new_comm_pct, '0.00') ||
-                           ', YearsSvc=' || TO_CHAR(v_years_service, '990.00');
-
-        INSERT INTO AuditLog (tableName, operationType, details)
-        VALUES ('Employees', 'RECOGNIZE', v_audit_details);
-
-        v_recognized_count := v_recognized_count + 1;
-        DBMS_OUTPUT.PUT_LINE('Recognized employee ' || emp_rec.employeeId || '. Payment: $' || v_recognition_payment || '. New Comm Pct: ' || v_new_comm_pct);
-
-    END LOOP;
-
-    DBMS_OUTPUT.PUT_LINE('Total employees recognized: ' || v_recognized_count);
-
-    IF v_recognized_count < 1 THEN
-        ROLLBACK TO SAVEPOINT recognition_initiative_start;
-        DBMS_OUTPUT.PUT_LINE('Fewer than 1 employee recognized. Transaction rolled back to recognition_initiative_start.');
-    ELSE
-        COMMIT;
-        DBMS_OUTPUT.PUT_LINE(v_recognized_count || ' employee(s) recognized. Transaction committed.');
-    END IF;
-
-EXCEPTION
-    WHEN OTHERS THEN
-        ROLLBACK;
-        DBMS_OUTPUT.PUT_LINE('Error occurred: ' || SQLCODE || ' - ' || SQLERRM);
-        RAISE;
+SELECT * FROM ESSENTIAL_FUNCTIONS_DMLBASICS.TLS;
+INSERT INTO ESSENTIAL_FUNCTIONS_DMLBASICS.AUDITLOG (TABLENAME, OPERATIONTYPE) VALUES ('Employees', 'RECOGNIZE', );
+WITH c_logins AS (
+  SELECT 
+  CONCAT('Recognition: EmpID=', EMPLOYEEID, ' (Name: ', RTRIM(FULLNAME), '), Payment=$', SERVICEKICKER, ', NewCommPct=', COMMISSIONPCT, ', YearsSvc=', SERVICEYEARS) AS DETAILS
+  FROM ESSENTIAL_FUNCTIONS_DMLBASICS.TLS NATURAL JOIN ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES
+)
+</code></pre>
+Fist usage of a PL/SQL function
+<pre><code class="language-sql">DECLARE 
+BEGIN 
+  SAVEPOINT audited_logs;
+  FOR c_log IN (
+    SELECT 
+    CONCAT('Recognition: EmpID=', EMPLOYEEID, ' (Name: ', RTRIM(FULLNAME), '), Payment=\$', SERVICEKICKER, ', NewCommPct=', COMMISSIONPCT, ', YearsSvc=', SERVICEYEARS
+    ) AS DETAILS
+    FROM ESSENTIAL_FUNCTIONS_DMLBASICS.TLS NATURAL JOIN ESSENTIAL_FUNCTIONS_DMLBASICS.EMPLOYEES
+  ) LOOP
+    INSERT INTO ESSENTIAL_FUNCTIONS_DMLBASICS.AUDITLOG (TABLENAME, OPERATIONTYPE, DETAILS) VALUES ('Employees', 'RECOGNIZE', c_log.DETAILS);
+  END LOOP;
 END;
-/
+
+DBMS_OUTPUT.PUT_LINE('Not necessary the final rollback because 2 employees were recognized');
+COMMIT;
 </code></pre>
 <div class="solution-explanation">
 <p><strong>Explanation of Hardcore Problem Solution Elements:</strong></p>

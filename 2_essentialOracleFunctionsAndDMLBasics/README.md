@@ -1,5 +1,5 @@
 <style>
-:root {
+    :root {
         /* --- Oracle Night Mode Palette --- */
         --primary-color: #4db8ff; /* Oracle brand blue */
         --secondary-color: #6bd4ff; /* Lighter Oracle blue */

@@ -33,9 +33,9 @@ EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
 /
 -- essential_functions_dmlbasics.Departments Table
 CREATE TABLE essential_functions_dmlbasics.Departments (
-departmentId NUMBER PRIMARY KEY,
-departmentName VARCHAR2(100) NOT NULL,
-locationCity VARCHAR2(50)
+   departmentId NUMBER PRIMARY KEY,
+   departmentName VARCHAR2(100) NOT NULL,
+   locationCity VARCHAR2(50)
 );
 
 
