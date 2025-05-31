@@ -64,6 +64,8 @@
             radial-gradient(circle at 10% 20%, #2a2a3a 0%, transparent 20%),
             radial-gradient(circle at 90% 80%, #2a2a3a 0%, transparent 20%);
         overflow-x: hidden;
+        font-size: 1.2rem;
+        /* user-select: none; */
     }
 
     .container {
@@ -92,10 +94,6 @@
         transform: translateY(-5px);
     }
 
-    /* .container:active {
-        animation: containerGlow 0.5s ease-out;
-    } */
-
     /* Content animations with staggered delays */
     .container > * {
         opacity: 0;
@@ -109,12 +107,10 @@
     .container > pre { animation-delay: 0.7s; }
     .container > table { animation-delay: 0.8s; }
     .container > .oracle-specific { animation-delay: 0.9s; }
-    .container > ul { animation-delay: 0.65s; } /* Add delay for lists */
+    .container > ul, .container > ol { animation-delay: 0.65s; }
     .container > .postgresql-bridge { animation-delay: 0.9s; }
     .container > .caution { animation-delay: 0.9s; }
 
-
-    /* Rest of your styles (h1, h2, code blocks, etc.) */
     h1, h2, h3, h4 {
         font-family: var(--header-font);
         color: var(--primary-color);
@@ -157,111 +153,232 @@
         color: var(--primary-color);
     }
 
-    p, li {
-        font-size: 1.1em;
+    p { /* li styling moved to specific list item rules */
+        font-size: 1.15em; /* Relative to body font-size */
         margin-bottom: 12px;
     }
 
+    li { /* General li, mostly for margin, font-size will be overridden */
+        margin-bottom: 10px; 
+    }
+
+    /* --- Unordered List Styling --- */
     ul {
-        list-style-type: none; /* Remove default bullets */
+        list-style-type: none; 
         padding-left: 0;
     }
 
-    ul li {
-        padding-left: 25px; /* Space for custom bullet */
-        position: relative; /* For custom bullet positioning */
-        margin-bottom: 10px; /* Spacing between list items */
+    /* Level 1 UL Items */
+    ul > li {
+        font-size: 1.15em; /* Relative to body font-size */
+        padding-left: 25px; 
+        position: relative; 
+        margin-bottom: 10px; 
     }
 
-    ul li::before {
-        content: '►'; /* Custom bullet character */
-        color: var(--accent-color); /* Bullet color */
+    ul > li::before {
+        content: '►'; 
+        color: var(--accent-color); 
         position: absolute;
         left: 0;
-        top: 1px; /* Adjust for vertical alignment */
-        font-size: 1em; /* Bullet size */
+        top: 1px; 
+        font-size: 1em; /* Relative to this li's font-size */
         transition: transform 0.2s ease-out, color 0.2s ease-out;
     }
 
-    ul li:hover::before {
+    ul > li:hover::before {
         color: var(--primary-color);
         transform: scale(1.2) translateX(2px);
     }
 
+    /* Level 2 UL Container */
     ul ul {
-        margin-top: 8px;    /* Add some space above the nested list */
-        margin-bottom: 8px; /* Add some space below the nested list */
-        font-size: 1rem;
-        /* padding-left: 0; is inherited from the general 'ul' rule, which is fine.
-        The indentation of the nested list items will be handled by the parent li's padding
-        and the nested li's own padding, aligning the sub-bullet with the parent's text. */
+        margin-top: 8px;
+        margin-bottom: 8px;
+        padding-left: 0; /* Sub-list aligns with parent text start */
+        /* font-size removed from here, applied to li */
     }
 
-    /* Style for the second-degree list items themselves (e.g., slightly smaller margin) */
-    ul ul li {
-        margin-bottom: 8px; /* Slightly smaller margin than first-level items */
+    /* Level 2 UL Items */
+    ul ul > li { 
+        font-size: 1.0em; /* Relative to body font-size */
+        padding-left: 25px; /* Inherited padding from parent ul li is typically how this is done if not explicit */
+        position: relative; /* Ensure positioning context for ::before */
+        margin-bottom: 8px; 
     }
 
-    /* Style for the ::before pseudo-element of second-degree list items */
-    /* This overrides some properties from the general 'ul li::before' rule */
-    ul ul li::before {
-        content: '–';                 /* En-dash for a simple, clean look. You could also use '◦' (small circle) or '›'. */
-        color: var(--secondary-color); /* Use the secondary blue, more subdued than accent orange. */
-        font-size: 1em;             /* Make the dash slightly larger/bolder to be visually clear.
-                                        The original '►' is 1em of the li's font-size. */
-        top: 0px;                     /* Adjust vertical position. '–' often aligns better slightly higher
-                                        than '►' if '►' was set with 'top: 1px'.
-                                        This value might need slight tweaking based on the specific font. */
-        /* Inherited from 'ul li::before':
-        - position: absolute;
-        - left: 0;
-        - transition: transform var(--transition-speed) ease, color var(--transition-speed) ease;
-            (or the more specific transition from your original 'ul li::before')
-        */
-    /* If you want to ensure the transition is consistent for color but different for transform: */
-    transition: color 0.2s ease-out, transform 0.2s ease-out; /* Explicitly set for clarity */
+    ul ul > li::before {
+        content: '–'; 
+        color: var(--secondary-color);
+        font-size: 1em; /* Relative to this li's font-size */
+        position: absolute;
+        left: 0;
+        top: 0px; 
+        transition: color 0.2s ease-out, transform 0.2s ease-out;
     }
 
-    /* Hover effect for second-degree list item bullets */
-    /* This overrides the hover effect from the general 'ul li:hover::before' rule */
-    ul ul li:hover::before {
-        color: var(--primary-color); /* Change color to primary blue on hover (same as first-level) */
-        transform: none;             /* Simpler: no scaling or translation on hover.
-                                        Alternatively, a very subtle effect: transform: translateX(2px); */
+    ul ul > li:hover::before {
+        color: var(--primary-color);
+        transform: none; 
     }
 
+    /* Level 3 UL Container */
     ul ul ul {
-        margin-top: 6px;    /* Slightly less space above the third-level list */
-        margin-bottom: 6px; /* Slightly less space below the third-level list */
-        /* padding-left will be handled by the nesting */
+        margin-top: 6px;
+        margin-bottom: 6px;
+        padding-left: 0; 
     }
 
-    /* Style for the third-degree list items themselves */
-    ul ul ul li {
-        margin-bottom: 6px; /* Even smaller margin for third-level items */
-        font-size: 0.95em; /* Optional: slightly smaller font for third-level text */
+    /* Level 3 UL Items */
+    ul ul ul > li { 
+        font-size: 0.9em; /* Relative to body font-size */
+        padding-left: 25px;
+        position: relative;
+        margin-bottom: 6px;
     }
 
-    /* Style for the ::before pseudo-element of third-degree list items */
-    ul ul ul li::before {
-        content: '·';                 /* Middle dot (cdot). Alternatives: '◦' (if not used for 2nd), or '*' (asterisk).
-                                        '·' is very simple and small. */
-        color: var(--footnote-color); /* Use the footnote color for a very subdued look,
-                                        or a lighter shade of text-color, or desaturated blue */
-        font-size: 1.4em;             /* The middle dot is small, so make it a bit larger relative to text.
-                                        This needs testing for visual balance. */
-        top: 0px;                     /* Adjust vertical alignment. The middle dot is usually centered.
-                                        Fine-tune based on font and line-height. */
-        left: 1px;                    /* May need slight horizontal adjustment to appear centered in the space
-                                        if the '►' and '–' took up more visual width. */
-        transition: color 0.2s ease-out; /* Only transition color if there's a hover effect */
-        /* Inherited: position: absolute; */
+    ul ul ul > li::before {
+        content: '·'; 
+        color: var(--footnote-color);
+        font-size: 1.1em; /* Slightly larger to make the small dot visible, relative to this li's font-size */
+        position: absolute;
+        left: 1px; 
+        top: 0px;
+        transition: color 0.2s ease-out;
     }
 
-    /* Hover effect for third-degree list item bullets (optional and minimal) */
-    ul ul ul li:hover::before {
-        color: var(--text-color);     /* Subtle change to the main text color on hover. */
-        transform: none;              /* Definitely no transform for the simplest look. */
+    ul ul ul > li:hover::before {
+        color: var(--text-color);
+        transform: none;
+    }
+
+    /* --- Ordered List Styling --- */
+    ol {
+        /* padding-left: 40px; /* Example if you want to control default first-level indentation */
+    }
+
+    /* Level 1 OL Items */
+    ol > li {
+        font-size: 1em; /* Relative to body font-size */
+        margin-bottom: 10px; 
+        transition: opacity 0.3s ease-out;
+        /* Default browser numbering and ::before marker will apply */
+        /* If custom marker needed for L1 OL, add here similar to ul > li */
+    }
+
+    ol > li::marker {
+        transition: color 0.2s ease-out; /* Smooth transition if color changes */
+        /* The default color will be inherited from the li text color */
+    }
+
+    /* NEW: Hide the ::marker on hover for first-level OL items */
+    ol > li:hover::marker {
+        color: transparent; /* Makes the marker invisible */
+    }
+
+    /* Level 2 OL Container (nested in ul or ol) */
+    ol ol,
+    ul ol { 
+        list-style-type: none;   
+        padding-left: 0;         
+        margin-top: 8px;         
+        margin-bottom: 8px;      
+        /* font-size removed from here, applied to li */
+        counter-reset: nested-ol-counter; 
+    }
+
+    /* Level 2 OL Items */
+    ol ol > li,
+    ul ol > li { 
+        font-size: 1.0em; /* Relative to body font-size */
+        position: relative;
+        padding-left: 25px;      
+        margin-bottom: 8px;      
+        counter-increment: nested-ol-counter; 
+    }
+
+    ol ol > li::before,
+    ul ol > li::before { 
+        content: counter(nested-ol-counter) ". "; 
+        color: var(--secondary-color);           
+        font-weight: normal;                     
+        font-size: 1em; /* Relative to this li's font-size */
+        position: absolute;
+        left: 0;
+        top: 0px;
+    }
+
+    ol ol > li:hover::before,
+    ul ol > li:hover::before { 
+        color: var(--primary-color);             
+    }
+
+    /* Level 3 OL Container (nested in various ways) */
+    ol ol ol,
+    ul ol ol,
+    ol ul ol,
+    ul ul ol {
+        list-style-type: none;
+        padding-left: 0;
+        margin-top: 6px;
+        margin-bottom: 6px;
+        /* font-size removed from here, applied to li */
+        counter-reset: sub-sub-ol-counter;
+    }
+
+    /* Level 3 OL Items - Ensuring all 8 combinations for font size */
+    ul ul ul > li, /* From UL section, repeated for clarity or combined */
+    ul ul ol > li,
+    ul ol ul > li,
+    ul ol ol > li,
+    ol ul ul > li,
+    ol ul ol > li,
+    ol ol ul > li,
+    ol ol ol > li {
+        font-size: 0.9em; /* Relative to body font-size */
+        position: relative;
+        padding-left: 25px;
+        margin-bottom: 6px;
+        /* counter-increment will be specific to the type of list item (ol vs ul) */
+    }
+    /* Specific counter-increment for OL L3 items */
+    ol ol ol > li,
+    ul ol ol > li,
+    ol ul ol > li,
+    ul ul ol > li { /* Only for OL items */
+         counter-increment: sub-sub-ol-counter;
+    }
+
+
+    /* Level 3 OL Markers */
+    ol ol ol > li::before,
+    ul ol ol > li::before,
+    ol ul ol > li::before,
+    ul ul ol > li::before {
+        content: counter(sub-sub-ol-counter, lower-alpha) ". "; 
+        color: var(--footnote-color);
+        font-size: 1em; /* Relative to this li's font-size */
+        position: absolute;
+        left: 0px; /* Adjusted from 1px to align with other numbered lists */
+        top: 0px;
+        transition: color 0.2s ease-out;
+    }
+
+    ol ol ol > li:hover::before,
+    ul ol ol > li:hover::before,
+    ol ul ol > li:hover::before,
+    ul ul ol > li:hover::before {
+        color: var(--text-color);
+    }
+
+    /* Combining Level 3 UL and OL items for shared properties (font-size, padding, margin) */
+    /* This is a more concise way to set common L3 li properties if preferred over listing all 8 */
+    ul ul ul > li, ol ol ol > li, ul ol ul > li, ol ul ol > li, 
+    ul ul ol > li, ol ul ul > li, ul ol ol > li, ol ol ul > li {
+        font-size: 0.9em;
+        position: relative;
+        padding-left: 25px;
+        margin-bottom: 6px;
     }
 
     code {
@@ -271,7 +388,7 @@
         border-radius: 4px;
         border: 1px solid var(--code-border);
         color: var(--inline-code-text);
-        font-size: 0.9em;
+        font-size: 0.95em; /* Relative to parent element's font size */
         transition: all var(--transition-speed) ease;
     }
 
@@ -288,13 +405,13 @@
         padding: 18px;
         overflow-x: auto;
         box-shadow: 2px 2px 8px var(--box-shadow-color);
-        font-size: 1em;
+        font-size: 1em; /* Relative to parent, typically body or container */
         transition: all var(--transition-speed) ease;
     }
 
     pre:hover {
         border-color: var(--primary-color);
-        box-shadow: 2px 2px 12px rgba(0, 100, 200, 0.3);
+        box-shadow: 0 0 15px rgba(77, 184, 255, 0.3); 
     }
 
     pre code {
@@ -303,7 +420,7 @@
         border: none;
         padding: 0;
         color: inherit;
-        font-size: inherit;
+        font-size: inherit; /* Inherits from pre's 1em */
     }
 
     table {
@@ -311,11 +428,12 @@
         border-collapse: collapse;
         margin-top: 25px;
         box-shadow: 2px 2px 8px var(--box-shadow-color);
-        transition: transform var(--transition-speed) ease;
+        transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
     }
 
     table:hover {
         transform: scale(1.005);
+        box-shadow: 0 0 15px rgba(77, 184, 255, 0.3); 
     }
 
     th, td {
@@ -329,7 +447,7 @@
         background-color: var(--table-header-bg);
         color: var(--table-header-text);
         font-family: var(--header-font);
-        font-size: 1.1em;
+        font-size: 1.1em; /* Relative to table's font size (inherited) */
     }
 
     td {
@@ -346,12 +464,12 @@
         padding: 12px 15px;
         margin: 18px 0;
         border-radius: 4px;
-        transition: all var(--transition-speed) ease;
+        transition: all var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
     }
 
     .oracle-specific:hover {
         transform: translateX(5px);
-        box-shadow: 3px 0 10px rgba(255, 140, 0, 0.2);
+        box-shadow: 3px 0 10px rgba(255, 140, 0, 0.2), 0 0 15px rgba(77, 184, 255, 0.3); 
     }
 
     .postgresql-bridge {
@@ -379,7 +497,7 @@
 
     .caution:hover {
         transform: translateX(5px);
-        box-shadow: 3px 0 10px rgba(230, 76, 0, 0.2); /* Matched caution-bg color for glow */
+        box-shadow: 3px 0 10px rgba(230, 76, 0, 0.2); 
     }
 
     .rhyme {
@@ -401,12 +519,11 @@
     p > small {
         display: block;
         margin-top: 8px;
-        font-size: 0.9em;
+        font-size: 0.9em; /* Relative to parent p's font size */
         color: var(--footnote-color);
         transition: color var(--transition-speed) ease;
     }
 
-    /* Keyframes for animations */
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
@@ -418,70 +535,27 @@
         100% { box-shadow: 0 0 0 0 rgba(77, 184, 255, 0); }
     }
 
-    /* Smooth scrolling */
     html {
         scroll-behavior: smooth;
     }
 
-    /* Special Oracle SQL elements */
-    .sql-keyword {
-        color: var(--accent-color);
-        font-weight: bold;
-    }
-
-    .sql-function {
-        color: var(--secondary-color);
-    }
-
-    .sql-comment {
-        color: #7f7f9f;
-        font-style: italic;
-    }
-        /* Enhanced glow for interactive elements */
-    pre:hover, table:hover, .oracle-specific:hover {
-        box-shadow: 0 0 15px rgba(77, 184, 255, 0.3);
-    }
-
-    /* Responsive adjustments */
     @media (max-width: 768px) {
         .container {
             padding: 20px;
             margin: 1rem auto;
         }
         :root {
-            --glow-intensity: 0.3; /* Less intense glow on mobile */
+            --glow-intensity: 0.3; 
         }
+        body {
+            font-size: 1.1rem; 
+            padding: 15px;
+        }
+        h1 { font-size: 2.4em; }
+        h2 { font-size: 1.9em; }
+        h3 { font-size: 1.5em; }
+        p { font-size: 1.05em; } /* li rule removed, font sizes for li are now level-specific and will scale with body's 1.1rem */
     }
-
-    /* Footnote Styles */
-    .footnote-ref {
-        font-size: 0.8em;
-        vertical-align: super;
-        color: var(--accent-color);
-        text-decoration: none;
-        transition: color var(--transition-speed) ease;
-    }
-    .footnote-ref:hover {
-        color: var(--primary-color);
-        text-decoration: underline;
-    }
-    .footnotes {
-        margin-top: 30px;
-        padding-top: 15px;
-        border-top: 1px solid var(--table-border);
-    }
-    .footnotes ol {
-        padding-left: 20px;
-        font-size: 0.8em;
-        color: var(--footnote-color);
-    }
-    .footnotes li {
-        margin-bottom: 8px;
-    }
-    .footnotes p {
-        margin-bottom: 0; /* Remove paragraph margin within footnote list item */
-    }
-
 </style>
 
 <div class="container">
