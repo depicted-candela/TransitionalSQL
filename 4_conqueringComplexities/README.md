@@ -600,10 +600,8 @@ CREATE TABLE IF NOT EXISTS ProductInventory (
 );
 
 -- Let's ensure this table is empty before inserting for idempotency if re-run
--- In a real script, you might use IF NOT EXISTS for DDL, or TRUNCATE for DML
--- For simplicity here, we assume a clean slate or that inserts are safe.
--- If you run this multiple times, you might get ORA-00001 if ProductID is not unique.
--- Consider DELETE FROM ProductInventory; before inserts for easy re-runs of this block.
+DELETE FROM ProductInventory; 
+COMMIT;
 
 INSERT INTO ProductInventory (ProductID, ProductName, DescriptionText, ProductImage, SpecificationsXML, AttributesJSON)
 VALUES (
@@ -677,6 +675,9 @@ CREATE TABLE IF NOT EXISTS EmployeeDirectory (
     ContactInfoJSON JSON
 );
 
+DELETE FROM EmployeeDirectory;
+COMMIT;
+
 INSERT INTO EmployeeDirectory (EmployeeID, FullName, JobRole, DepartmentName, ContactInfoJSON)
 VALUES (1, 'Ada Coder', 'Lead Developer', 'Technology', JSON('{"email": "ada.coder@example.com", "phone": "555-0101", "skills": ["Java", "PLSQL", "JSON"]}'));
 INSERT INTO EmployeeDirectory (EmployeeID, FullName, JobRole, DepartmentName, ContactInfoJSON)
@@ -690,6 +691,9 @@ CREATE TABLE IF NOT EXISTS SensorReadings (
     ReadingTime TIMESTAMP DEFAULT SYSTIMESTAMP,
     PayloadJSON JSON CHECK (PayloadJSON IS JSON) -- Enforces JSON structure
 );
+
+DELETE FROM SensorReadings;
+COMMIT;
 
 INSERT INTO SensorReadings (DeviceID, PayloadJSON)
 VALUES ('TEMP-SENSOR-001', JSON('{"temperature": 25.5, "humidity": 60, "unit": "Celsius", "location": "ServerRoomA"}'));
@@ -747,12 +751,22 @@ These types hold the treasures your applications reap.
 *   **Oracle 23ai - JSON Binary Data Type (Default):**
     *   **Meaning:** In Oracle 23ai, the `JSON` data type *defaults* to storing data in an optimized binary representation.
     *   **Value:** This pre-parsed format significantly speeds up queries and manipulations as the database doesn't need to re-parse JSON text repeatedly. It allows for faster path navigation and more efficient indexing.
-*   **Oracle 23ai - JSON Relational Duality Views <sup class="footnote-ref"><a href="#fn4" id="fnref4">4</a></sup>:**
-    *   **Meaning:** A powerful new view type that exposes underlying relational data as if it were a collection of JSON documents, and vice-versa. It creates a "duality" where the same data can be accessed and manipulated relationally (via SQL on base tables) or as JSON documents (via the view).
-    *   **Value:** Provides immense flexibility for developers, allowing them to use the paradigm (relational or document) best suited for their application or microservice, without data duplication or complex synchronization logic. You can `INSERT`, `UPDATE`, `DELETE` JSON documents through the view, and Oracle translates these operations to the underlying relational tables.
-*   **Oracle 23ai - JSON Collection Tables:**
-    *   **Meaning:** This isn't a new distinct table *type* per se, but rather Oracle's enhanced support and terminology for the common pattern of creating a table primarily to store a collection of JSON documents. Typically, this involves a table with a primary key (like a `RAW(16)` for a GUID) and a `JSON` column.
-    *   **Value:** Facilitates a document-database-like storage model within Oracle, allowing for schema flexibility within the JSON documents themselves while still leveraging Oracle's transactional integrity and query capabilities. The `CHECK (column IS JSON)` constraint is often used.
+*   **Oracle 23ai - JSON Relational Duality Views <sup class="footnote-ref"><a href="#fn4" id="fnref4">4</a></sup> <sup class="footnote-ref"><a href="#fn10" id="fnref10">10</a></sup>:**
+    *   **Meaning:** A groundbreaking Oracle 23ai feature that provides two simultaneous perspectives on the *same underlying data*: a relational view (as traditional tables and columns) and a document view (as a collection of JSON documents). It's a live, updatable mapping, not a copy or synchronization.
+        Think of it as a special pair of glasses: one lens shows you structured tables, the other shows flexible JSON documents, but both are looking at the exact same reality.
+    *   **Value:**
+        *   **Flexibility:** Applications can interact with the data using the model (relational or document) that best suits their needs. A microservice might prefer JSON documents via REST, while a reporting tool uses SQL on the tables.
+        *   **Simplicity:** Bridges the gap between relational and document models without data duplication or complex ETL/synchronization logic.
+        *   **Data Integrity:** Changes made through the JSON document view are automatically reflected in the underlying relational tables, and vice-versa, maintaining consistency.
+        *   **Performance:** Operations are optimized. When you query a JSON document from a duality view, Oracle can often directly access underlying table data without fully constructing the JSON document if not needed for the final result.
+    *   Each document exposed by a duality view automatically includes:
+        *   An `_id` field: Uniquely identifies the document, typically derived from the primary key of the root table in the view's definition.
+        *   A `_metadata` field: Contains:
+            *   `etag`: An "entity tag" or version identifier for the document, crucial for optimistic concurrency control. It changes if the document's content (the parts included in ETAG calculation) changes.
+            *   `asof`: The System Change Number (SCN) recording the logical point in time when the document was generated, useful for read consistency.
+*   **Oracle 23ai - JSON Collection Tables <sup class="footnote-ref"><a href="#fn3" id="fnref3">3</a></sup>:**
+    *   **Meaning:** This isn't a new distinct table *type* but an Oracle-endorsed pattern for creating tables designed primarily to store collections of JSON documents. This typically involves a table with a primary key (e.g., a `RAW(16)` for a GUID or a `NUMBER` identity column) and a `JSON` data type column.
+    *   **Value:** Enables a document-centric storage approach within the Oracle relational database, offering schema flexibility for the JSON payloads while still leveraging Oracle's ACID properties, transactional consistency, security, and powerful query engine over both the JSON content and any accompanying relational metadata columns. The `CHECK (json_column IS JSON)` constraint is commonly used to ensure data integrity.
 
 ## Section 2: Relations: How They Play with Others (in Oracle)
 
@@ -768,6 +782,7 @@ These complex types don't live in isolation. They interact with each other and w
 *   **Data Types (`VARCHAR2`, `NUMBER`, `DATE`, `BOOLEAN` - 23ai):**
     *   These scalar types are often the building blocks *within* XML and JSON structures. For example, an XML element might contain a `DATE`, or a JSON field might hold a `NUMBER` or a 23ai `BOOLEAN`.
     *   When extracting data from `XMLTYPE` or `JSON` (using functions like `XMLCAST`, `JSON_VALUE`), you'll convert parts of the complex type back into these standard Oracle scalar types.
+    *   **For JSON Relational Duality Views:** The underlying tables for a duality view are composed of these standard SQL data types. The duality view then maps these to JSON fields.
 *   **`DUAL` Table:**
     *   While less direct, `DUAL` can be used to construct `XMLTYPE` or `JSON` literals for testing or simple insertions if not using table data. E.g., `SELECT XMLTYPE('<test/>') FROM DUAL;`.
 *   **NULL Handling (`NVL`, `COALESCE`):**
@@ -775,22 +790,23 @@ These complex types don't live in isolation. They interact with each other and w
 *   **Conditional Expressions (`CASE`, `DECODE`):**
     *   Can be used with values extracted from XML/JSON. For example, `CASE JSON_VALUE(doc, '$.status') WHEN 'active' THEN 1 ELSE 0 END`.
 *   **`ROWNUM`:**
-    *   Can be used to limit rows when querying tables containing complex types, but it doesn't directly interact with the internal structure of the complex types themselves.
+    *   Can be used to limit rows when querying tables containing complex types, or when querying JSON Relational Duality Views.
 *   **DDL (`IF NOT EXISTS` - 23ai):**
-    *   When creating tables with `CLOB`, `BLOB`, `XMLTYPE`, or `JSON` columns, the 23ai `IF NOT EXISTS` clause can be used for conditional DDL.
+    *   When creating tables with `CLOB`, `BLOB`, `XMLTYPE`, or `JSON` columns, the 23ai `IF NOT EXISTS` clause can be used for conditional DDL. This also applies to creating JSON Relational Duality Views.
 *   **Date Functions (`SYSDATE`, `TO_DATE`, `TO_CHAR`):**
     *   Dates stored within XML or JSON (often as strings) need to be converted using `TO_DATE` upon extraction, or formatted using `TO_CHAR` when constructing XML/JSON.
 *   **String Functions (`CONCAT`, `SUBSTR`, etc.):**
     *   While you should generally use dedicated XML/JSON functions for parsing, string functions might be used to prepare data *before* creating an XML/JSON document or to do rudimentary checks on `CLOB` content if it's not well-structured. `DBMS_LOB.SUBSTR` is the LOB equivalent for `SUBSTR`.
 *   **Set Operators (`MINUS`):**
-    *   Can operate on result sets that include columns of complex types, but comparison is typically based on the LOB locator or a canonicalized form, which might have nuances. Comparing the actual *content* of LOBs/XML/JSON with set operators is generally not what they are designed for.
+    *   Can operate on result sets that include columns of complex types, but comparison is typically based on the LOB locator or a canonicalized form, which might have nuances. Comparing the actual *content* of LOBs/XML/JSON with set operators is generally not what they are designed for. Duality views, being views, can be part of set operations if their `DATA` column (which is JSON) is handled appropriately in comparisons.
 *   **Hierarchical Queries (`CONNECT BY`):**
-    *   Less direct relation, but one could imagine shredding hierarchical XML/JSON into relational rows and then using `CONNECT BY` on those relational representations. The primary interaction is that XML/JSON themselves represent hierarchical data.
+    *   XML and JSON inherently represent hierarchical data. While `CONNECT BY` operates on relational data, you could shred XML/JSON into tables and then apply hierarchical queries. JSON Relational Duality Views themselves define a JSON hierarchy based on underlying relational tables, potentially involving joins that imply a hierarchy.
 *   **Analytic Functions (`RANK`, `LAG`):**
-    *   Can be used on data extracted from XML/JSON, just like with regular columns. E.g., ranking products based on a price extracted from a JSON field.
-*   **DML & Transaction Control (`INSERT`, `UPDATE`, `DELETE`, `MERGE`, `COMMIT`):**
-    *   You `INSERT` rows containing these complex types.
-    *   You `UPDATE` columns of these types (e.g., replacing an entire JSON document, or using `DBMS_LOB` to modify parts of a LOB). Oracle also provides functions for partial JSON updates (e.g., `JSON_MERGEPATCH`).
+    *   Can be used on data extracted from XML/JSON, just like with regular columns. E.g., ranking products based on a price extracted from a JSON field in a table or a duality view.
+*   **DML & Transaction Control (`INSERT`, `UPDATE`, `DELETE`, `MERGE`, `COMMIT`):** <sup class="footnote-ref"><a href="#fn11" id="fnref11">11</a></sup>
+    *   You `INSERT` rows containing these complex types into base tables.
+    *   You can `INSERT`, `UPDATE`, `DELETE` JSON documents directly through an updatable JSON Relational Duality View, and Oracle translates these to DML on the underlying tables.
+    *   You `UPDATE` columns of these types (e.g., replacing an entire JSON document, or using `DBMS_LOB` to modify parts of a LOB, or `JSON_MERGEPATCH` for partial JSON updates).
     *   `DELETE` rows containing them.
     *   `MERGE` can use these columns in its conditions (often after extracting scalar values) or update them.
     *   All operations are part of standard transaction control.
@@ -808,6 +824,7 @@ These complex types don't live in isolation. They interact with each other and w
     *   PostgreSQL's `json` stores an exact copy of the input text, while `jsonb` uses a decomposed binary format optimized for querying (similar to Oracle's default binary JSON storage).
     *   Oracle's `JSON` type (especially from 12.2 onwards, and by default in 23ai) also uses an optimized binary format (OSON). This makes Oracle's `JSON` type functionally very similar to PostgreSQL's `jsonb` in terms of performance and capabilities.
     *   Both systems offer a rich set of functions and operators for querying JSON. Syntax for path expressions and function names will differ (e.g., Oracle's `JSON_VALUE` vs. PostgreSQL's `->>` operator for extracting scalar text).
+*   **JSON Relational Duality Views:** This is a uniquely Oracle 23ai feature. PostgreSQL does not have a direct equivalent for this live, bidirectional mapping between relational tables and updatable JSON document views. PostgreSQL users might achieve similar *outcomes* (exposing relational data as JSON) using `json_agg`, `json_build_object`, and views, but these are typically read-only or require complex triggers for updatability, unlike the native Duality Views.
 
 ## Section 3: How to Use Them: Structures & Syntax (in Oracle)
 
@@ -817,7 +834,7 @@ Let's dive into the Oracle syntax. Examples can be tested in environments like O
 With syntax precise, your commands take their flight,
 `DBMS_LOB` for the big stuff, shining so bright.
 `XMLTABLE` for structures, `JSON_VALUE` for bits,
-Oracle's power, right at your fingertips!
+And Duality Views? Oracle's latest big hits!
 </div>
 
 ### 1. Large Objects (CLOB, BLOB) & `DBMS_LOB`
@@ -861,13 +878,13 @@ DECLARE
 BEGIN
     SELECT ProductImage, ProductName
     INTO v_lob_loc, v_product_name
-    FROM ProductInventory -- Note: schema prefix removed for general use
+    FROM ProductInventory 
     WHERE ProductID = 101;
     
     IF v_lob_loc IS NOT NULL THEN
         DBMS_LOB.READ(
             lob_loc => v_lob_loc,
-            amount  => v_amount,  -- This can be modified by the procedure to actual amount read
+            amount  => v_amount, 
             offset  => v_offset,
             buffer  => v_buffer
         );
@@ -894,50 +911,7 @@ DECLARE myClob CLOB; BEGIN
 END;
 /
 ```
-*   **`DBMS_LOB.CREATETEMPORARY(lob_loc OUT CLOB|BLOB, cache BOOLEAN, dur INTEGER := DBMS_LOB.SESSION)`**: Creates a temporary LOB.
-*   **`DBMS_LOB.FREETEMPORARY(lob_loc IN OUT CLOB|BLOB)`**: Frees a temporary LOB.
-*   **`DBMS_LOB.COPY(dest_lob IN OUT CLOB|BLOB, src_lob CLOB|BLOB, amount INTEGER, dest_offset INTEGER := 1, src_offset INTEGER := 1)`**: Copies part or all of a LOB.
-
-**PL/SQL Example: Reading and Appending to CLOB**
-```sql
-SET SERVEROUTPUT ON;
-DECLARE
-    vDescription CLOB;
-    vTempClob CLOB;
-    vBuffer VARCHAR2(100);
-    vAmount INTEGER := 50;
-    vOffset INTEGER := 1;
-BEGIN
-    -- Get the LOB locator
-    SELECT DescriptionText INTO vDescription
-    FROM ProductInventory WHERE ProductID = 101;
-
-    DBMS_OUTPUT.PUT_LINE('Original Length: ' || DBMS_LOB.GETLENGTH(vDescription));
-    vBuffer := DBMS_LOB.SUBSTR(vDescription, vAmount, vOffset);
-    DBMS_OUTPUT.PUT_LINE('First 50 Chars: ' || vBuffer);
-
-    -- To modify, typically use a temporary LOB or select FOR UPDATE
-    DBMS_LOB.CREATETEMPORARY(vTempClob, TRUE);
-    DBMS_LOB.COPY(vTempClob, vDescription, DBMS_LOB.GETLENGTH(vDescription)); -- Copy original
-    
-    DBMS_LOB.WRITEAPPEND(vTempClob, LENGTH(' **NEWLY APPENDED SECTION.**'), ' **NEWLY APPENDED SECTION.**');
-    DBMS_OUTPUT.PUT_LINE('New Temp Length: ' || DBMS_LOB.GETLENGTH(vTempClob));
-    DBMS_OUTPUT.PUT_LINE('New Temp First 100 Chars: ' || DBMS_LOB.SUBSTR(vTempClob, 100, 1));
-
-    -- If you wanted to update the table:
-    -- UPDATE ProductInventory SET DescriptionText = vTempClob WHERE ProductID = 101;
-    -- COMMIT;
-
-    DBMS_LOB.FREETEMPORARY(vTempClob);
-EXCEPTION
-    WHEN OTHERS THEN
-        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
-        IF DBMS_LOB.ISTEMPORARY(vTempClob) = 1 THEN
-            DBMS_LOB.FREETEMPORARY(vTempClob);
-        END IF;
-END;
-/
-```
+*   Other key `DBMS_LOB` functions: `CREATETEMPORARY`, `FREETEMPORARY`, `COPY`, `COMPARE`, `ERASE`.
 
 ### 2. XMLTYPE Data Type
 
@@ -950,138 +924,65 @@ DECLARE
     myXML XMLTYPE;
 BEGIN
     myXML := XMLTYPE.CREATEXML('<customer><id>1</id><name>John Doe</name></customer>');
-    -- Or simply: myXML := XMLTYPE('<customer><id>1</id><name>John Doe</name></customer>');
-    DBMS_OUTPUT.PUT_LINE(myXML.getClobVal()); -- Display as CLOB
+    DBMS_OUTPUT.PUT_LINE(myXML.getClobVal()); 
 END;
 /
 ```
 
 **B. Querying XMLTYPE (SQL/XML Functions):** <sup class="footnote-ref"><a href="#fn6" id="fnref6">6</a></sup>
+Key XPath symbols are `/` (child), `//` (descendant), `.` (current), `..` (parent), `*` (wildcard), `@` (attribute), `[]` (predicate), `text()`.
 
-The power of `XMLTYPE` lies in using XPath/XQuery expressions within SQL/XML functions to navigate and extract data.
-
-*   **XPath/XQuery Path Expressions - Key Symbols & Constructs:**
-    These expressions are used in functions like `XMLTABLE`, `XMLQUERY`, `XMLExists`.
-    <ul>
-        <li><strong>Core Navigation:</strong>
-            <ul>
-                <li><code>/</code>: Selects the root node (if at start) or a direct child. Ex: <code>/widgetSpecs</code>, <code>/widgetSpecs/model</code>.</li>
-                <li><code>//</code>: Selects nodes anywhere matching the selection (descendant-or-self). Ex: <code>//feature</code>.</li>
-                <li><code>.</code>: Selects the current node.</li>
-                <li><code>..</code>: Selects the parent of the current node.</li>
-                <li><code>*</code>: Wildcard, matches any element node. Ex: <code>/widgetSpecs/*</code>.</li>
-                <li><code>@</code>: Selects attributes. Ex: <code>@type</code>, or <code>feature/@type</code>.</li>
-            </ul>
-        </li>
-        <li><strong>Predicates <code>[]</code>:</strong> Filter nodes based on conditions.
-            <ul>
-                <li><code>[position]</code>: Selects by position (1-based). Ex: <code>feature[1]</code>. <code>feature[last()]</code> for the last.</li>
-                <li><code>[@attribute='value']</code>: Selects nodes where an attribute has a specific value. Ex: <code>feature[@type='performance']</code>.</li>
-                <li><code>[element='value']</code>: Selects nodes where a child element has specific text. Ex: <code>widgetSpecs[material='Titanium Alloy']</code>.</li>
-                <li><code>[expression]</code>: More complex conditions. Ex: <code>dimensions[@unit='cm']/length[. > 5]</code> (length in cm greater than 5).</li>
-            </ul>
-        </li>
-        <li><strong>Node Tests & Functions (subset):</strong>
-            <ul>
-                <li><code>text()</code>: Selects the text content of an element. Ex: <code>model/text()</code>.</li>
-                <li><code>count(node-set)</code>: Returns the number of nodes. Ex: <code>count(//feature)</code>.</li>
-                <li><code>contains(string1, string2)</code>: True if <code>string1</code> contains <code>string2</code>. Ex: <code>feature[contains(text(), 'Resistant')]</code>.</li>
-                <li><code>starts-with(string1, string2)</code>: True if <code>string1</code> starts with <code>string2</code>. Ex: <code>model[starts-with(text(), 'OWP')]</code>.</li>
-            </ul>
-        </li>
-    </ul>
-
-*   **`XMLTABLE`**: Shreds XML into relational rows and columns. Ideal for repeating XML elements.
+*   **`XMLTABLE`**: Shreds XML into relational rows and columns.
 ```sql
--- Scenario: Extract all features for product 101, showing their type and description.
 SELECT
     pi.ProductName,
     xt.FeatureType,
     xt.FeatureDescription
 FROM ProductInventory pi,
-        XMLTABLE('/widgetSpecs/features/feature' -- XPath to the repeating 'feature' elements
-            PASSING pi.SpecificationsXML         -- The XMLTYPE column
-            COLUMNS                              -- Define output columns
-                FeatureType        VARCHAR2(50)  PATH '@type', -- Get 'type' attribute
-                FeatureDescription VARCHAR2(100) PATH '.'      -- Get text content of 'feature'
+        XMLTABLE('/widgetSpecs/features/feature'
+            PASSING pi.SpecificationsXML        
+            COLUMNS                              
+                FeatureType        VARCHAR2(50)  PATH '@type', 
+                FeatureDescription VARCHAR2(100) PATH '.'      
         ) xt
 WHERE pi.ProductID = 101;
 ```
-*   **`XMLQUERY`**: Extracts XML fragments or scalar values based on an XQuery/XPath expression.
-    **`XMLCAST`**: Casts the result of `XMLQUERY` (which is `XMLTYPE`) to a SQL data type.
+*   **`XMLQUERY` & `XMLCAST`**: Extracts XML fragments or casts to SQL types.
 ```sql
--- Scenario: Get model name and length for product 101, only if material is 'Titanium Alloy'.
 SELECT
     ProductName,
     XMLCAST(
-        XMLQUERY('/widgetSpecs[material="Titanium Alloy"]/model/text()' -- Conditional path
+        XMLQUERY('/widgetSpecs/model/text()' 
                     PASSING SpecificationsXML RETURNING CONTENT)
         AS VARCHAR2(50)
-    ) AS ModelName,
-    XMLCAST(
-        XMLQuery('/widgetSpecs[material="Titanium Alloy"]/dimensions/length/text()'
-                    PASSING SpecificationsXML RETURNING CONTENT)
-        AS NUMBER
-    ) AS LengthCM
+    ) AS ModelName
 FROM ProductInventory
-WHERE ProductID = 101
-    AND XMLExists('/widgetSpecs[material="Titanium Alloy"]' PASSING SpecificationsXML); -- Ensure it exists
+WHERE ProductID = 101;
 ```
-*   **`XMLExists`**: Checks if an XQuery/XPath expression finds any nodes (returns boolean).
+*   **`XMLExists`**: Checks if an XPath expression finds any nodes.
 ```sql
--- Scenario: Find products that have a 'durability' feature.
 SELECT ProductName
 FROM ProductInventory
-WHERE XMLExists(
-    '/widgetSpecs/features/feature[@type="durability"]' -- Path checks for specific feature
-    PASSING SpecificationsXML
-);
-```
-*   **Scenario: Count performance features for each product.**
-```sql
-SELECT
-    ProductName,
-    XMLCAST(
-        XMLQUERY('count(/widgetSpecs/features/feature[@type="performance"])'
-                    PASSING SpecificationsXML RETURNING CONTENT)
-        AS NUMBER
-    ) AS PerformanceFeatureCount
-FROM ProductInventory;
+WHERE XMLExists('/widgetSpecs/features/feature[@type="durability"]' PASSING SpecificationsXML);
 ```
 
 **C. Constructing XMLTYPE (SQL/XML Functions):** <sup class="footnote-ref"><a href="#fn7" id="fnref7">7</a></sup>
+`XMLELEMENT`, `XMLFOREST`, `XMLAGG`.
 
-*   **`XMLELEMENT`**: Creates a single XML element.
-*   **`XMLFOREST`**: Creates a forest (sequence) of XML elements from columns.
-*   **`XMLAGG`**: Aggregates XML fragments into a single XML document/fragment.
 ```sql
 SELECT
-    XMLELEMENT("ProductList",
-        XMLAGG(
-            XMLELEMENT("Product",
-                XMLFOREST(
-                    p.ProductID AS "ID",
-                    p.ProductName AS "Name"
-                ),
-                XMLELEMENT("Specs", p.SpecificationsXML) -- Nesting existing XML
-            ) ORDER BY p.ProductID
-        )
-    ).getClobVal() AS AllProductsXML
-FROM ProductInventory p;
+    XMLELEMENT("Product",
+        XMLFOREST(p.ProductName AS "Name"),
+        XMLELEMENT("Details", p.SpecificationsXML) 
+    ).getClobVal() AS ProductXML
+FROM ProductInventory p WHERE p.ProductID = 101;
 ```
 
-**D. Storage Options (Oracle 23ai - TBX):**
-When creating a table, you can specify storage:
+**D. Oracle 23ai - Transportable Binary XML (TBX) Storage:**
 ```sql
 CREATE TABLE ProductSpecsAdvanced (
-    SpecID NUMBER PRIMARY KEY,
-    SpecName VARCHAR2(100),
-    -- Default is Binary XML in modern Oracle
-    DetailsXML XMLTYPE, 
-    -- Explicitly CLOB storage
-    LegacyDetailsXML XMLTYPE STORE AS CLOB,
-    -- Explicitly Oracle 23ai Transportable Binary XML
     PortableDetailsXML XMLTYPE STORE AS TRANSPORTABLE BINARY XML 
+    -- ... other columns
 );
 ```
 
@@ -1095,194 +996,192 @@ CREATE TABLE ProductSpecsAdvanced (
 DECLARE
     myJSON JSON;
 BEGIN
-    myJSON := JSON('{"name": "Gizmo", "version": 2.1, "parts": ["A", "B"]}');
-    -- For 23ai, also native constructors for JSON objects/arrays if needed for dynamic creation
-    myJSON := JSON_OBJECT('name' VALUE 'Gizmo', 'version' VALUE 2.1); 
+    myJSON := JSON('{"name": "Gizmo", "active": true, "codes": [1,2,3]}');
     DBMS_OUTPUT.PUT_LINE(JSON_SERIALIZE(myJSON PRETTY));
 END;
 /
 ```
 
 **B. Querying JSON (SQL/JSON Functions & Dot Notation):** <sup class="footnote-ref"><a href="#fn8" id="fnref8">8</a></sup>
+Key SQL/JSON path symbols: `$` (root), `.<key>` (object member), `[index]` (array element), `[*]` (array wildcard), `?()` (filter expression).
 
-Oracle's SQL/JSON path expressions are key to accessing JSON data.
-
-*   **SQL/JSON Path Expressions - Key Symbols & Constructs:**
-    These are used with dot-notation and SQL/JSON functions.
-    <ul>
-        <li><strong>Core Navigation:</strong>
-            <ul>
-                <li><code>$</code>: Represents the root of the JSON document (the context item).</li>
-                <li><code>.<key_name></code> or <code>."key name with spaces"</code>: Selects an object member. Ex: <code>$.color</code>, <code>$.rating.stars</code>.</li>
-                <li><code>['<key_name>']</code>: Alternative for object member selection, useful for keys with special characters. Ex: <code>$['rating']['reviewCount']</code>.</li>
-                <li><code>[index]</code>: Selects an array element (0-based). Ex: <code>$.connectivity[0]</code>.</li>
-                <li><code>[*]</code> (Array Wildcard): Selects all elements in an array. Ex: <code>$.connectivity[*]</code>. Often used in <code>JSON_TABLE</code>.</li>
-            </ul>
-        </li>
-        <li><strong>Filter Expressions <code>?()</code>:</strong> Applied to arrays to select elements matching a condition. <code>@</code> refers to the current array element.
-            <ul>
-                <li>Ex: <code>$.connectivity[?(@ == "NFC")]</code> (finds "NFC" in the connectivity array).</li>
-                <li>Ex: <code>$.reviews[?(@.rating > 4)]</code> (finds reviews in an array where rating is > 4).</li>
-                <li>Operators: <code>==</code>, <code>!=</code>, <code>></code>, <code>>=</code>, <code><</code>, <code><=</code>, <code>&&</code> (AND), <code>||</code> (OR), <code>!</code> (NOT).</li>
-                <li>Existence: <code>?(@.optionalField)</code> (true if <code>optionalField</code> exists).</li>
-            </ul>
-        </li>
-        <li><em>Note:</em> While the JSONPath standard includes functions like <code>.size()</code> or <code>.type()</code>, their direct use within Oracle SQL/JSON path expressions for functions like <code>JSON_VALUE</code> can be limited. Oracle often provides SQL-level means for such operations (e.g., checking array element existence <code>$.array[1]</code> to infer size, or using `JSON_TABLE` for complex iteration).</li>
-    </ul>
-
-*   **Dot Notation (Simple Path Access):** For quick and readable access to object members.
+*   **Dot Notation (Simple Path Access):**
 ```sql
--- Scenario: Get product name, its color, and rating stars.
 SELECT
     pi.ProductName,
-    pi.AttributesJSON.color AS ProductColor,       -- Simple scalar access
-    pi.AttributesJSON.rating.stars AS RatingStars  -- Nested scalar access
+    pi.AttributesJSON.color AS ProductColor,       
+    pi.AttributesJSON.rating.stars AS RatingStars  
 FROM ProductInventory pi
 WHERE pi.ProductID = 101;
 ```
-*   **`JSON_VALUE`**: Extracts a scalar value from JSON.
+*   **`JSON_VALUE`**: Extracts a scalar value.
 ```sql
--- Scenario: Get color, weight, and eco-friendly status for product 101.
 SELECT
     ProductName,
     JSON_VALUE(AttributesJSON, '$.color') AS Color,
     JSON_VALUE(AttributesJSON, '$.weightGrams' RETURNING NUMBER) AS Weight,
-    JSON_VALUE(AttributesJSON, '$.ecoFriendly' RETURNING BOOLEAN) AS IsEcoFriendly -- 23ai BOOLEAN
-    -- For older versions or if JSON stores boolean as string "true"/"false":
-    -- JSON_VALUE(AttributesJSON, '$.ecoFriendly' RETURNING VARCHAR2(5)) AS IsEcoFriendlyString
-FROM ProductInventory
-WHERE ProductID = 101;
+    JSON_VALUE(AttributesJSON, '$.ecoFriendly' RETURNING BOOLEAN) AS IsEcoFriendly -- 23ai
+FROM ProductInventory WHERE ProductID = 101;
 ```
-*   **`JSON_QUERY`**: Extracts a JSON object or array (a fragment).
+*   **`JSON_QUERY`**: Extracts a JSON object or array.
 ```sql
--- Scenario: Get the connectivity array and the entire rating object for product 101.
 SELECT
     ProductName,
-    JSON_QUERY(AttributesJSON, '$.connectivity[0]') AS SpecificConnectivity,
-    JSON_QUERY(AttributesJSON, '$.connectivity[*]') AS ConnectivityByRow,
     JSON_QUERY(AttributesJSON, '$.connectivity') AS ConnectivityArray,
     JSON_QUERY(AttributesJSON, '$.rating') AS RatingObject
-FROM ProductInventory
-WHERE ProductID = 101;
+FROM ProductInventory WHERE ProductID = 101;
 ```
-*   **`JSON_TABLE`**: Shreds JSON (typically an array of objects or simple values) into relational rows and columns.
+*   **`JSON_TABLE`**: Shreds JSON into relational rows and columns.
 ```sql
--- Scenario: List all connectivity options for product 101 as separate rows.
-SELECT
-    pi.ProductName,
-    JSON_QUERY(AttributesJSON, '$.connectivity') AS Connectivity,
-    jt.Device1, jt.Device2, jt.Device3
-FROM CONQUERING_COMPLEXITIES_LECTURE.ProductInventory pi,
-    JSON_TABLE(pi.AttributesJSON, '$.connectivity'
-        COLUMNS (
-            Device1 VARCHAR2(20) PATH '$[0]',
-            Device2 VARCHAR2(20) PATH '$[1]',
-            Device3 VARCHAR2(20) PATH '$[2]'
-        )
-    ) jt
-WHERE pi.ProductID = 101;
-
--- Scenario: Extract star rating and review count from the 'rating' object.
-SELECT
-    pi.ProductName,
-    jt.Stars,
-    jt.ReviewCount
+SELECT pi.ProductName, jt.ConnectionType
 FROM ProductInventory pi,
-        JSON_TABLE(pi.AttributesJSON, '$.rating' -- Path to the 'rating' object
-            COLUMNS (
-                Stars        NUMBER PATH '$.stars',
-                ReviewCount  NUMBER PATH '$.reviewCount'
-            )
-        ) jt
+     JSON_TABLE(pi.AttributesJSON, '$.connectivity[*]' -- Path to array elements
+        COLUMNS (ConnectionType VARCHAR2(20) PATH '$')
+     ) jt
 WHERE pi.ProductID = 101;
 ```
 *   **`JSON_EXISTS`**: Checks if a JSON path exists and optionally matches a condition.
 ```sql
--- Scenario: Find products with a star rating greater than 4.5.
-SELECT ProductName
-FROM ProductInventory
-WHERE JSON_EXISTS(AttributesJSON, '$.rating?(@.stars > 4.5)'); -- Filter on 'stars' within 'rating'
-
--- Scenario: Find products that list "NFC" as a connectivity option.
-SELECT ProductName
-FROM ProductInventory
-WHERE JSON_EXISTS(AttributesJSON, '$.connectivity?(@ == "NFC")');
+SELECT ProductName FROM ProductInventory
+WHERE JSON_EXISTS(AttributesJSON, '$.rating?(@.stars > 4.5)');
 ```
 
 **C. Constructing JSON (SQL/JSON Functions):** <sup class="footnote-ref"><a href="#fn9" id="fnref9">9</a></sup>
-
-*   **`JSON_OBJECT`**: Creates a JSON object.
-*   **`JSON_ARRAY`**: Creates a JSON array.
-*   **`JSON_ARRAYAGG`**: Aggregates values into a JSON array.
+`JSON_OBJECT`, `JSON_ARRAY`, `JSON_ARRAYAGG`.
 ```sql
 SELECT
     JSON_OBJECT(
         'productID' VALUE p.ProductID,
         'productName' VALUE p.ProductName,
-        'mainColor' VALUE JSON_VALUE(p.AttributesJSON, '$.color'), -- Extract existing scalar
-        'attributes' VALUE p.AttributesJSON -- Nest existing JSON object
-    ) AS ProductJSON
-FROM ProductInventory p
-WHERE p.ProductID = 102;
+        'mainColor' VALUE JSON_VALUE(p.AttributesJSON, '$.color')
+    ) AS ProductSummaryJSON
+FROM ProductInventory p WHERE p.ProductID = 102;
 ```
 
-**D. Oracle 23ai - JSON Relational Duality Views:** <sup class="footnote-ref"><a href="#fn4" id="fnref4">4</a></sup>
-Allows unified access to relational data as JSON documents.
+**D. Oracle 23ai - JSON Relational Duality Views:** <sup class="footnote-ref"><a href="#fn10" id="fnref10">10</a></sup>
 
-```sql
--- Duality View over EmployeeDirectory
-CREATE OR REPLACE JSON RELATIONAL DUALITY VIEW EmployeeDV AS
-SELECT JSON {
-    'employeeId'     : e.EmployeeID,
-    'name'           : e.FullName,
-    'role'           : e.JobRole,
-    'department'     : e.DepartmentName,
-    'contact'        : e.ContactInfoJSON, -- Embed the existing JSON column
-    'updatableFields': [e.JobRole, e.ContactInfoJSON] 
-}
-FROM EmployeeDirectory e
-WITH UPDATE (JobRole, ContactInfoJSON) 
-     INSERT 
-     DELETE;
+JSON Relational Duality Views offer a unified way to work with relational data as JSON documents. They are defined using SQL or GraphQL. The view maps table columns to JSON fields, and you can specify updatability.
 
--- Now you can query EmployeeDV as if it's a collection of JSON documents
-SELECT data FROM EmployeeDV WHERE JSON_VALUE(data, '$.employeeId') = 1;
-
--- Example: Update job role for employee 1 via the Duality View using JSON_MERGEPATCH
--- This operation will be translated to an UPDATE on the base EmployeeDirectory table.
--- UPDATE EmployeeDV dv
--- SET dv.data = JSON_MERGEPATCH(dv.data, '{"role": "Senior Lead Developer"}')
--- WHERE JSON_VALUE(dv.data, '$.employeeId') = 1;
--- COMMIT;
-```
 <div class="rhyme">
-Duality Views, a 23ai trick,
-Relational and JSON, pick your click!
-Update one side, the other will know,
-A harmonious data ebb and flow.
+Duality Views, a 23ai design,
+Relational and JSON, truly align.
+Define with a `SELECT`, a `JSON` so grand,
+Update through the view, data's at your command!
 </div>
 
-**E. Oracle 23ai - JSON Collection Tables:**
-This is a design pattern well-supported by Oracle.
+**Syntax Structure (SQL):**
 ```sql
--- SensorReadings table created earlier is an example:
--- CREATE TABLE SensorReadings (
---     ReadingID RAW(16) DEFAULT SYS_GUID() PRIMARY KEY,
---     DeviceID VARCHAR2(50),
---     ReadingTime TIMESTAMP DEFAULT SYSTIMESTAMP,
---     PayloadJSON JSON CHECK (PayloadJSON IS JSON)
--- );
+CREATE [OR REPLACE] JSON RELATIONAL DUALITY VIEW view_name AS
+SELECT JSON {
+    '_id'              : root_table_alias.primary_key_column,
+    'json_field1'      : root_table_alias.column1,
+    'json_field_object': { -- Nested object from same table
+        'nested_field1': root_table_alias.column2 
+    },
+    'json_field_array' : [ -- Array from a joined table
+        SELECT JSON {
+            'child_field1': child_table_alias.child_column1
+        }
+        FROM child_table child_table_alias
+        WHERE child_table_alias.foreign_key_column = root_table_alias.primary_key_column
+        -- Optional: Add WITH INSERT UPDATE DELETE for child table updatability here
+    ] -- WITH clause for array elements
+    -- Other fields from root_table or joined tables
+}
+FROM root_table root_table_alias -- [joins to other tables]
+WITH [NO]UPDATE ([column_list]) 
+     [NO]INSERT ([column_list]) 
+     [NO]DELETE;
+     -- Use (NO)CHECK on columns for ETAG calculation
+```
 
+*   **Key Elements:**
+    *   `SELECT JSON { ... }`: Defines the structure of the JSON documents the view will produce.
+    *   `'_id'`: A mandatory top-level field in the JSON document, typically mapped to the primary key of the root table of the view. It uniquely identifies the document.
+    *   `'_metadata'`: An automatically generated top-level field containing:
+        *   `etag`: For optimistic concurrency control. It's a hash of the document fields marked for `CHECK` (default is all updatable, non-generated fields).
+        *   `asof`: The System Change Number (SCN) at the time the document was fetched.
+    *   `FROM root_table ...`: Specifies the main table for the view.
+    *   `WITH [NO]UPDATE / [NO]INSERT / [NO]DELETE`: Declaratively specifies which operations are allowed on the view (and thus on the underlying tables). You can also specify this at the level of nested objects/arrays from joined tables.
+    *   `[NO]CHECK` annotation (used with `WITH` on a column or table in the `SELECT JSON` part): Determines if a column's value contributes to the `etag` calculation. By default, fields are checked. `WITH NOCHECK` excludes a field from `etag` calculation.
+
+**Example using `EmployeeDirectory`:**
+```sql
+CREATE OR REPLACE JSON RELATIONAL DUALITY VIEW EmployeeDocumentDV AS
+SELECT JSON {
+    '_id'              : e.EmployeeID, -- Document identifier
+    'fullName'         : e.FullName,
+    'role'             : e.JobRole,
+    'department'       : e.DepartmentName,
+    'contactDetails'   : e.ContactInfoJSON, -- Embedding existing JSON column
+    'lastUpdatedSCN'   : ORA_ROWSCN -- Example of adding a non-updatable field from base table
+    -- _metadata (with etag and asof) is implicitly added
+}
+FROM EmployeeDirectory e
+WITH INSERT -- Allows inserting new employees through the view
+     UPDATE (JobRole, ContactInfoJSON) -- Allows updating role and contact info
+     DELETE; -- Allows deleting employees through the view
+    -- All fields from EmployeeDirectory will contribute to ETAG by default
+```
+
+**Querying the Duality View:**
+The Duality View has a single column (usually named `DATA` by default if not aliased) of `JSON` type.
+```sql
+-- Retrieve Ada Coder's document
+SELECT dv.data FROM EmployeeDocumentDV dv
+WHERE JSON_VALUE(dv.data, '$._id') = 1;
+
+-- Retrieve employees in 'Technology' department
+SELECT JSON_SERIALIZE(dv.data PRETTY) FROM EmployeeDocumentDV dv
+WHERE JSON_VALUE(dv.data, '$.department') = 'Technology';
+```
+
+**Updating through the Duality View:** <sup class="footnote-ref"><a href="#fn11" id="fnref11">11</a></sup>
+If the view is defined with update capabilities, you can modify the JSON documents.
+```sql
+-- Update Ada Coder's role
+UPDATE EmployeeDocumentDV dv
+SET dv.data = JSON_MERGEPATCH(dv.data, '{"role": "Principal Developer"}')
+WHERE JSON_VALUE(dv.data, '$._id') = 1
+  AND dv.data."_metadata".etag = (SELECT d.data."_metadata".etag 
+                                  FROM EmployeeDocumentDV d 
+                                  WHERE JSON_VALUE(d.data, '$._id') = 1); -- Optimistic Locking
+COMMIT;
+
+-- Check the base table
+SELECT EmployeeID, FullName, JobRole FROM EmployeeDirectory WHERE EmployeeID = 1;
+```
+*Note on optimistic locking:* The `ETAG` from the `_metadata` field is crucial. When updating, you typically provide the `ETAG` you last read. Oracle checks if the `ETAG` in the database still matches. If not (meaning someone else changed the data), the update fails, preventing lost updates. The example above shows one way to fetch the current ETAG for the condition. Simpler client-side tools might handle ETAGs via HTTP headers (e.g., `If-Match`).
+
+**Inserting through the Duality View:**
+```sql
+INSERT INTO EmployeeDocumentDV (data)
+VALUES (
+    JSON('{
+        "_id": 3, 
+        "fullName": "Dev OpsGuru",
+        "role": "Senior DevOps Engineer",
+        "department": "Operations",
+        "contactDetails": {"email": "dev.ops@example.com", "pager": "555-0102"}
+    }')
+);
+COMMIT;
+
+-- Verify in base table
+SELECT * FROM EmployeeDirectory WHERE EmployeeID = 3;
+```
+
+**E. Oracle 23ai - JSON Collection Tables (Pattern):**
+As shown in the setup, the `SensorReadings` table is a good example.
+```sql
 -- Querying a JSON Collection Table
--- Scenario: Find recent temperature readings from 'ServerRoomA'.
 SELECT
     sr.DeviceID,
     sr.ReadingTime,
     JSON_VALUE(sr.PayloadJSON, '$.temperature' RETURNING NUMBER) AS Temperature,
-    JSON_VALUE(sr.PayloadJSON, '$.unit') AS Unit
+    JSON_VALUE(sr.PayloadJSON, '$.location') AS Location
 FROM SensorReadings sr
 WHERE JSON_VALUE(sr.PayloadJSON, '$.location') = 'ServerRoomA'
-  AND JSON_EXISTS(sr.PayloadJSON, '$.temperature') -- Ensure temperature reading exists
 ORDER BY sr.ReadingTime DESC;
 ```
 
@@ -1300,6 +1199,8 @@ And `jsonb`'s power, so fast and so lean,
 Mirrored in Oracle's `JSON` type, sharp and keen!
 Though functions may differ, and syntax may bend,
 The core mission's the same: complex data to send, store, and extend.
+Duality Views, though, are Oracle's own art,
+A relational-JSON fresh new start!
 </div>
 
 | Feature/Concept       | PostgreSQL Approach                      | Oracle Approach                                       | Key Differences/Nuances                                                                                                                               |
@@ -1312,47 +1213,42 @@ The core mission's the same: complex data to send, store, and extend.
 | **JSON Querying**     | Operators (`->`, `->>`), functions (`jsonb_extract_path_text`) | Dot-notation, `JSON_VALUE`, `JSON_QUERY`, `JSON_TABLE` | Oracle's SQL/JSON functions are standardized. Dot-notation is convenient. Path expressions are powerful.                                                  |
 | **JSON Construction** | `to_json()`, `json_build_object()`, `json_build_array()`, `json_agg()` | `JSON_OBJECT`, `JSON_ARRAY`, `JSON_ARRAYAGG`        | Names differ, but functionality is similar. Oracle's functions are part of the SQL/JSON standard.                                                  |
 | **Manipulating LOBs** | String/bytea functions, large object API | `DBMS_LOB` package                                    | Oracle's `DBMS_LOB` provides a very comprehensive API for piecewise LOB operations, temporary LOBs, etc.                                                |
+| **Relational-JSON Views** | Manual views with `json_build_object`, etc. (typically read-only or complex triggers for updates) | `JSON RELATIONAL DUALITY VIEW` (natively updatable, bidirectional) | Oracle's Duality Views are a native, deeply integrated feature for live, updatable dual-paradigm access. No direct equivalent in PostgreSQL. |
 
-**Example: Extracting a JSON scalar value**
-
-*   **PostgreSQL (`jsonb`):**
-```sql
--- Assuming a table 'products' with a 'attributes' jsonb column
--- SELECT attributes->>'color' FROM products WHERE id = 101;
-```
-*   **Oracle (`JSON`):**
-```sql
-SELECT JSON_VALUE(AttributesJSON, '$.color') FROM ProductInventory WHERE ProductID = 101;
--- Or using dot-notation:
--- SELECT AttributesJSON.color FROM ProductInventory WHERE ProductID = 101;
-```
-
-The shift involves learning Oracle's specific function names, path syntaxes, and leveraging Oracle-specific features like `DBMS_LOB` or the comprehensive SQL/XML and SQL/JSON standards implementation.
 
 ## Section 4: Why Use Them? (Advantages in Oracle)
 
 Using these specialized types isn't just for show; they bring real power.
 
 *   **LOBs (CLOB, BLOB):**
-    *   **Store Massive Data:** They break the `VARCHAR2` size limits (4000 bytes or 32767 bytes depending on configuration), handling gigabytes or terabytes.
+    *   **Store Massive Data:** They break the `VARCHAR2` size limits.
         <div class="rhyme">"When your data's a giant, a `VARCHAR2` too small, `CLOB` and `BLOB` stand up tall."</div>
     *   **Efficient Handling:** LOB locators mean the database doesn't move huge data unnecessarily.
-    *   **Granular Control with `DBMS_LOB`:** Read, write, append, or trim specific parts of LOBs without loading the entire thing.
+    *   **Granular Control with `DBMS_LOB`:** Read, write, append, or trim specific parts of LOBs.
 *   **XMLTYPE:**
     *   **XML-Awareness:** Ensures well-formedness and allows schema validation.
-    *   **Structured Querying:** XPath and XQuery allow precise navigation and extraction, far superior to string parsing a CLOB.
-    *   **Optimized Storage:** Binary XML and TBX (23ai) offer faster querying and potentially smaller storage than plain CLOB.
-    *   **Indexing:** Specialized `XMLIndex` can drastically speed up queries on XML content.
+    *   **Structured Querying:** XPath and XQuery allow precise navigation and extraction.
+    *   **Optimized Storage:** Binary XML and TBX (23ai) offer faster querying.
+    *   **Indexing:** Specialized `XMLIndex` can drastically speed up queries.
 *   **JSON Data Type:**
     *   **Format Validation:** Guarantees stored data is valid JSON.
-    *   **Optimized Performance:** Native binary storage (default in 23ai) means faster queries and updates compared to JSON in `CLOB`/`VARCHAR2`. *It's like pre-chewing your food for faster digestion!*
-    *   **Powerful Querying:** SQL/JSON path expressions, dot-notation, and functions like `JSON_TABLE` provide flexible and efficient data access.
-    *   **Indexing:** Supports various indexing strategies for fast lookups within JSON documents.
-    *   **Schema Flexibility:** Great for evolving data structures where a rigid relational model is too restrictive.
+    *   **Optimized Performance:** Native binary storage (default in 23ai) means faster queries and updates.
+    *   **Powerful Querying:** SQL/JSON path expressions, dot-notation, and functions.
+    *   **Indexing:** Supports various indexing strategies for fast lookups.
+    *   **Schema Flexibility:** Great for evolving data structures.
 *   **Oracle 23ai Enhancements:**
-    *   **Transportable Binary XML (TBX):** Simplifies moving binary XML data across systems, enhancing portability.
-    *   **JSON Relational Duality Views:** Unprecedented flexibility to treat relational data as JSON and vice-versa, bridging two worlds seamlessly. *It's like having a universal translator for your data models!*
-    *   **JSON Collection Tables (Pattern):** Provides a robust way to implement document-style storage with the power of Oracle's transactional engine.
+    *   **Transportable Binary XML (TBX):** Simplifies moving binary XML data.
+    *   **JSON Relational Duality Views:** <sup class="footnote-ref"><a href="#fn10" id="fnref10">10</a></sup> Unprecedented flexibility to treat relational data as JSON and vice-versa.
+        *   Combines document advantages (easy object mapping, get/put access) with relational strengths (consistency, normalization, efficient joins).
+        *   Applications can choose their preferred data access model (document API or SQL) on the *same* data.
+        *   Automatic ETAG generation facilitates optimistic concurrency control for document operations.
+        <div class="rhyme">
+            A view of two worlds, yet the data's the same,
+            Duality's power, a whole new game!
+            Change JSON or tables, it syncs with a flair,
+            No copies, no fuss, just integrated care.
+        </div>
+    *   **JSON Collection Tables (Pattern):** Provides a robust way to implement document-style storage with Oracle's transactional engine.
 
 ## Section 5: Watch Out! (Disadvantages & Pitfalls in Oracle)
 
@@ -1364,75 +1260,85 @@ Complex types, a powerful array,
 But misuse them, and you might rue the day!
 Mind your LOB space, your paths, and your casts,
 Or performance gremlins will make your queries the lasts!
+Duality views, while a wondrous new tool,
+Demand thoughtful design to keep your data cool.
 </div>
 
 *   **LOBs (CLOB, BLOB):**
-    *   **LOB Locators vs. Content:** Remember you're often dealing with locators. Fetching entire LOBs into PL/SQL variables in a loop can kill performance. Use `DBMS_LOB` for piecewise access.
-    *   **Temporary LOBs:** If you create temporary LOBs with `DBMS_LOB.CREATETEMPORARY`, *you must* free them with `DBMS_LOB.FREETEMPORARY` to avoid consuming temporary tablespace. *It's like forgetting to return your library books – eventually, there's no space left!*
-    *   **Storage Overhead:** LOBs have more overhead than `VARCHAR2`. Don't use them for small, frequently accessed strings.
+    *   **LOB Locators vs. Content:** Fetching entire LOBs unnecessarily can harm performance.
+    *   **Temporary LOBs:** *Must* be freed with `DBMS_LOB.FREETEMPORARY`.
+    *   **Storage Overhead:** Not for small, frequently accessed strings.
 *   **XMLTYPE:**
-    *   **Complexity:** XPath/XQuery can have a steep learning curve.
-    *   **Performance with CLOB Storage:** If `XMLTYPE` is stored as `CLOB`, queries will be slower due to runtime parsing. Binary XML or TBX is generally preferred for performance.
-    *   **Overkill for Simple Data:** If your "XML" is just a single value in a tag, `XMLTYPE` might be more than you need.
+    *   **Complexity:** XPath/XQuery can be complex.
+    *   **Performance with CLOB Storage:** Binary XML or TBX is generally preferred.
 *   **JSON Data Type:**
-    *   **Path Errors:** Invalid JSON paths in functions like `JSON_VALUE` often return `NULL` silently, which can mask errors or lead to unexpected logic. Careful error handling (`ON ERROR` clauses) or checks (`JSON_EXISTS`) are important.
-    *   **`JSON_VALUE` Truncation:** If the `RETURNING` data type in `JSON_VALUE` is too small for the extracted string, it will be truncated (or error, depending on settings). Specify `VARCHAR2(4000)` or `CLOB` for potentially long strings.
-    *   **Dot-Notation Limitations:** While convenient, dot-notation has limitations with arrays or complex conditional access that SQL/JSON functions handle better.
-    *   **Type Handling:** JSON itself is loosely typed. Be explicit with `RETURNING` clauses in `JSON_VALUE` to ensure correct data type conversions to SQL.
-*   **Oracle 23ai - JSON Relational Duality Views:**
-    *   **Mapping Complexity:** Designing the mapping from JSON updates to underlying relational DML in the Duality View definition needs care to ensure data integrity and handle all cases correctly. Complex updates might be harder to define or debug.
-    *   **Performance of Updates:** While powerful, updates through the JSON view still translate to DML on base tables. Very complex JSON patches affecting many underlying rows/tables could have performance implications if not designed well.
+    *   **Path Errors:** Invalid JSON paths often return `NULL` silently. Use `ON ERROR` clauses or `JSON_EXISTS`.
+    *   **`JSON_VALUE` Truncation:** Ensure `RETURNING` data type is sufficient.
+    *   **Type Handling:** Be explicit with `RETURNING` clauses for correct SQL type conversions.
+*   **Oracle 23ai - JSON Relational Duality Views:** <sup class="footnote-ref"><a href="#fn10" id="fnref10">10</a></sup>
+    *   **Design Complexity:** The definition of the duality view, especially the mapping of JSON structure to underlying tables and the updatability annotations (`WITH UPDATE INSERT DELETE`, `(NO)CHECK`), requires careful design. A poorly designed view can lead to unexpected update behavior or performance issues.
+    *   **Updatability Rules:** Understanding which parts of the JSON document are updatable (and how those updates translate to the base tables) is crucial. The `(NO)UPDATE`, `(NO)INSERT`, `(NO)DELETE` annotations at table and column levels within the view definition dictate this. Incorrect annotations can lead to errors or prevent desired modifications. (See Chapter 4 of Duality Guide).
+    *   **ETAG Scope and `(NO)CHECK`:** The `etag` is vital for optimistic concurrency. Developers must understand which fields contribute to the `etag` (those with `CHECK` annotation, which is default for updatable fields). Using `NOCHECK` inappropriately can bypass concurrency control for certain fields.
+    *   **Performance of Complex Updates:** While reads can be highly optimized, updates through a duality view that affect multiple underlying tables or involve complex transformations might incur overhead. The database still needs to decompose the JSON and apply changes to relational rows.
+    *   **Not a Magic Bullet for Bad Schema:** Duality views provide flexible access but don't inherently fix a poorly designed underlying relational schema if the goal is efficient JSON document representation. The relational schema should still be reasonably aligned with the desired document structures for best results.
+    *   **Learning Curve:** Being a newer and powerful feature, there's a learning curve to fully master its capabilities and best practices.
 
-By understanding these nuances, you'll be well-equipped to harness the full potential of Oracle's complex data types!
+By understanding these nuances, you'll be well-equipped to harness the full potential of Oracle's complex data types and the innovative JSON Relational Duality Views!
 </div>
 
 <div class="footnotes">
     <hr>
     <ol>
     <li id="fn1">
-        <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/cncpt/database-concepts.pdf" title="Details on Oracle 23ai LOB Data Types, originally from Oracle Database 23c SQL Language Reference, 'Data Types' (CLOB/BLOB sections)">Overview of LOBs (PDF Section)</a>.
+        <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/cncpt/introduction-to-oracle-database.html#GUID-45894630-203B-46FD-9973-21135B0578E4" title="Details on Oracle 23ai LOB Data Types, originally from Oracle Database 23c SQL Language Reference, 'Data Types' (CLOB/BLOB sections)">Overview of LOBs</a>.
         <a href="#fnref1">↩</a>
         </p>
     </li>
     <li id="fn2">
-    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/cncpt/database-concepts.pdf" title="Oracle 23ai XMLType & TBX Documentation, originally from Oracle Database 23c XML DB Developer's Guide, 'XMLType Storage and Transportable Binary XML'">Overview of XML in Oracle Database (PDF Section)</a>.
+    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/adxdb/overview-of-xml-in-oracle-database.html#GUID-199C5878-8321-497C-940F-6C91E9C06A3D" title="Oracle 23ai XMLType & TBX Documentation, originally from Oracle Database 23c XML DB Developer's Guide, 'XMLType Storage and Transportable Binary XML'">Overview of XML in Oracle Database</a>.
     <a href="#fnref2">↩</a>
     </p>
     </li>
     <li id="fn3">
-    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/cncpt/database-concepts.pdf" title="Oracle 23ai JSON Data Type, originally from Oracle Database 23c JSON Developer's Guide, 'JSON Data Type in Oracle Database'">Overview of JSON in Oracle Database (PDF Section)</a>.
+    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/overview-of-json-in-oracle-database.html#GUID-E9C08A61-9A4D-417F-9A7E-95A82C0A5DE3" title="Oracle 23ai JSON Data Type, originally from Oracle Database 23c JSON Developer's Guide, 'JSON Data Type in Oracle Database'">Overview of JSON in Oracle Database</a>.
     <a href="#fnref3">↩</a>
     </p>
     </li>
     <li id="fn4">
-    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/cncpt/database-concepts.pdf" title="Oracle 23ai JSON Relational Duality, originally from Oracle Database 23c JSON Developer's Guide, 'JSON Relational Duality Views'">Overview of JSON in Oracle Database (PDF Section)</a>.
+    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/json-relational-duality-views.html#GUID-4093D6A6-2987-459F-9F6B-17A45E017355" title="Oracle 23ai JSON Relational Duality, originally from Oracle Database 23c JSON Developer's Guide, 'JSON Relational Duality Views'">JSON Relational Duality Views (Main Doc)</a>.
     <a href="#fnref4">↩</a>
     </p>
     </li>
     <li id="fn5">
-    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/cncpt/database-concepts.pdf" title="Oracle 23ai DBMS_LOB Package, originally from Oracle Database 23c PL/SQL Packages and Types Reference, 'DBMS_LOB Package'">Overview of LOBs (PDF Section)</a>.
+    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/arpls/DBMS_LOB.html#TITLE_DBMS_LOB" title="Oracle 23ai DBMS_LOB Package, originally from Oracle Database 23c PL/SQL Packages and Types Reference, 'DBMS_LOB Package'">DBMS_LOB Package Reference</a>.
     <a href="#fnref5">↩</a>
     </p>
     </li>
     <li id="fn6">
-    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/cncpt/database-concepts.pdf" title="Oracle 23ai XML Query Functions, originally from Oracle Database 23c SQL Language Reference, 'SQL/XML Query Functions'">Overview of XML in Oracle Database (PDF Section)</a>.
+    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/SQL-XML-Query-Functions.html#GUID-5C183384-91A3-452E-9D2E-436A307CE2E2" title="Oracle 23ai XML Query Functions, originally from Oracle Database 23c SQL Language Reference, 'SQL/XML Query Functions'">SQL/XML Query Functions</a>.
     <a href="#fnref6">↩</a>
     </p>
     </li>
     <li id="fn7">
-    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/cncpt/database-concepts.pdf" title="Oracle 23ai XML Generation Functions, originally from Oracle Database 23c SQL Language Reference, 'SQL/XML Generation Functions'">Overview of XML in Oracle Database (PDF Section)</a>.
+    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/SQL-XML-Generation-Functions.html#GUID-9B76227A-200B-4D0A-BD4D-829254F80D26" title="Oracle 23ai XML Generation Functions, originally from Oracle Database 23c SQL Language Reference, 'SQL/XML Generation Functions'">SQL/XML Generation Functions</a>.
     <a href="#fnref7">↩</a>
     </p>
     </li>
     <li id="fn8">
-    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/cncpt/database-concepts.pdf" title="Oracle 23ai JSON Query Functions, originally from Oracle Database 23c SQL Language Reference, 'SQL/JSON Query Functions'">Overview of JSON in Oracle Database (PDF Section)</a>.
+    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/SQL-JSON-Query-Functions.html#GUID-0798597C-4798-499C-A21C-3D7A2E93A07B" title="Oracle 23ai JSON Query Functions, originally from Oracle Database 23c SQL Language Reference, 'SQL/JSON Query Functions'">SQL/JSON Query Functions</a>.
     <a href="#fnref8">↩</a>
     </p>
     </li>
     <li id="fn9">
-    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/cncpt/database-concepts.pdf" title="Oracle 23ai JSON Construction Functions, originally from Oracle Database 23c SQL Language Reference, 'SQL/JSON Generation Functions'">Overview of JSON in Oracle Database (PDF Section)</a>.
+    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/SQL-JSON-Generation-Functions.html#GUID-D58D962E-C107-496B-808C-E85A257DE287" title="Oracle 23ai JSON Construction Functions, originally from Oracle Database 23c SQL Language Reference, 'SQL/JSON Generation Functions'">SQL/JSON Generation Functions</a>.
     <a href="#fnref9">↩</a>
     </p>
+    </li>
+    <li id="fn10">
+      <p>Oracle Database JSON-Relational Duality Developer's Guide, 23ai. This guide provides comprehensive details on creating, using, and managing JSON Relational Duality Views. For example, see <em>Chapter 1: Overview of JSON-Relational Duality Views</em> and <em>Chapter 3: Creating Duality Views</em>. (Based on provided PDF F57229-11) <a href="#fnref10" title="Jump back to footnote 10 in the text">↩</a></p>
+    </li>
+    <li id="fn11">
+      <p>Oracle Database JSON-Relational Duality Developer's Guide, 23ai, <em>Chapter 5: Using JSON-Relational Duality Views</em>, covers inserting, updating, and deleting documents through duality views, including examples of using ETAGs for optimistic concurrency. (Based on provided PDF F57229-11) <a href="#fnref11" title="Jump back to footnote 11 in the text">↩</a></p>
     </li>
     </ol>
 </div>

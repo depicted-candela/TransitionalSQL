@@ -1082,52 +1082,32 @@ SELECT ProductName, IsActive FROM Products WHERE ProductName IN ('SuperPhone X v
 
 **2. JSON Relational Duality View for Employees (Oracle 23ai):**
 ```sql
-CREATE OR REPLACE JSON RELATIONAL DUALITY VIEW EmployeeDataDV AS
+CREATE OR REPLACE JSON RELATIONAL DUALITY VIEW CONQUERINGCOMPLEXITIES.EmployeeDataDV AS
 SELECT JSON {
-    'employeeId'     : e.EmployeeID,
-    'fullName'       : e.FirstName || ' ' || e.LastName,
-    'jobTitle'       : e.JobTitle WITH UPDATE, -- Allow update of JobTitle
-    'email'          : e.Email WITH UPDATE,    -- Allow update of Email
-    'department'     : JSON_OBJECT(
-                         'name'     VALUE d.DepartmentName,
-                         'location' VALUE d.Location
-                       ),
-    'profileDetails' : e.EmployeeProfileJSON -- Embeds the existing JSON column
-                                            -- To make EmployeeProfileJSON updatable (full replacement):
-                                            -- 'profileDetails' : e.EmployeeProfileJSON WITH UPDATE
-}
-FROM EmployeesRelational e
-JOIN DepartmentsRelational d ON e.DepartmentID = d.DepartmentID
+    '_id'               : e.EMPLOYEEID, -- _id is mandatory in Oracle instead of employeeId and the same variable (e.EMPLOYEEID) can't be used twice
+    'employeeId'        : e.EMPLOYEEID, -- creates errors
+    'fullName'          : (e.FIRSTNAME || ' ' || e.LASTNAME),
+    'jobTitle'          : e.JOBTITLE WITH UPDATE,
+    'email'             : e.EMAIL WITH UPDATE,
+    'department'        : ( -- Nested object from DEPARTMENTSRELATIONAL
+                            SELECT JSON {
+                                'id'       : d.DEPARTMENTID,    -- mandatory for the duality to have the fk that is the pk in the correlated table, its absence makes an error
+                                'name'     : d.DEPARTMENTNAME,
+                                'location' : d.LOCATION
+                            }
+                            FROM CONQUERINGCOMPLEXITIES.DEPARTMENTSRELATIONAL d
+                            WITH NOINSERT NOUPDATE NODELETE
+                            WHERE d.DEPARTMENTID = e.DEPARTMENTID
+                        ),
+    'profileDetails'    : e.EMPLOYEEPROFILEJSON
+} FROM CONQUERINGCOMPLEXITIES.EMPLOYEESRELATIONAL e
+WITH UPDATE INSERT DELETE;
 -- The WITH UPDATE on individual fields in the JSON projection defines what can be updated.
 -- For more complex updates (e.g., changing department by name might need specific view logic),
 -- or inserting/deleting, more clauses (WITH INSERT, WITH DELETE, specific mapping for updates) would be needed.
-;
-
--- Example of how one might test an update (conceptual, actual test requires client or PL/SQL)
-/*
--- Assume Jane Smith's employee ID is known or fetched
-DECLARE
-  vJaneSmithID NUMBER;
-  vPayload VARCHAR2(500);
-BEGIN
-  SELECT EmployeeID INTO vJaneSmithID FROM EmployeesRelational WHERE Email = 'jane.smith@example.com';
-  
-  vPayload := '{"jobTitle": "Principal JSON Architect", "email": "jane.principal@example.com"}';
-
-  -- This conceptual MERGE would update through the Duality View
-  -- In SQL, one might use UPDATE with JSON_MERGEPATCH:
-  UPDATE EmployeeDataDV dv
-  SET dv.DATA = JSON_MERGEPATCH(dv.DATA, vPayload)
-  WHERE JSON_VALUE(dv.DATA, '$.employeeId') = TO_CHAR(vJaneSmithID); -- Filter by employeeId
-  
-  COMMIT;
-  DBMS_OUTPUT.PUT_LINE('Jane Smith updated via Duality View.');
-END;
-/
 
 -- Verify update
 SELECT dv.DATA FROM EmployeeDataDV dv WHERE JSON_VALUE(dv.DATA, '$.email') = 'jane.principal@example.com';
-*/
 ```
 
 **3. LOB and XML Processing - Order Summary Procedure:**
