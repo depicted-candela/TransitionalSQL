@@ -1335,10 +1335,10 @@ By understanding these nuances, you'll be well-equipped to harness the full pote
     </p>
     </li>
     <li id="fn10">
-      <p>Oracle Database JSON-Relational Duality Developer's Guide, 23ai. This guide provides comprehensive details on creating, using, and managing JSON Relational Duality Views. For example, see <em>Chapter 1: Overview of JSON-Relational Duality Views</em> and <em>Chapter 3: Creating Duality Views</em>. (Based on provided PDF F57229-11) <a href="#fnref10" title="Jump back to footnote 10 in the text">↩</a></p>
+      <p><a href="https://github.com/depicted-candela/TransitionalSQL/blob/main/json-relational-duality-developers-guide.pdf" title="Oracle Database JSON-Relational Duality Developer's Guide, 23ai.">Oracle Database JSON-Relational Duality Developer's Guide, 23ai. This guide provides comprehensive details on creating, using, and managing JSON Relational Duality Views. For example, see <em>Chapter 1: Overview of JSON-Relational Duality Views</em> and <em>Chapter 3: Creating Duality Views</em>.</a> <a href="#fnref10" title="Jump back to footnote 10 in the text">↩</a></p>
     </li>
     <li id="fn11">
-      <p>Oracle Database JSON-Relational Duality Developer's Guide, 23ai, <em>Chapter 5: Using JSON-Relational Duality Views</em>, covers inserting, updating, and deleting documents through duality views, including examples of using ETAGs for optimistic concurrency. (Based on provided PDF F57229-11) <a href="#fnref11" title="Jump back to footnote 11 in the text">↩</a></p>
+      <p><a href="https://github.com/depicted-candela/TransitionalSQL/blob/main/json-relational-duality-developers-guide.pdf" title="Oracle Database JSON-Relational Duality Developer's Guide, 23ai.">Oracle Database JSON-Relational Duality Developer's Guide, 23ai, <em>Chapter 5: Using JSON-Relational Duality Views</em>, covers inserting, updating, and deleting documents through duality views, including examples of using ETAGs for optimistic concurrency.</a ><a href="#fnref11" title="Jump back to footnote 11 in the text">↩</a></p>
     </li>
     </ol>
 </div>

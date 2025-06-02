@@ -1098,15 +1098,7 @@ COMMIT;
             }
             ```
         *   The view should allow updates to an employee's `jobTitle` and `email` through the JSON interface.
-    3.  **LOB and XML Processing - Order Summary Procedure:**
-        *   Create a PL/SQL stored procedure `ProcessOrderSummaries` that takes `p_OrderID` as input.
-        *   Inside the procedure:
-            *   a.  Fetch the `OrderDetailsXML` for the given `p_OrderID`.
-            *   b.  Use `XMLTABLE` to extract all item `productid`, `name`, and `quantity`.
-            *   c.  For each item, retrieve its `ProductDescription` (CLOB).
-            *   d.  Create a temporary `CLOB` (`vOrderSummaryCLOB`). For each item in the order, append a line to `vOrderSummaryCLOB` in the format: "Item: [Item Name], Qty: [Quantity], Desc (first 50 chars): [First 50 chars of ProductDescription]". Use `DBMS_LOB` functions for CLOB manipulation and `DBMS_OUTPUT.PUT_LINE` to display the final `vOrderSummaryCLOB`. Remember to handle LOB memory.
-            *   e.  If the `ShippingAddressJSON` for the order contains an `apartment` key, print "Apartment delivery."
-    4.  **Complex Querying with JSON, XML, and Analytics:**
+    3.  **Complex Querying with JSON, XML, and Analytics:**
         *   Write a single SQL query (using CTEs where helpful) to produce a report. PostgreSQL users will be familiar with CTEs; the focus is on Oracle's complex data type functions.
         *   The report should list:
             *   `c.FirstName`, `c.LastName` (Customer)
