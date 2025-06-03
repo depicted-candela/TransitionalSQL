@@ -613,7 +613,7 @@ For every PL/SQL whim!
 Below, you'll find the Oracle SQL script to create and populate the necessary tables for these exercises. It's crucial to run this script in your Oracle environment *before* you start.
 
 <div class="oracle-specific">
-<strong>Setup Tip:</strong> You can typically run this script in SQL Developer by opening a new SQL worksheet, pasting the code, and clicking the "Run Script" button (often an icon with a green play button and a page). For SQL*Plus, save it as a `.sql` file and run it using `@your_script_name.sql`. For Oracle Live SQL, paste it into a SQL Worksheet and click "Run".
+<strong>Setup Tip:</strong> You can typically run this script in SQL Developer by opening a new SQL worksheet, pasting the code, and clicking the "Run Script" button (often an icon with a green play button and a page). For SQL*Plus, save it as a `.sql` file and run it using `@dataset.sql`. For Oracle Live SQL, paste it into a SQL Worksheet and click "Run".
 </div>
 
 The primary tables you'll be working with are:
