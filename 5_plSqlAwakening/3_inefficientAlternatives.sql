@@ -1,4 +1,4 @@
-        -- PL/SQL Fundamentals
+        -- Awakening PL/SQL
 
 
 --  (iii) Contrasting with Inefficient Common Solutions
@@ -103,10 +103,10 @@ BEGIN
     FROM PLSQLAWAKENING.EMPLOYEES
     NATURAL JOIN PLSQLAWAKENING.DEPARTMENTS) LOOP
         DBMS_OUTPUT.PUT_LINE(
-                'EmpID: ' || empRec.employeeId ||
-                ', Name: ' || empRec.lastName ||
-                ', Dept: ' || empRec.departmentName
-            );
+            'EmpID: ' || empRec.employeeId ||
+            ', Name: ' || empRec.lastName ||
+            ', Dept: ' || empRec.departmentName
+        );
     END LOOP;
 EXCEPTION
     WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE(SQLERRM);
