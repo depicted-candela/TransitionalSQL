@@ -159,6 +159,20 @@ h3:hover {
     font-size: large;
 }
 
+h4 {
+    font-size: 1.2em;
+    margin-top: 30px;
+    border-left: 4px solid var(--accent-color);
+    padding-left: 10px;
+    transition: all var(--transition-speed) ease;
+}
+
+h4:hover {
+    border-left-color: var(--primary-color);
+    color: var(--secondary-color);
+}
+
+
 p { /* li styling moved to specific list item rules */
     font-size: 1em; /* Relative to body font-size */
     margin-bottom: 12px;
@@ -176,7 +190,7 @@ ul {
 
 /* Level 1 UL Items */
 ul > li {
-    font-size: 1.15em; /* Relative to body font-size */
+    font-size: 1em; /* Relative to body font-size */
     padding-left: 25px; 
     position: relative; 
     margin-bottom: 10px; 

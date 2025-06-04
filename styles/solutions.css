@@ -147,10 +147,25 @@ h3 {
     padding-left: 10px;
     transition: all var(--transition-speed) ease;
 }
+
 h3:hover {
     border-left-color: var(--secondary-color);
     color: var(--primary-color);
 }
+
+h4 {
+    font-size: 1.2em;
+    margin-top: 30px;
+    border-left: 4px solid var(--accent-color);
+    padding-left: 10px;
+    transition: all var(--transition-speed) ease;
+}
+
+h4:hover {
+    border-left-color: var(--primary-color);
+    color: var(--secondary-color);
+}
+
 
 p { /* li styling moved to specific list item rules */
     font-size: 1em; /* Relative to body font-size */
