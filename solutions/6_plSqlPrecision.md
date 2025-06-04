@@ -234,7 +234,6 @@ DECLARE
         FROM employees e
         JOIN departments d ON e.departmentId = d.departmentId
         WHERE d.departmentName = 'IT';
-
     vFirstName employees.firstName%TYPE;
     vLastName employees.lastName%TYPE;
     vSalary employees.salary%TYPE;
@@ -326,7 +325,9 @@ For explicit cursors, <code>cursor_name%ISOPEN</code> correctly reflects whether
 
 **Solution C5:**
 <p><strong>Block 1 (Simulating forgetting to close):</strong></p>
-<pre><code class="language-sql">-- In SQL*Plus or similar, cursors can persist if not closed if the PL/SQL block doesn't
+
+```sql
+-- In SQL*Plus or similar, cursors can persist if not closed if the PL/SQL block doesn't
 -- complete in a way that automatically closes them (e.g. session termination)
 -- However, for a simple anonymous block, Oracle often cleans up.
 -- To better demonstrate the "already open" issue, we'd ideally use a package cursor.
@@ -346,9 +347,12 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('Block 1 completed. Cursor state depends on environment.');
 END;
 /
-</code></pre>
+```
+
 <p><strong>Block 2 (Attempting to re-open, illustrating the point if it were a persistent cursor):</strong></p>
-<pre><code class="language-sql">-- This block would demonstrate ORA-06511 if cLeak from Block 1 remained open.
+
+```sql
+-- This block would demonstrate ORA-06511 if cLeak from Block 1 remained open.
 -- In typical anonymous block execution, cLeak from Block 1 is closed automatically.
 -- Let's modify to show the error by attempting to open twice in the same block.
 DECLARE
@@ -358,11 +362,9 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('Attempting to open cLeak first time...');
     OPEN cLeak;
     DBMS_OUTPUT.PUT_LINE('cLeak opened.');
-    
     DBMS_OUTPUT.PUT_LINE('Attempting to open cLeak second time without closing...');
     OPEN cLeak; -- This will raise ORA-06511
     DBMS_OUTPUT.PUT_LINE('cLeak opened again (This should not print).');
-
     CLOSE cLeak;
 EXCEPTION
     WHEN CURSOR_ALREADY_OPEN THEN -- ORA-06511
@@ -373,7 +375,7 @@ EXCEPTION
         IF cLeak%ISOPEN THEN CLOSE cLeak; END IF; -- Ensure it's closed
 END;
 /
-</code></pre>
+```
 <p><strong>Potential Issue:</strong> If a cursor (especially a package-level cursor) is opened and not closed, subsequent attempts to open it without first closing will raise <code>ORA-06511: PL/SQL: cursor already open</code>. In long-running applications with many such unclosed cursors, <code>ORA-01000: maximum open cursors exceeded</code> can occur.</p>
 
 **Exercise C6:**
@@ -436,6 +438,7 @@ Demonstrate this potentially less efficient approach. Then, provide the more Ora
 
 **Solution C7:**
 <p><strong>Less Efficient Approach (Manual Count and Loop Control):</strong></p>
+
 ```sql
 SET SERVEROUTPUT ON;
 DECLARE
@@ -444,10 +447,8 @@ DECLARE
         FROM employees e
         JOIN departments d ON e.departmentId = d.departmentId
         WHERE d.departmentName = 'Sales';
-
     vFirstName employees.firstName%TYPE;
     vLastName employees.lastName%TYPE;
-    
     vTotalSalesEmployees NUMBER;
     vFetchedCount NUMBER := 0;
 BEGIN
@@ -455,9 +456,7 @@ BEGIN
     FROM employees e
     JOIN departments d ON e.departmentId = d.departmentId
     WHERE d.departmentName = 'Sales';
-
     DBMS_OUTPUT.PUT_LINE('Less Efficient Approach: Total Sales Employees = ' || vTotalSalesEmployees);
-
     OPEN cSalesEmployees;
     WHILE vFetchedCount < vTotalSalesEmployees LOOP
         FETCH cSalesEmployees INTO vFirstName, vLastName;
@@ -469,7 +468,8 @@ BEGIN
 END;
 /
 ```
-<p><strong>More Efficient / Idiomatic Oracle Solution (Cursor FOR Loop):</strong></p>
+
+**More Efficient / Idiomatic Oracle Solution (Cursor FOR Loop):**
 ```sql
 SET SERVEROUTPUT ON;
 BEGIN
@@ -485,6 +485,7 @@ BEGIN
 END;
 /
 ```
+
 <p><strong>Explanation:</strong><br>
 The first approach is less efficient and less idiomatic because:</p>
 <ol>
@@ -846,7 +847,7 @@ END;
 Show this approach. Then, provide a more efficient Oracle-idiomatic solution using a single procedure with `OUT` parameters or a function returning a record type. Explain the inefficiency of the first approach.
 
 **Solution SP7:**
-<p><strong>Less Efficient Approach (Two Separate Functions):</strong></p>
+Less Efficient Approach (Two Separate Functions):
 ```sql
 CREATE OR REPLACE FUNCTION getEmpFirstName (
     pEmployeeId IN employees.employeeId%TYPE
@@ -883,7 +884,7 @@ BEGIN
 END;
 /
 ```
-<p><strong>More Efficient Oracle Solution (Procedure with OUT parameters):</strong></p>
+More Efficient Oracle Solution (Procedure with OUT parameters):
 ```sql
 CREATE OR REPLACE PROCEDURE getEmployeeDetails (
     pEmployeeId IN employees.employeeId%TYPE,
@@ -913,7 +914,6 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('Employee: ' || vFName || ', Salary: ' || vSal);
 END;
 /
-
 -- Alternative: Function returning a record (also efficient)
 DECLARE
     TYPE empDetailRec IS RECORD (
@@ -921,7 +921,6 @@ DECLARE
         salary employees.salary%TYPE
     );
     vEmpRec empDetailRec;
-    
     FUNCTION getEmployeeDetailsFunc (
         pEmployeeId IN employees.employeeId%TYPE
     ) RETURN empDetailRec AS
@@ -936,7 +935,6 @@ DECLARE
         WHEN NO_DATA_FOUND THEN
             RETURN NULL; -- Or an empty record, depending on desired handling
     END getEmployeeDetailsFunc;
-
     vEmpId employees.employeeId%TYPE := 103;
 BEGIN
     DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- More Efficient Approach (Function returning Record) ---');

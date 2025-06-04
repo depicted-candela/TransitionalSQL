@@ -16,8 +16,8 @@
     --table-cell-bg: #252535; /* Slightly lighter than main BG */
     
     --header-font: 'Oracle Sans', 'Helvetica Neue', Arial, sans-serif;
-    --body-font: 'Georgia', Times, serif;
-    --code-font: 'Fira Code', 'Oracle Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+    --body-font: 'Times', 'Georgia', serif;
+    --code-font: 'Consolas', 'Monaco', 'Courier New', 'Oracle Mono', 'Fira Code', monospace;
     
     /* Animation variables */
     --transition-speed: 0.4s;
@@ -99,6 +99,12 @@ body {
     animation: slideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+.problem-label {
+    font-style: italic;
+    font-weight: normal; /* Explicitly set to normal if it might inherit bold from somewhere else */
+    /* You might want to adjust color or other properties here too */
+}
+
 .container > h1 { animation-delay: 0.3s; }
 .container > h2 { animation-delay: 0.4s; }
 .container > h3 { animation-delay: 0.5s; }
@@ -150,10 +156,11 @@ h3 {
 h3:hover {
     border-left-color: var(--secondary-color);
     color: var(--primary-color);
+    font-size: large;
 }
 
 p { /* li styling moved to specific list item rules */
-    font-size: 1.15em; /* Relative to body font-size */
+    font-size: 1em; /* Relative to body font-size */
     margin-bottom: 12px;
 }
 
@@ -251,10 +258,10 @@ ul ul ul > li:hover::before {
     transform: none;
 }
 
-/* --- Ordered List Styling --- */
+/* --- Ordered List Styling --- 
 ol {
     /* padding-left: 40px; /* Example if you want to control default first-level indentation */
-}
+/* }*/ */
 
 /* Level 1 OL Items */
 ol > li {
