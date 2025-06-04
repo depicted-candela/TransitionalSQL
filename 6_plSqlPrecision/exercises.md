@@ -4,82 +4,69 @@
 
 <div class="container">
 
-# PL/SQL Precision: Cursors, Procedures, and Data Flow - Exercises
+# PL/SQL Precision: Cursors, Procedures, and Data Flow - Practice Exercises
 
-Welcome, Oracle Voyager! This set of exercises is designed to sharpen your skills in PL/SQL, focusing on the essential mechanisms for data iteration and procedural logic: cursors and stored program units (procedures and functions). With cursors tight and functions right, your Oracle might will take its flight!
+Welcome to the practice arena for *PL/SQL Precision: Cursors, Procedures, and Data Flow*! These exercises are crafted to sharpen your skills, moving from PostgreSQL's familiar grounds to Oracle's powerful PL/SQL landscape with Oracle DB 23ai. Get ready to loop with finesse and craft procedures that sing!
 
-These exercises will help you:
-*   Master Oracle's specific syntax and behavior for implicit and explicit cursors, including cursor FOR loops.
-*   Understand and implement stored procedures and functions with various parameter modes (`IN`, `OUT`, `IN OUT`).
-*   Gain practical experience in controlling data flow and handling common scenarios in PL/SQL.
-*   Bridge your existing PostgreSQL knowledge to Oracle's powerful procedural extensions.
+## Learning Objectives
 
-As you work through these, remember:
-<div class="rhyme">
-In Oracle's realm, where data streams flow,<br>
-Cursors guide the way, helping knowledge grow.<br>
-Procedures and functions, with parameters so neat,<br>
-Make complex logic a programmable treat.
-</div>
+Upon completing these exercises, you will be able to:
 
-</div>
-
-<div class="container">
+*   Understand and utilize **Oracle implicit cursors** and their attributes (`SQL%FOUND`, `SQL%NOTFOUND`, `SQL%ROWCOUNT`, `SQL%ISOPEN`).
+*   Master the declaration, opening, fetching, and closing of **Oracle explicit cursors**.
+*   Implement **cursor FOR loops** for efficient and concise row-by-row processing in Oracle.
+*   Identify and handle common pitfalls associated with cursor usage in Oracle PL/SQL.
+*   Create and execute **Oracle stored procedures and functions** with various parameter modes (`IN`, `OUT`, `IN OUT`).
+*   Understand the behavior and purpose of the `RETURN` statement in Oracle functions.
+*   Recognize Oracle-specific syntax and best practices for procedural logic, especially when contrasting with PostgreSQL approaches.
+*   Apply these concepts to solve complex data processing tasks in an Oracle environment.
 
 ## Prerequisites & Setup
 
-Before diving into these exercises, ensure you're comfortable with:
-*   **Oracle Core Syntax:** Basic `SELECT`, `INSERT`, `UPDATE`, `DELETE` statements, `WHERE` clauses, and Oracle data types (especially `VARCHAR2`, `NUMBER`, `DATE`) as covered in the "Key Differences & Core Syntax" and subsequent DML/Date/String function sections of this transitional course.
-*   **PL/SQL Fundamentals:** The basic PL/SQL block structure (`DECLARE`, `BEGIN`, `EXCEPTION`, `END`), variable declaration (`%TYPE`, `%ROWTYPE`), conditional logic (`IF-THEN-ELSIF`), and basic loops from the preceding "PL/SQL: Oracle's Procedural Powerhouse - Fundamentals" section.
-*   **PostgreSQL Equivalents (Conceptual):** Understanding of how cursors (even if less explicitly managed in some PG styles) and functions/procedures work in PostgreSQL will help you appreciate Oracle's specific implementations.
+To make the most of these exercises, you should have a solid understanding of:
 
-<div class="oracle-specific">
-    <p><strong>Dataset Setup: Your Oracle Playground</strong></p>
-    <p>To tackle these exercises, you'll need our practice dataset. A complete Oracle SQL script is provided below (or will be inserted by the generation tool) to create the necessary tables (`departments`, `employees`, `salaryAudit`) and populate them with sample data. </p>
-    <p><strong>How to Run the Script:</strong></p>
-    <ol>
-        <li>Copy the entire SQL script block.</li>
-        <li>Paste it into your Oracle DB 23ai environment (e.g., SQL Developer worksheet, SQL*Plus session, or Oracle Live SQL).</li>
-        <li>Execute the script. This will create the tables and insert the data.</li>
-    </ol>
-    <p><strong>Brief Table Overview:</strong></p>
-    <ul>
-        <li><code>departments</code>: Stores department information (<code>departmentId</code>, <code>departmentName</code>, <code>location</code>).</li>
-        <li><code>employees</code>: Stores employee details (<code>employeeId</code>, names, <code>email</code>, <code>hireDate</code>, <code>jobId</code>, <code>salary</code>, <code>departmentId</code>). It has a foreign key to <code>departments</code>.</li>
-        <li><code>salaryAudit</code>: A table to log salary changes, often updated by procedures or triggers.</li>
-    </ul>
-    <p>Ensure this dataset is correctly set up before you begin. If the tables exist, they'll be dropped and recreated, so your slate is clean and your data keen!</p>
-</div>
+*   **From "The Original PostgreSQL Course Sequence":**
+    *   Basic SQL (WHERE, ORDER BY).
+    *   Intermediate SQL (Aggregators, Joins, Date Functions, CASE).
+    *   Procedural concepts (Loops, Conditionals, Functions in PostgreSQL).
+*   **From "Server Programming with Oracle (DB 23 ai) PL/SQL: A Transition Guide for PostgreSQL Users" (Previous Sections):**
+    *   Key Differences & Core Syntax (Oracle Data Types, DUAL, NULL Handling, ROWNUM).
+    *   Date Functions, String Functions, Set Operators, Hierarchical Queries, Analytic Functions (Oracle syntax).
+    *   DML & Transaction Control (Oracle context).
+    *   PL/SQL Fundamentals (Block Structure, Variables, Conditional & Iterative Control, SQL within PL/SQL).
 
-</div>
+### Dataset Guidance
 
-<div class="container">
+A complete Oracle SQL script for defining and populating the necessary tables is provided below within the "Exercises & Dataset" section.
+
+**To set up the dataset:**
+
+1.  **Connect** to your Oracle DB 23ai free environment using a tool like SQL Developer, SQL\*Plus, or Oracle Live SQL.
+2.  **Copy and paste** the entire `CREATE TABLE` and `INSERT INTO` script block provided into your SQL tool.
+3.  **Execute** the script. This will create three tables: `departments`, `employees`, and `salaryAudit`.
+    *   `departments`: Stores department information.
+    *   `employees`: Stores employee details, including their department and salary.
+    *   `salaryAudit`: Will be used to log salary changes made by some procedures.
+4.  Ensure the script runs without errors. A `COMMIT` statement is included at the end of the population script.
+
+*It's crucial to have this dataset ready before you start,
+Or your queries and procedures might just fall apart!*
 
 ## Exercise Structure Overview
 
-These exercises are structured to build your understanding progressively:
-*   **Meanings, Values, Relations, and Advantages:** Focus on the core definition, usage, benefits, and connections of each concept, especially Oracle's specific syntax and features.
-*   **Disadvantages and Pitfalls:** Explore common mistakes and limitations within the Oracle PL/SQL context.
-*   **Contrasting with Inefficient Common Solutions:** Compare Oracle-idiomatic solutions with less optimal approaches one might take, highlighting the advantages of the Oracle way.
-*   **Hardcore Combined Problem:** A comprehensive challenge integrating all concepts from this section and relevant prior topics.
+The exercises are structured to build your understanding progressively:
 
-<div class="rhyme">
-Try each task with thought and with care,<br>
-Before peeking at answers, if you dare!
-</div>
-</div>
+*   **Meanings, Values, Relations, and Advantages:** Focus on the core concepts and their benefits, bridging from PostgreSQL where applicable.
+*   **Disadvantages and Pitfalls:** Explore common issues and limitations specific to Oracle's implementation.
+*   **Contrasting with Inefficient Common Solutions:** Compare Oracle-idiomatic approaches with less optimal ones you might encounter.
+*   **Hardcore Combined Problem:** A complex scenario integrating all concepts from this and preceding sections.
 
-<div class="container">
+*Attempt each problem first, give your mind a good test,
+Then check the solution, and put your skills to their best!*
 
-## Exercises: PL/SQL Precision
-
-<!-- ### INSERT PRE-GENERATED EXERCISES AND SOLUTIONS HERE ### -->
-<!-- The previously generated Markdown for exercises (C1-C7, SP1-SP7, and Hardcore Problem) -->
-<!-- including their problem descriptions and solutions, and the dataset script, -->
-<!-- would be programmatically inserted into this location. -->
-<!-- For now, I will manually paste the dataset and one example from each category of exercise. -->
-
-### Dataset for Exercises (Oracle SQL with ORACLE DB 23ai)
+## Exercises & Dataset
+<hr/>
+<br/>
 
 ```sql
 -- Drop tables if they exist to ensure a clean setup
@@ -161,10 +148,10 @@ INSERT INTO employees (employeeId, firstName, lastName, email, hireDate, jobId, 
 COMMIT;
 ```
 
-### Category: Cursors
+## Category: Cursors
 (Implicit Cursors, Explicit Cursors, Cursor FOR Loops)
 
-#### (i) Meanings, Values, Relations, and Advantages
+### (i) Meanings, Values, Relations, and Advantages
 
 **Exercise C1:**
 **Problem:** Write a PL/SQL anonymous block that attempts to update the salary of an employee with `employeeId = 999` (who does not exist) by increasing it by 10%. After the `UPDATE` statement, use Oracle's implicit cursor attributes to display:
@@ -172,31 +159,65 @@ COMMIT;
 2.  Whether no row was found and updated (`SQL%NOTFOUND`).
 3.  The number of rows affected (`SQL%ROWCOUNT`).
 
-<div class="postgresql-bridge">
-<strong>Bridging from PostgreSQL:</strong> In PostgreSQL, you might use <code>GET DIAGNOSTICS affected_rows = ROW_COUNT;</code> after an <code>UPDATE</code>. Oracle provides boolean attributes <code>SQL%FOUND</code> and <code>SQL%NOTFOUND</code> for a more direct check, in addition to <code>SQL%ROWCOUNT</code>.
-</div>
+**Exercise C2:**
+**Problem:** Write a PL/SQL anonymous block that declares an explicit cursor to fetch the `firstName`, `lastName`, and `salary` of all employees in the 'IT' department. Loop through the cursor, fetching one row at a time, and display the details. Ensure the cursor is properly opened and closed. Use `%TYPE` for variable declarations.
 
----
-*(... Other exercises C2-C7 would be listed here ...)*
----
+**Exercise C3:**
+**Problem:** Rewrite the previous exercise (C2) using a cursor FOR loop to display the `firstName`, `lastName`, and `salary` of all employees in the 'IT' department.
 
-### Category: Stored Procedures & Functions
+**Exercise C4:**
+**Problem:** Explain the meaning and demonstrate the use of `SQL%ISOPEN` with an implicit cursor and an explicit cursor. Why does `SQL%ISOPEN` always return `FALSE` for implicit cursors after the SQL statement execution?
 
-#### (i) Meanings, Values, Relations, and Advantages
+### (ii) Disadvantages and Pitfalls
+
+**Exercise C5:**
+**Problem:** Write a PL/SQL block that declares an explicit cursor but forgets to close it after processing. Then, write another PL/SQL block that tries to open the *same named cursor* again (simulate this by running the first block, then the second in a SQL*Plus session or similar tool where session state persists for cursors if not properly managed). What is the potential issue here, and what Oracle error might you encounter?
+
+**Exercise C6:**
+**Problem:** A PL/SQL block uses `SELECT ... INTO` to fetch an employee's salary. What are two common exceptions (pitfalls) that can occur with `SELECT ... INTO` if the `WHERE` clause is not carefully constructed, and how can an explicit cursor or cursor FOR loop mitigate one of them?
+
+### (iii) Contrasting with Inefficient Common Solutions
+
+**Exercise C7:**
+**Problem:** A developer needs to process all employees from the 'Sales' department. They write a PL/SQL block that first counts the total number of 'Sales' employees using one `SELECT COUNT(*)` query, and then uses this count in a `WHILE` loop with an explicit cursor, fetching one employee at a time and manually incrementing a counter to stop the loop.
+Demonstrate this potentially less efficient approach. Then, provide the more Oracle-idiomatic and efficient solution using a cursor `FOR` loop or an explicit cursor with `EXIT WHEN %NOTFOUND`. Explain why the latter is generally preferred.
+
+## Category: Stored Procedures & Functions
+
+### (i) Meanings, Values, Relations, and Advantages
 
 **Exercise SP1:**
 **Problem:** Create an Oracle stored procedure named `addDepartment` that accepts `departmentId`, `departmentName`, and `location` as `IN` parameters and inserts a new department into the `departments` table. Demonstrate invoking this procedure.
-<div class="oracle-specific">
-<strong>Advantage:</strong> Procedures encapsulate DML logic, promoting reusability and maintainability. Parameters allow for dynamic data input.
-</div>
 
----
-*(... Other exercises SP2-SP7 would be listed here ...)*
----
+**Exercise SP2:**
+**Problem:** Create an Oracle stored function named `getEmployeeFullName` that takes an `employeeId` (`IN` parameter) and returns the employee's full name (firstName || ' ' || lastName) as a `VARCHAR2`. Demonstrate its use in a `SELECT` statement and a PL/SQL block.
 
-### Category: Combined - Cursors and Stored Procedures & Functions
+**Exercise SP3:**
+**Problem:** Create a procedure `updateEmployeeJobAndGetOldJob` that takes `employeeId` and a `newJobId` as `IN` parameters. It should update the employee's `jobId`. The procedure must also return the employee's *old* `jobId` using an `OUT` parameter.
 
-#### (iv) Hardcore Combined Problem
+**Exercise SP4:**
+**Problem:** Create a procedure `processSalary` that takes an `employeeId` as an `IN` parameter and a `currentSalary` as an `IN OUT` parameter. The procedure should:
+1.  Fetch the employee's current salary into the `IN OUT` parameter.
+2.  If the fetched salary is less than 60000, increase the `currentSalary` (which is the `IN OUT` parameter) by 10% within the procedure.
+3.  The calling block should see the modified salary.
+
+### (ii) Disadvantages and Pitfalls
+
+**Exercise SP5:**
+**Problem:** A function is designed to calculate an annual bonus (10% of salary) but mistakenly attempts to perform an `UPDATE` statement inside it to log the bonus calculation. Why is this problematic if the function is intended to be called from a `SELECT` query? What Oracle error would occur?
+
+**Exercise SP6:**
+**Problem:** A procedure has an `OUT` parameter. Inside the procedure, there's an `IF-THEN-ELSIF` structure. One of the `ELSIF` branches does not assign a value to the `OUT` parameter. What is the state of the `OUT` parameter in the calling environment if that branch is executed? How does this differ from an `IN OUT` parameter?
+
+### (iii) Contrasting with Inefficient Common Solutions
+
+**Exercise SP7:**
+**Problem:** A developer needs to retrieve an employee's `firstName` and `salary` for a given `employeeId`. They create two separate functions: `getEmpFirstName(p_id IN NUMBER) RETURN VARCHAR2` and `getEmpSalary(p_id IN NUMBER) RETURN NUMBER`. In their main PL/SQL block, they call these two functions sequentially for the same `employeeId`.
+Show this approach. Then, provide a more efficient Oracle-idiomatic solution using a single procedure with `OUT` parameters or a function returning a record type. Explain the inefficiency of the first approach.
+
+## Category: Combined - Cursors and Stored Procedures & Functions
+
+### (iv) Hardcore Combined Problem
 
 **Problem:**
 Create a PL/SQL stored procedure named `processDepartmentRaises` with the following requirements:
@@ -208,83 +229,37 @@ Create a PL/SQL stored procedure named `processDepartmentRaises` with the follow
     *   `pStatusMessage` (OUT VARCHAR2): A message indicating success, "Over budget", "No employees found", "Department not found", or other errors.
 
 2.  **Logic:**
-    *   The procedure should first find the `departmentId` for the given `pDepartmentName`. If not found, set an appropriate `pStatusMessage` and exit. (Hint: `SELECT INTO`, handle `NO_DATA_FOUND`).
+    *   The procedure should first find the `departmentId` for the given `pDepartmentName`. If not found, set an appropriate `pStatusMessage` and exit.
     *   Establish a `SAVEPOINT` before attempting any salary updates for the department.
     *   Use an explicit cursor to iterate through all employees belonging to the found `departmentId`.
     *   For each employee:
-        *   Calculate the `raiseAmount` (current salary * `pRaisePercentage` / 100).
-        *   Calculate the `newSalary` (current salary + `raiseAmount`).
+        *   Calculate the `raiseAmount`.
+        *   Calculate the `newSalary`.
         *   Keep a running `totalRaiseCostForDepartment`.
-    *   After iterating through all employees in the department (or if no employees are found):
-        *   If no employees were found in the department, set `pStatusMessage` to "No employees found" and `pEmployeesUpdatedCount` to 0.
-        *   If `totalRaiseCostForDepartment` exceeds `pDepartmentBudget`:
-            *   `ROLLBACK` to the savepoint.
-            *   Set `pStatusMessage` to "Over budget. No salaries updated for department [departmentName]."
-            *   Set `pEmployeesUpdatedCount` to 0.
-        *   Otherwise (if within budget and employees exist):
-            *   Iterate through the employees of the department again (you might re-open the cursor or use a second cursor, or store employee IDs from the first pass if memory allows and it's efficient).
-            *   For each employee, `UPDATE` their `salary` to the calculated `newSalary`.
-            *   After each successful `UPDATE`, log the change into the `salaryAudit` table (employeeId, oldSalary, newSalary, changedBy='PROC_RAISE', notes='Departmental Raise'). You can create a helper private procedure within `processDepartmentRaises` for this logging.
-            *   Count the number of successfully updated employees and set `pEmployeesUpdatedCount`.
-            *   Set `pStatusMessage` to "Salaries updated successfully for [count] employees in department [departmentName]."
-            *   `COMMIT` the transaction (if all updates are successful and within budget).
-    *   Use appropriate exception handling for unexpected errors.
+    *   After iterating:
+        *   If no employees were found, set status.
+        *   If `totalRaiseCostForDepartment` > `pDepartmentBudget`, `ROLLBACK` to savepoint, set status.
+        *   Otherwise, iterate again (or use stored data) to `UPDATE` salaries, log each update to `salaryAudit` (you can use a helper private procedure), count updates, set status, and `COMMIT`.
+    *   Handle unexpected errors gracefully.
 
-<div class="postgresql-bridge">
-<strong>Foundational PostgreSQL Concepts to Leverage (and contrast with Oracle way):</strong>
-<ul>
-    <li>Looping through query results (PostgreSQL <code>FOR rec IN SELECT ... LOOP</code>).</li>
-    <li>Functions and Procedures (PostgreSQL combines these more; Oracle has distinct <code>PROCEDURE</code> and <code>FUNCTION</code>).</li>
-    <li>Transaction control (similar, but Oracle savepoints are part of the standard flow).</li>
-</ul>
-</div>
-<div class="oracle-specific">
-<strong>Previous Oracle Concepts to Integrate:</strong>
-<ul>
-    <li>PL/SQL Block Structure, Variables (<code>%TYPE</code>, <code>%ROWTYPE</code>).</li>
-    <li>Conditional Control (<code>IF-THEN-ELSIF-ELSE</code>).</li>
-    <li>SQL within PL/SQL (<code>SELECT INTO</code>, <code>UPDATE</code>).</li>
-    <li>Implicit Cursor Attributes (<code>SQL%FOUND</code>, <code>SQL%ROWCOUNT</code>).</li>
-    <li>Explicit Cursors (DECLARE, OPEN, FETCH, CLOSE, attributes).</li>
-    <li>Exception Handling (predefined, <code>OTHERS</code>).</li>
-    <li><code>COMMIT</code>, <code>ROLLBACK</code>, <code>SAVEPOINT</code>.</li>
-    <li><code>SYSDATE</code>, <code>TO_CHAR</code> (implicitly via default <code>salaryAudit.changeDate</code>).</li>
-    <li><code>NVL</code>.</li>
-</ul>
-</div>
-
-</div>
-
-<div class="container">
+<br/>
+<hr/>
 
 ## Tips for Success & Learning
 
-To get the most out of these exercises:
-*   **Experiment and Explore:** Don't just run the solutions. Try modifying them. What happens if you change a parameter mode? What if a cursor fetches no data?
-*   **Understand the *Why*:** For each solution, make sure you understand why it works and why it's an Oracle-idiomatic way.
-*   **Consult the Docs:** If a concept is new or unclear, the Oracle PL/SQL Language Reference and Oracle SQL Language Reference are your best friends.
-    <div class="rhyme">
-    When doubt casts a shadow, or questions arise,<br>
-    The Oracle manuals hold wisdom, so very wise.
-    </div>
-*   **Tackle Challenges Step-by-Step:** For the "Hardcore Combined Problem," break it down into smaller, manageable parts. Test each part as you build it.
-*   **Error Messages are Clues:** Oracle's error messages (like `ORA-xxxxx`) can seem cryptic at first, but they often point directly to the issue. Learn to interpret them.
-
-</div>
-
-<div class="container">
+*   **Experiment Freely:** Don't just run the solutions. Modify them, try different approaches, and see what happens. *The best way to learn the rules, is to sometimes bend them like fools! (But then fix them, of course).*
+*   **Understand the "Why":** Focus not just on *how* a solution works, but *why* it's the Oracle-idiomatic way. Consider performance and readability.
+*   **Oracle Docs are Your Friend:** For deep dives on any concept, the official Oracle documentation is invaluable.
+*   **Break Down Problems:** If a hardcore problem seems daunting, break it into smaller, manageable pieces. *A mountain's climbed one step, not in a single, giant leap!*
+*   **Embrace the Oracle Way:** While your PostgreSQL knowledge is a great foundation, be open to Oracle's specific syntax and features. Some things are different, and that's where the new learning shines!
 
 ## Conclusion & Next Steps
 
-Well done on working through (or preparing to work through) these exercises! Mastering cursors and stored program units is fundamental to effective PL/SQL development and harnessing the full power of Oracle Database.
+Great job tackling these exercises! You're building a strong bridge from PostgreSQL to the world of Oracle PL/SQL. The concepts of cursors, procedures, and functions are fundamental, and mastering them here will pay dividends.
 
-<div class="rhyme">
-With cursors now flowing, and functions so keen,<br>
-Your PL/SQL prowess, a magnificent scene!
-</div>
+*With cursors and procs, your PL/SQL will gleam,
+Ready for packages, a powerful, organized dream!*
 
-You're now better equipped to handle complex data processing and build modular, efficient applications in Oracle.
-
-**Next Up:** Prepare to delve into **PL/SQL Packages**, a cornerstone of Oracle development for organizing your code, managing state, and building robust applications.
+Next up in your "Server Programming with Oracle (DB 23 ai) PL/SQL: A Transition Guide for PostgreSQL Users" journey are **Packages**. Get ready to organize your code like a pro!
 
 </div>
