@@ -2,588 +2,6 @@
     <link rel="stylesheet" href="../styles/solutions.css">
 </head>
 
-<style>
-    /* CSS styles from exercises.css are assumed to be linked or embedded here */
-    /* For this example, I will embed the CSS directly. In a real setup, you'd link to solutions.css */
-    :root {
-        /* --- Oracle Night Mode Palette --- */
-        --primary-color: #4db8ff; /* Oracle brand blue */
-        --secondary-color: #6bd4ff; /* Lighter Oracle blue */
-        --accent-color: #ff8c00; /* Oracle accent orange */
-        --background-color: #1a1a24; /* Deep blue-black */
-        --text-color: #e0e0e0; /* Soft white text */
-        
-        --code-background: #1e1e2e; /* Dark blue-gray */
-        --code-border: #3a3a5a; /* Medium blue-gray */
-        --inline-code-text: #f0f0f0; /* Bright code text */
-        
-        --table-border: #4a4a6a; /* Blue-gray border */
-        --table-header-bg: rgba(77, 184, 255, 0.15); /* Oracle blue tint */
-        --table-header-text: var(--secondary-color); /* Light blue text */
-        --table-cell-bg: #252535; /* Slightly lighter than main BG */
-        
-        --header-font: 'Lato', 'Oracle Sans', 'Helvetica Neue', Arial, sans-serif;
-        --body-font: 'Roboto', 'Georgia', Times, serif;
-        --code-font: 'Fira Code', 'Oracle Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
-        
-        /* Animation variables */
-        --transition-speed: 0.4s;
-        --hover-scale: 1.02;
-        --glow-intensity: 0.6;
-
-        /* Additional custom properties for specific callouts if needed */
-        --oracle-specific-bg: rgba(255, 140, 0, 0.1);
-        --oracle-specific-border: var(--accent-color);
-        --postgresql-bridge-bg: rgba(0, 193, 118, 0.1);
-        --postgresql-bridge-border: #00c176;
-        --caution-bg: rgba(230, 76, 0, 0.1); /* More reddish orange for caution */
-        --caution-border: #e64c00; /* Darker reddish orange */
-        --footnote-color: #a0a0c0;
-        --box-shadow-color: rgba(0,0,0,0.3);
-    }
-
-    @keyframes slideUp {
-        from { 
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to { 
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @keyframes containerGlow {
-        0% { box-shadow: 0 0 5px rgba(77, 184, 255, 0); }
-        50% { box-shadow: 0 0 20px rgba(77, 184, 255, var(--glow-intensity)); }
-        100% { box-shadow: 0 0 5px rgba(77, 184, 255, 0); }
-    }
-
-    body {
-        font-family: var(--body-font);
-        color: var(--text-color);
-        background-color: var(--background-color);
-        line-height: 1.7;
-        margin: 0;
-        padding: 25px;
-        background-image: 
-            radial-gradient(circle at 10% 20%, #2a2a3a 0%, transparent 20%),
-            radial-gradient(circle at 90% 80%, #2a2a3a 0%, transparent 20%);
-        overflow-x: hidden;
-        font-size: 1.2rem;
-        /* user-select: none; */
-    }
-
-    .container {
-        max-width: 950px;
-        margin: 2rem auto;
-        background-color: #252535;
-        padding: 35px;
-        border-radius: 8px;
-        box-shadow: 0 4px 30px rgba(0, 0, 30, 0.5);
-        border: 1px solid transparent;
-        animation: 
-            slideUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards,
-            containerGlow 3s ease-in-out 1s infinite;
-        transition: 
-            transform var(--transition-speed) ease,
-            box-shadow var(--transition-speed) ease,
-            border-color var(--transition-speed) ease;
-        opacity: 0; /* Start invisible for animation */
-    }
-
-    .container:hover {
-        border: 1px solid var(--primary-color);
-        box-shadow: 
-            0 0 25px rgba(77, 184, 255, 0.3),
-            0 4px 30px rgba(0, 0, 30, 0.6);
-        transform: translateY(-5px);
-    }
-
-    /* Content animations with staggered delays */
-    .container > * {
-        opacity: 0;
-        animation: slideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-    }
-
-    .container > h1 { animation-delay: 0.3s; }
-    .container > h2 { animation-delay: 0.4s; }
-    .container > h3 { animation-delay: 0.5s; }
-    .container > p { animation-delay: 0.6s; }
-    .container > pre { animation-delay: 0.7s; }
-    .container > table { animation-delay: 0.8s; }
-    .container > .oracle-specific { animation-delay: 0.9s; }
-    .container > ul, .container > ol { animation-delay: 0.65s; }
-    .container > .postgresql-bridge { animation-delay: 0.9s; }
-    .container > .caution { animation-delay: 0.9s; }
-
-    h1, h2, h3, h4 {
-        font-family: var(--header-font);
-        color: var(--primary-color);
-        transition: color var(--transition-speed) ease;
-    }
-
-    h1 {
-        border-bottom: 4px solid var(--secondary-color);
-        padding-bottom: 15px;
-        font-size: 2.8em;
-        text-align: center;
-        letter-spacing: 1px;
-        text-shadow: 0 2px 4px rgba(0, 100, 200, 0.2);
-    }
-
-    h2 {
-        color: var(--secondary-color);
-        font-size: 2.2em;
-        border-bottom: 2px solid var(--accent-color);
-        margin-top: 35px;
-        padding-bottom: 8px;
-        transform-origin: left;
-        transition: transform 0.2s ease;
-    }
-
-    h2:hover {
-        transform: scaleX(1.01);
-    }
-
-    h3 {
-        color: var(--accent-color);
-        font-size: 1.7em;
-        margin-top: 25px;
-        border-left: 4px solid var(--primary-color);
-        padding-left: 10px;
-        transition: all var(--transition-speed) ease;
-    }
-    h3:hover {
-        border-left-color: var(--secondary-color);
-        color: var(--primary-color);
-    }
-
-    p { /* li styling moved to specific list item rules */
-        font-size: 1em; /* Relative to body font-size */
-        margin-bottom: 12px;
-    }
-
-    li { /* General li, mostly for margin, font-size will be overridden */
-        margin-bottom: 10px; 
-    }
-
-    /* --- Unordered List Styling --- */
-    ul {
-        list-style-type: none; 
-        padding-left: 0;
-    }
-
-    /* Level 1 UL Items */
-    ul > li {
-        font-size: 1.15em; /* Relative to body font-size */
-        padding-left: 25px; 
-        position: relative; 
-        margin-bottom: 10px; 
-    }
-
-    ul > li::before {
-        content: '►'; 
-        color: var(--accent-color); 
-        position: absolute;
-        left: 0;
-        top: 1px; 
-        font-size: 1em; /* Relative to this li's font-size */
-        transition: transform 0.2s ease-out, color 0.2s ease-out;
-    }
-
-    ul > li:hover::before {
-        color: var(--primary-color);
-        transform: scale(1.2) translateX(2px);
-    }
-
-    /* Level 2 UL Container */
-    ul ul {
-        margin-top: 8px;
-        margin-bottom: 8px;
-        padding-left: 0; /* Sub-list aligns with parent text start */
-        /* font-size removed from here, applied to li */
-    }
-
-    /* Level 2 UL Items */
-    ul ul > li { 
-        font-size: 1.0em; /* Relative to body font-size */
-        padding-left: 25px; /* Inherited padding from parent ul li is typically how this is done if not explicit */
-        position: relative; /* Ensure positioning context for ::before */
-        margin-bottom: 8px; 
-    }
-
-    ul ul > li::before {
-        content: '–'; 
-        color: var(--secondary-color);
-        font-size: 1em; /* Relative to this li's font-size */
-        position: absolute;
-        left: 0;
-        top: 0px; 
-        transition: color 0.2s ease-out, transform 0.2s ease-out;
-    }
-
-    ul ul > li:hover::before {
-        color: var(--primary-color);
-        transform: none; 
-    }
-
-    /* Level 3 UL Container */
-    ul ul ul {
-        margin-top: 6px;
-        margin-bottom: 6px;
-        padding-left: 0; 
-    }
-
-    /* Level 3 UL Items */
-    ul ul ul > li { 
-        font-size: 0.9em; /* Relative to body font-size */
-        padding-left: 25px;
-        position: relative;
-        margin-bottom: 6px;
-    }
-
-    ul ul ul > li::before {
-        content: '·'; 
-        color: var(--footnote-color);
-        font-size: 1.1em; /* Slightly larger to make the small dot visible, relative to this li's font-size */
-        position: absolute;
-        left: 1px; 
-        top: 0px;
-        transition: color 0.2s ease-out;
-    }
-
-    ul ul ul > li:hover::before {
-        color: var(--text-color);
-        transform: none;
-    }
-
-    /* --- Ordered List Styling --- */
-    /* ol { */
-        /* padding-left: 40px; /* Example if you want to control default first-level indentation */
-    /* } */
-
-    /* Level 1 OL Items */
-    ol > li {
-        font-size: 1em; /* Relative to body font-size */
-        margin-bottom: 10px; 
-        transition: opacity 0.3s ease-out;
-        /* Default browser numbering and ::before marker will apply */
-        /* If custom marker needed for L1 OL, add here similar to ul > li */
-    }
-
-    ol > li::marker {
-        transition: color 0.2s ease-out; /* Smooth transition if color changes */
-        /* The default color will be inherited from the li text color */
-    }
-
-    /* NEW: Hide the ::marker on hover for first-level OL items */
-    ol > li:hover::marker {
-        color: transparent; /* Makes the marker invisible */
-    }
-
-    /* Level 2 OL Container (nested in ul or ol) */
-    ol ol,
-    ul ol { 
-        list-style-type: none;   
-        padding-left: 0;         
-        margin-top: 8px;         
-        margin-bottom: 8px;      
-        /* font-size removed from here, applied to li */
-        counter-reset: nested-ol-counter; 
-    }
-
-    /* Level 2 OL Items */
-    ol ol > li,
-    ul ol > li { 
-        font-size: 1.0em; /* Relative to body font-size */
-        position: relative;
-        padding-left: 25px;      
-        margin-bottom: 8px;      
-        counter-increment: nested-ol-counter; 
-    }
-
-    ol ol > li::before,
-    ul ol > li::before { 
-        content: counter(nested-ol-counter) ". "; 
-        color: var(--secondary-color);           
-        font-weight: normal;                     
-        font-size: 1em; /* Relative to this li's font-size */
-        position: absolute;
-        left: 0;
-        top: 0px;
-    }
-
-    ol ol > li:hover::before,
-    ul ol > li:hover::before { 
-        color: var(--primary-color);             
-    }
-
-    /* Level 3 OL Container (nested in various ways) */
-    ol ol ol,
-    ul ol ol,
-    ol ul ol,
-    ul ul ol {
-        list-style-type: none;
-        padding-left: 0;
-        margin-top: 6px;
-        margin-bottom: 6px;
-        /* font-size removed from here, applied to li */
-        counter-reset: sub-sub-ol-counter;
-    }
-
-    /* Level 3 OL Items - Ensuring all 8 combinations for font size */
-    ul ul ul > li, /* From UL section, repeated for clarity or combined */
-    ul ul ol > li,
-    ul ol ul > li,
-    ul ol ol > li,
-    ol ul ul > li,
-    ol ul ol > li,
-    ol ol ul > li,
-    ol ol ol > li {
-        font-size: 0.9em; /* Relative to body font-size */
-        position: relative;
-        padding-left: 25px;
-        margin-bottom: 6px;
-        /* counter-increment will be specific to the type of list item (ol vs ul) */
-    }
-    /* Specific counter-increment for OL L3 items */
-    ol ol ol > li,
-    ul ol ol > li,
-    ol ul ol > li,
-    ul ul ol > li { /* Only for OL items */
-            counter-increment: sub-sub-ol-counter;
-    }
-
-
-    /* Level 3 OL Markers */
-    ol ol ol > li::before,
-    ul ol ol > li::before,
-    ol ul ol > li::before,
-    ul ul ol > li::before {
-        content: counter(sub-sub-ol-counter, lower-alpha) ". "; 
-        color: var(--footnote-color);
-        font-size: 1em; /* Relative to this li's font-size */
-        position: absolute;
-        left: 0px; /* Adjusted from 1px to align with other numbered lists */
-        top: 0px;
-        transition: color 0.2s ease-out;
-    }
-
-    ol ol ol > li:hover::before,
-    ul ol ol > li:hover::before,
-    ol ul ol > li:hover::before,
-    ul ul ol > li:hover::before {
-        color: var(--text-color);
-    }
-
-    /* Combining Level 3 UL and OL items for shared properties (font-size, padding, margin) */
-    /* This is a more concise way to set common L3 li properties if preferred over listing all 8 */
-    ul ul ul > li, ol ol ol > li, ul ol ul > li, ol ul ol > li, 
-    ul ul ol > li, ol ul ul > li, ul ol ol > li, ol ol ul > li {
-        font-size: 0.9em;
-        position: relative;
-        padding-left: 25px;
-        margin-bottom: 6px;
-    }
-
-    code {
-        font-family: var(--code-font);
-        background-color: var(--code-background);
-        padding: 3px 6px;
-        border-radius: 4px;
-        border: 1px solid var(--code-border);
-        color: var(--inline-code-text);
-        font-size: 0.95em; /* Relative to parent element's font size */
-        transition: all var(--transition-speed) ease;
-    }
-
-    .problem-label {
-        font-style: italic;
-        font-weight: normal; /* Explicitly set to normal if it might inherit bold from somewhere else */
-        /* You might want to adjust color or other properties here too */
-    }
-
-    code:hover {
-        background-color: #252540;
-        border-color: var(--primary-color);
-    }
-
-    pre {
-        background-color: var(--code-background);
-        border: 1px solid var(--code-border);
-        border-left: 5px solid var(--secondary-color);
-        border-radius: 5px;
-        padding: 18px;
-        overflow-x: auto;
-        box-shadow: 2px 2px 8px var(--box-shadow-color);
-        font-size: 1em; /* Relative to parent, typically body or container */
-        transition: all var(--transition-speed) ease;
-    }
-
-    pre:hover {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 15px rgba(77, 184, 255, 0.3); 
-    }
-
-    pre code {
-        font-family: var(--code-font);
-        background-color: transparent;
-        border: none;
-        padding: 0;
-        color: inherit;
-        font-size: inherit; /* Inherits from pre's 1em */
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 25px;
-        box-shadow: 2px 2px 8px var(--box-shadow-color);
-        transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
-    }
-
-    table:hover {
-        transform: scale(1.005);
-        box-shadow: 0 0 15px rgba(77, 184, 255, 0.3); 
-    }
-
-    th, td {
-        border: 1px solid var(--table-border);
-        padding: 12px;
-        text-align: left;
-        transition: background-color var(--transition-speed) ease;
-    }
-
-    th {
-        background-color: var(--table-header-bg);
-        color: var(--table-header-text);
-        font-family: var(--header-font);
-        font-size: 1.1em; /* Relative to table's font size (inherited) */
-    }
-
-    td {
-        background-color: var(--table-cell-bg);
-    }
-
-    tr:hover td {
-        background-color: #2e2e3e;
-    }
-
-    .oracle-specific {
-        background-color: var(--oracle-specific-bg);
-        border-left: 6px solid var(--oracle-specific-border);
-        padding: 12px 15px;
-        margin: 18px 0;
-        border-radius: 4px;
-        transition: all var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
-    }
-
-    .oracle-specific:hover {
-        transform: translateX(5px);
-        box-shadow: 3px 0 10px rgba(255, 140, 0, 0.2), 0 0 15px rgba(77, 184, 255, 0.3); 
-    }
-
-    .postgresql-bridge {
-        background-color: var(--postgresql-bridge-bg);
-        border-left: 6px solid var(--postgresql-bridge-border);
-        padding: 12px 15px;
-        margin: 18px 0;
-        border-radius: 4px;
-        transition: all var(--transition-speed) ease;
-    }
-
-    .postgresql-bridge:hover {
-        transform: translateX(5px);
-        box-shadow: 3px 0 10px rgba(0, 193, 118, 0.2);
-    }
-
-    .caution {
-        background-color: var(--caution-bg);
-        border-left: 6px solid var(--caution-border);
-        padding: 12px 15px;
-        margin: 18px 0;
-        border-radius: 4px;
-        transition: all var(--transition-speed) ease;
-    }
-
-    .caution:hover {
-        transform: translateX(5px);
-        box-shadow: 3px 0 10px rgba(230, 76, 0, 0.2); 
-    }
-
-    .rhyme {
-        font-style: italic;
-        color: var(--primary-color);
-        margin-left: 25px;
-        padding: 5px 0;
-        border-left: 3px dotted var(--accent-color);
-        padding-left: 10px;
-        transition: all var(--transition-speed) ease;
-    }
-
-    .rhyme:hover {
-        color: var(--secondary-color);
-        border-left-color: var(--primary-color);
-        transform: translateX(3px);
-    }
-
-    p > small {
-        display: block;
-        margin-top: 8px;
-        font-size: 0.9em; /* Relative to parent p's font size */
-        color: var(--footnote-color);
-        transition: color var(--transition-speed) ease;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes pulse {
-        0% { box-shadow: 0 0 0 0 rgba(77, 184, 255, 0.4); }
-        70% { box-shadow: 0 0 0 10px rgba(77, 184, 255, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(77, 184, 255, 0); }
-    }
-
-    html {
-        scroll-behavior: smooth;
-    }
-
-    .sql-keyword {
-        color: var(--accent-color);
-        font-weight: bold;
-    }
-
-    .sql-function {
-        color: var(--secondary-color);
-    }
-
-    .sql-comment {
-        color: #7f7f9f;
-        font-style: italic;
-    }
-
-    @media (max-width: 768px) {
-        .container {
-            padding: 20px;
-            margin: 1rem auto;
-        }
-        :root {
-            --glow-intensity: 0.3; 
-        }
-        body {
-            font-size: 1.1rem; 
-            padding: 15px;
-        }
-        h1 { font-size: 2.4em; }
-        h2 { font-size: 1.9em; }
-        h3 { font-size: 1.5em; }
-        p { font-size: 1.05em; }
-    }
-</style>
-
 <div class="container">
 
 # Solutions: PL/SQL Resilience - Packages, Errors, and Automation
@@ -615,14 +33,7 @@ When reviewing, try to:
 *   Understand the rationale behind Oracle-specific constructs.
 *   Note any pitfalls or common errors discussed in the explanations.
 
-## <!-- PLACEHOLDER FOR PRE-GENERATED SOLUTIONS -->
-
-*(The pre-generated exercises and their solutions, including dataset DDL/DML if not provided separately in the exercise document, will be inserted here. Each solution will follow the structure outlined above: Problem Recap, Solution Code, and Detailed Explanation.)*
-
----
-**BEGINNING OF INSERTED SOLUTIONS**
-
-*(This is where your previously generated exercise solutions would go. For brevity, I will provide the solutions for the exercises I generated in the previous step. Ensure each solution includes the problem statement for context, the code, and a detailed explanation.)*
+## Solutions
 
 ### Category: Packages: Specification, body, benefits, overloading
 
@@ -757,7 +168,7 @@ When reviewing, try to:
             RETURN vFullName;
         EXCEPTION
             WHEN NO_DATA_FOUND THEN
-                RETURN 'Employee not found';
+                RETURN 'Employee ID ' || pEmployeeId || ' not found';
         END GetEmployeeFullName;
 
         PROCEDURE UpdateEmployeeSalary (
@@ -960,10 +371,477 @@ When reviewing, try to:
 **Oracle Insight:** Overloading allows you to create multiple subprograms with the same name but different parameter signatures. This enhances code flexibility and readability, as users can call the version of the subprogram that best suits the data they have. It's a common practice in Oracle's own supplied packages.
 </div>
 
-*(Solutions for (ii), (iii), and (iv) would continue in a similar fashion, with problem recaps, code, and detailed explanations, including PostgreSQL bridge comments and Oracle-specific insights where appropriate.)*
+#### (ii) Disadvantages and Pitfalls (Packages)
+
+**Exercise 2.1: Package State Invalidation**
+*   <span class="problem-label">Problem Recap:</span> Demonstrate package state loss (ORA-04068) when a package body is recompiled in another session.
+
+*   **Solution Code:**
+    ```sql
+    -- Package Specification
+    CREATE OR REPLACE PACKAGE StatefulPkg AS
+        counter NUMBER := 0;
+        PROCEDURE IncrementCounter;
+        FUNCTION GetCounter RETURN NUMBER;
+    END StatefulPkg;
+    /
+
+    -- Package Body
+    CREATE OR REPLACE PACKAGE BODY StatefulPkg AS
+        PROCEDURE IncrementCounter IS
+        BEGIN
+            counter := counter + 1;
+            DBMS_OUTPUT.PUT_LINE('Counter (session ' || SYS_CONTEXT('USERENV', 'SID') || ') is now: ' || counter);
+        END IncrementCounter;
+
+        FUNCTION GetCounter RETURN NUMBER IS
+        BEGIN
+            RETURN counter;
+        END GetCounter;
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('StatefulPkg initialized for session ' || SYS_CONTEXT('USERENV', 'SID') || '. Counter: ' || counter);
+    END StatefulPkg;
+    /
+    ```
+
+    **Test Steps:**
+    1.  **Session 1:**
+        ```sql
+        SET SERVEROUTPUT ON;
+        BEGIN
+            StatefulPkg.IncrementCounter; -- Expected: Initialized, Counter is now: 1
+            StatefulPkg.IncrementCounter; -- Expected: Counter is now: 2
+            DBMS_OUTPUT.PUT_LINE('Final Counter in Session 1 (before recompile): ' || StatefulPkg.GetCounter); -- Expected: 2
+        END;
+        /
+        ```
+    2.  **Session 2:**
+        ```sql
+        -- Make a trivial change if needed, or just recompile
+        ALTER PACKAGE StatefulPkg COMPILE BODY; 
+        -- Or, if making a change to ensure it's "different":
+        /*
+        CREATE OR REPLACE PACKAGE BODY StatefulPkg AS
+            PROCEDURE IncrementCounter IS
+            BEGIN
+                counter := counter + 1;
+                DBMS_OUTPUT.PUT_LINE('Counter (session ' || SYS_CONTEXT('USERENV', 'SID') || ') is now (v2): ' || counter);
+            END IncrementCounter;
+
+            FUNCTION GetCounter RETURN NUMBER IS
+            BEGIN
+                RETURN counter;
+            END GetCounter;
+        BEGIN
+            DBMS_OUTPUT.PUT_LINE('StatefulPkg (v2) initialized for session ' || SYS_CONTEXT('USERENV', 'SID') || '. Counter: ' || counter);
+        END StatefulPkg;
+        /
+        */
+        ```
+    3.  **Session 1 (again):**
+        ```sql
+        SET SERVEROUTPUT ON;
+        BEGIN
+            DBMS_OUTPUT.PUT_LINE('Attempting to increment counter after recompile in another session...');
+            StatefulPkg.IncrementCounter; 
+        EXCEPTION
+            WHEN OTHERS THEN
+                DBMS_OUTPUT.PUT_LINE('Error in Session 1: ' || SQLERRM);
+                -- Attempt to re-access, which might re-initialize
+                BEGIN
+                    DBMS_OUTPUT.PUT_LINE('Attempting to get counter after error...');
+                    DBMS_OUTPUT.PUT_LINE('Counter after re-access: ' || StatefulPkg.GetCounter);
+                EXCEPTION
+                    WHEN OTHERS THEN
+                         DBMS_OUTPUT.PUT_LINE('Further error: ' || SQLERRM);
+                END;
+        END;
+        /
+        ```
+*   **Detailed Explanation:**
+    *   Initially, Session 1 uses `StatefulPkg`, and its `counter` variable maintains state (increments).
+    *   When Session 2 recompiles the package *body*, the definition of the package changes in the database.
+    *   When Session 1 next tries to access `StatefulPkg`, Oracle detects that its in-memory state for the package is stale (based on an older version of the body). This results in the `ORA-04068: existing state of package "SCHEMA.STATEFULPKG" has been discarded` error.
+    *   Subsequent calls in Session 1 *might* trigger a re-initialization of the package for that session, at which point `counter` would reset to 0. The exact behavior can sometimes depend on how Oracle handles the re-instantiation.
+    *   This demonstrates a critical pitfall in environments where package bodies are frequently updated during development or deployment while sessions are active.
+    *   **Oracle 23ai Note:** The `SESSION_EXIT_ON_PACKAGE_STATE_ERROR` initialization parameter (mentioned in `PL/SQL Language Reference`, p. 11-8) can alter this behavior. If `TRUE`, the session would exit instead of just raising ORA-04068. For this exercise, the default behavior (raising ORA-04068) is assumed.
+
+<div class="caution">
+**Pitfall:** Unmanaged package state invalidation (ORA-04068) can lead to unexpected application errors if not handled or understood by developers. Applications should be designed to be resilient to this, or deployment procedures should minimize active sessions during package updates.
+</div>
+
+**Exercise 2.2: Overloading Pitfall - Ambiguity with Implicit Conversions**
+*   <span class="problem-label">Problem Recap:</span> Create a package with overloaded procedures `ProcessValue(NUMBER)` and `ProcessValue(VARCHAR2)`. Call it with a `DATE`.
+
+*   **Solution Code:**
+    ```sql
+    CREATE OR REPLACE PACKAGE OverloadDemo AS
+        PROCEDURE ProcessValue(pValue IN NUMBER);
+        PROCEDURE ProcessValue(pValue IN VARCHAR2);
+    END OverloadDemo;
+    /
+
+    CREATE OR REPLACE PACKAGE BODY OverloadDemo AS
+        PROCEDURE ProcessValue(pValue IN NUMBER) IS
+        BEGIN
+            DBMS_OUTPUT.PUT_LINE('Called ProcessValue(NUMBER) with: ' || pValue);
+        END ProcessValue;
+
+        PROCEDURE ProcessValue(pValue IN VARCHAR2) IS
+        BEGIN
+            DBMS_OUTPUT.PUT_LINE('Called ProcessValue(VARCHAR2) with: ' || pValue);
+        END ProcessValue;
+    END OverloadDemo;
+    /
+
+    -- Test block
+    SET SERVEROUTPUT ON;
+    DECLARE
+        myDate DATE := SYSDATE;
+    BEGIN
+        OverloadDemo.ProcessValue(myDate); 
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error: ' || SQLCODE || ' - ' || SQLERRM);
+    END;
+    /
+    ```
+*   **Detailed Explanation:**
+    *   When `OverloadDemo.ProcessValue(myDate)` is called, Oracle attempts to find a matching `ProcessValue` procedure.
+    *   There is no `ProcessValue(DATE)`.
+    *   Oracle will then try to implicitly convert `myDate` (a `DATE`) to either `NUMBER` or `VARCHAR2`.
+    *   A `DATE` can be implicitly converted to `VARCHAR2` (using the default NLS date format). It typically cannot be implicitly converted to `NUMBER` directly in a way that makes sense for overloading resolution without an explicit cast or function call.
+    *   **Expected Outcome:** The `ProcessValue(VARCHAR2)` version will likely be called, and `myDate` will be implicitly converted to its character representation (e.g., '15-MAY-25').
+    *   **Pitfall:** The developer might have intended a different behavior or might not realize which overloaded version is being invoked due to implicit conversion. If there were, for instance, a `ProcessValue(TIMESTAMP)`, and `DATE` could also implicitly convert to `TIMESTAMP`, then PLS-00307 (too many declarations of 'PROCESSVALUE' match this call) could occur.
+    *   **Resolution:** To avoid ambiguity and ensure the correct version is called, use explicit conversion:
+        *   `OverloadDemo.ProcessValue(TO_CHAR(myDate));` to call the VARCHAR2 version.
+        *   Or, if a numeric representation was intended (though less common for a DATE), `OverloadDemo.ProcessValue(TO_NUMBER(TO_CHAR(myDate, 'J')));` (for Julian date). The best resolution is often to provide an overloaded version that directly accepts the `DATE` type if that's a common use case.
+
+<div class="postgresql-bridge">
+**Bridging from PostgreSQL:** PostgreSQL's function overloading resolution also considers implicit casts. The "best match" rules can be complex. The key takeaway is that relying on implicit conversions with overloading can reduce code clarity and lead to unexpected behavior in both systems. Explicit casting is generally safer.
+</div>
+
+#### (iii) Contrasting with Inefficient Common Solutions (Packages)
+
+**Exercise 3.1: Package vs. Standalone Utilities**
+*   <span class="problem-label">Problem Recap:</span> Create string utility functions (`ReverseString`, `CountVowels`, `IsPalindrome`) first as standalone functions, then as a package. Discuss benefits.
+
+*   **Inefficient Common Solution (Standalone Functions):**
+    ```sql
+    CREATE OR REPLACE FUNCTION ReverseString (pInput IN VARCHAR2) RETURN VARCHAR2 IS
+        vReversed VARCHAR2(4000) := '';
+    BEGIN
+        FOR i IN REVERSE 1..LENGTH(pInput) LOOP
+            vReversed := vReversed || SUBSTR(pInput, i, 1);
+        END LOOP;
+        RETURN vReversed;
+    END ReverseString;
+    /
+
+    CREATE OR REPLACE FUNCTION CountVowels (pInput IN VARCHAR2) RETURN NUMBER IS
+        vCount NUMBER := 0;
+        vChar CHAR(1);
+    BEGIN
+        FOR i IN 1..LENGTH(pInput) LOOP
+            vChar := UPPER(SUBSTR(pInput, i, 1));
+            IF vChar IN ('A', 'E', 'I', 'O', 'U') THEN
+                vCount := vCount + 1;
+            END IF;
+        END LOOP;
+        RETURN vCount;
+    END CountVowels;
+    /
+
+    CREATE OR REPLACE FUNCTION IsPalindrome (pInput IN VARCHAR2) RETURN BOOLEAN IS
+        vCleanedInput VARCHAR2(4000);
+        vReversedInput VARCHAR2(4000);
+    BEGIN
+        -- Basic cleaning: remove spaces and convert to upper case
+        vCleanedInput := UPPER(REPLACE(pInput, ' ', ''));
+        IF vCleanedInput IS NULL THEN RETURN TRUE; END IF; -- Empty or all spaces is a palindrome
+        
+        vReversedInput := ReverseString(vCleanedInput); -- Reuses the standalone ReverseString
+        
+        RETURN vCleanedInput = vReversedInput;
+    END IsPalindrome;
+    /
+    ```
+
+*   **Oracle-Idiomatic Solution (Package `StringUtils`):**
+    ```sql
+    CREATE OR REPLACE PACKAGE StringUtils AS
+        FUNCTION ReverseString (pInput IN VARCHAR2) RETURN VARCHAR2;
+        FUNCTION CountVowels (pInput IN VARCHAR2) RETURN NUMBER;
+        FUNCTION IsPalindrome (pInput IN VARCHAR2) RETURN BOOLEAN;
+    END StringUtils;
+    /
+
+    CREATE OR REPLACE PACKAGE BODY StringUtils AS
+        FUNCTION ReverseString (pInput IN VARCHAR2) RETURN VARCHAR2 IS
+            vReversed VARCHAR2(4000) := '';
+        BEGIN
+            IF pInput IS NULL THEN RETURN NULL; END IF;
+            FOR i IN REVERSE 1..LENGTH(pInput) LOOP
+                vReversed := vReversed || SUBSTR(pInput, i, 1);
+            END LOOP;
+            RETURN vReversed;
+        END ReverseString;
+
+        FUNCTION CountVowels (pInput IN VARCHAR2) RETURN NUMBER IS
+            vCount NUMBER := 0;
+            vChar CHAR(1);
+        BEGIN
+            IF pInput IS NULL THEN RETURN 0; END IF;
+            FOR i IN 1..LENGTH(pInput) LOOP
+                vChar := UPPER(SUBSTR(pInput, i, 1));
+                IF vChar IN ('A', 'E', 'I', 'O', 'U') THEN
+                    vCount := vCount + 1;
+                END IF;
+            END LOOP;
+            RETURN vCount;
+        END CountVowels;
+
+        FUNCTION IsPalindrome (pInput IN VARCHAR2) RETURN BOOLEAN IS
+            vCleanedInput VARCHAR2(4000);
+            -- vReversedInput VARCHAR2(4000); -- Not needed if ReverseString is called directly
+        BEGIN
+            -- Basic cleaning: remove spaces and convert to upper case
+            vCleanedInput := UPPER(REPLACE(pInput, ' ', ''));
+            IF vCleanedInput IS NULL THEN RETURN TRUE; END IF;
+            
+            -- Calls the ReverseString function *within the same package*
+            RETURN vCleanedInput = StringUtils.ReverseString(vCleanedInput); 
+            -- Or simply: RETURN vCleanedInput = ReverseString(vCleanedInput); if unambiguous
+        END IsPalindrome;
+    END StringUtils;
+    /
+
+    -- Test the package
+    SET SERVEROUTPUT ON
+    BEGIN
+      DBMS_OUTPUT.PUT_LINE('Reverse of "Oracle": ' || StringUtils.ReverseString('Oracle'));
+      DBMS_OUTPUT.PUT_LINE('Vowels in "Database": ' || StringUtils.CountVowels('Database'));
+      DBMS_OUTPUT.PUT_LINE('Is "madam" a palindrome? ' || CASE WHEN StringUtils.IsPalindrome('madam') THEN 'Yes' ELSE 'No' END);
+      DBMS_OUTPUT.PUT_LINE('Is "test" a palindrome? ' || CASE WHEN StringUtils.IsPalindrome('test') THEN 'Yes' ELSE 'No' END);
+    END;
+    /
+    ```
+*   **Detailed Explanation & Discussion:**
+    *   **Inefficient (Standalone):**
+        *   Each function is a separate database object.
+        *   Managing grants becomes per-function.
+        *   If `IsPalindrome` needs a helper function also used by `ReverseString` (e.g., a more advanced string cleaning function), that helper would also have to be a standalone public function, or its code duplicated.
+        *   If `ReverseString` is modified, any standalone function calling it (like `IsPalindrome`) might need revalidation, though Oracle's dependency tracking is quite good.
+    *   **Oracle-Idiomatic (Package):**
+        *   **Modularity & Organization:** All related string utilities are grouped logically.
+        *   **Encapsulation:** The package could contain private helper functions or constants (e.g., a constant array of vowels) not exposed publicly but used by the public functions.
+        *   **Easier Grant Management:** `GRANT EXECUTE ON StringUtils TO user_or_role;` grants access to all public members.
+        *   **Reduced Namespace Pollution:** Only one top-level object (`StringUtils`) is created in the schema for these utilities.
+        *   **Performance (Session State & Loading):** When the first subprogram in `StringUtils` is called in a session, the entire package (or relevant parts) is loaded into memory. Subsequent calls to other subprograms in the same package within that session can be faster as they don't require reloading from disk.
+        *   **Dependency Management:** Changing the package *body* (implementation) without changing the specification does not invalidate objects that call the package. This is a significant advantage for maintenance. (`PL/SQL Language Reference, F46753-09`, p. 11-2 "Better Performance").
+    *   The `IsPalindrome` function within the package can directly call `ReverseString` (also in the package) without needing to qualify it with the package name, though explicitly qualifying (`StringUtils.ReverseString`) is also fine and sometimes clearer.
+
+<div class="oracle-specific">
+**Oracle Advantage:** Packages are a cornerstone of Oracle PL/SQL development for their organizational, encapsulation, and performance benefits. They represent a more robust modularization approach compared to simply grouping functions in a schema as one might do in PostgreSQL.
+</div>
 
 ---
-**END OF INSERTED SOLUTIONS**
+
+### Category: Exception Handling: Predefined exceptions, user-defined exceptions, SQLCODE, SQLERRM, PRAGMA EXCEPTION_INIT
+
+#### (i) Meanings, Values, Relations, and Advantages
+
+**Exercise 1.4: Handling Predefined Exceptions**
+*   **Problem:** Write a PL/SQL anonymous block that attempts to:
+    1.  Select an employee's salary into a `NUMBER` variable for an `employeeId` that does not exist in the `Employees` table.
+    2.  Handle the `NO_DATA_FOUND` predefined exception and print a user-friendly message.
+    3.  Attempt to divide a number by zero.
+    4.  Handle the `ZERO_DIVIDE` predefined exception and print a user-friendly message.
+*   **Focus:** Understand how to catch and handle common predefined Oracle exceptions.
+*   **Relations:**
+    *   **Oracle:** Directly uses predefined exceptions. `PL/SQL Language Reference (F46753-09)`, Chapter 12, "Predefined Exceptions" (p. 12-11, Table 12-3 lists them).
+    *   **PostgreSQL Bridge:** PostgreSQL also has predefined exceptions (e.g., `no_data_found`, `division_by_zero`). The concept is similar, but the specific exception names and the `EXCEPTION WHEN ... THEN` syntax are key Oracle PL/SQL constructs.
+*   **Advantages Demonstrated:** Graceful error recovery, providing better user experience than unhandled errors.
+
+**Exercise 1.5: Declaring and Raising User-Defined Exceptions**
+*   **Problem:**
+    1.  Create a procedure `CheckProductStock` that takes `pProductId` and `pQuantityRequired` as input.
+    2.  Inside the procedure, declare a user-defined exception named `LowStockWarning`.
+    3.  If the `stockQuantity` for the given `pProductId` in the `Products` table is less than `pQuantityRequired` but greater than 0, raise `LowStockWarning`.
+    4.  If `stockQuantity` is 0, raise the predefined `NO_DATA_FOUND` (or a different user-defined exception like `OutOfStockError`).
+    5.  The procedure should have an exception block to handle `LowStockWarning` by printing "Warning: Low stock for product ID [ID]." and `NO_DATA_FOUND` by printing "Error: Product ID [ID] is out of stock."
+    Write an anonymous block to test both scenarios (low stock and out of stock for Product ID 1002 'Wireless Mouse' and 1003 'Monitor HD' respectively, assuming initial quantities).
+*   **Focus:** Learn how to declare, raise, and handle user-defined exceptions.
+*   **Relations:**
+    *   **Oracle:** `PL/SQL Language Reference (F46753-09)`, Chapter 12, "User-Defined Exceptions" (p. 12-13) and "Raising Exceptions Explicitly" (p. 12-15).
+    *   **PostgreSQL Bridge:** PostgreSQL's `RAISE EXCEPTION` is similar in concept. Oracle's `DECLARE exception_name EXCEPTION;` and `RAISE exception_name;` syntax is specific.
+*   **Advantages Demonstrated:** Ability to create custom error conditions specific to application logic.
+
+**Exercise 1.6: Using `SQLCODE`, `SQLERRM`, and `PRAGMA EXCEPTION_INIT`**
+*   **Problem:**
+    1.  Declare a user-defined exception `NegativeSalaryError`.
+    2.  Use `PRAGMA EXCEPTION_INIT` to associate this exception with the Oracle error code -20002.
+    3.  Create a procedure `ValidateSalary` that takes a `newSalary` as input. If `newSalary` is negative, raise `NegativeSalaryError`.
+    4.  Write an anonymous block that calls `ValidateSalary` with a negative salary. The exception handler in the anonymous block should catch `NegativeSalaryError` and print the error code using `SQLCODE` and the error message using `SQLERRM`.
+*   **Focus:** Understand how to use `SQLCODE` and `SQLERRM` for error diagnostics and `PRAGMA EXCEPTION_INIT` to map custom exceptions to Oracle error numbers.
+*   **Relations:**
+    *   **Oracle:** `PL/SQL Language Reference (F46753-09)`, Chapter 12, "Retrieving Error Code and Error Message" (p. 12-27) and "Naming Internally Defined Exception" (p. 12-10), which explains `PRAGMA EXCEPTION_INIT`.
+    *   **PostgreSQL Bridge:** PostgreSQL has `SQLSTATE` and `SQLERRM` available in its `EXCEPTION` block. Oracle's `SQLCODE` is an integer, and `PRAGMA EXCEPTION_INIT` provides a way to give a name to a specific ORA- error or a user-defined error number within the range -20000 to -20999.
+*   **Advantages Demonstrated:** Standardized error reporting, ability to handle specific Oracle errors by custom names.
+
+#### (ii) Disadvantages and Pitfalls (Exception Handling)
+
+**Exercise 2.3: Overuse of `WHEN OTHERS`**
+*   **Problem:** Write a procedure `ProcessOrder` that performs several DML operations (e.g., inserts into `Orders`, then `OrderItems`, then updates `Products`). Include a single `WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE('An error occurred.');` exception handler at the end.
+    Discuss the disadvantages of this approach. How could it be improved for better error diagnosis and recovery?
+*   **Focus:** Highlight the pitfalls of catching all exceptions with a generic `WHEN OTHERS` without specific handling or re-raising.
+*   **Disadvantage/Pitfall:** Masks the actual error, making debugging very difficult. The specific cause of the failure is lost. It might also prevent proper transaction rollback if the error is critical.
+*   **Relevant Docs:** `PL/SQL Language Reference (F46753-09)`, Chapter 12, "Guidelines for Avoiding and Handling Exceptions" (p. 12-9) - especially the point about writing handlers for named exceptions.
+
+**Exercise 2.4: Exception Propagation and Unhandled Exceptions**
+*   **Problem:**
+    1.  Create a procedure `InnerProc` that attempts to insert a duplicate `productId` into the `Products` table (which will raise `DUP_VAL_ON_INDEX` due to the primary key constraint). `InnerProc` should *not* have an exception handler for `DUP_VAL_ON_INDEX`.
+    2.  Create another procedure `OuterProc` that calls `InnerProc`. `OuterProc` should also *not* have an exception handler for `DUP_VAL_ON_INDEX`.
+    3.  Write an anonymous block that calls `OuterProc`. This block *should* have an exception handler for `DUP_VAL_ON_INDEX`.
+    Explain the flow of exception propagation. What happens if the anonymous block also doesn't handle it?
+*   **Focus:** Demonstrate how unhandled exceptions propagate up the call stack.
+*   **Pitfall:** If an exception propagates all the way to the client without being handled, it can result in an ungraceful application termination or a generic error message to the user.
+*   **Relevant Docs:** `PL/SQL Language Reference (F46753-09)`, Chapter 12, "Exception Propagation" (p. 12-19).
+
+#### (iii) Contrasting with Inefficient Common Solutions (Exception Handling)
+
+**Exercise 3.2: Manual Error Checking vs. Exception Handling**
+*   **Scenario:** A requirement is to ensure that when a new employee is added, their salary is within a valid range for their department (e.g., min 30000, max 150000 for Sales).
+*   **Inefficient Common Solution (Problem):** A developer writes a procedure `AddEmployeeManualCheck` that takes employee details. After the `INSERT` statement, they use several `IF` statements to check if `SQL%ROWCOUNT = 1` (for successful insert) and then separately query the salary ranges and check if the inserted salary is valid. If not, they try to manually `DELETE` the inserted record and print error messages.
+*   **Oracle-Idiomatic Solution (Solution):** Create a procedure `AddEmployeeWithException` that declares a user-defined exception `InvalidSalaryRange`. Before the `INSERT`, check the salary. If invalid, `RAISE InvalidSalaryRange`. The `INSERT` only happens if the salary is valid. The calling block can then handle `InvalidSalaryRange`. Alternatively, use a `CHECK` constraint on the table if the range is static, or a trigger to validate (covered next). For this exercise, focus on the procedural exception.
+*   **Discussion Point:** Explain how exception handling simplifies the logic, makes it more readable, and centralizes error management compared to scattered `IF` checks and manual rollback/delete attempts.
+*   **Focus:** Show that proactive validation and raising custom exceptions leads to cleaner and more robust code than reactive manual checks and cleanups.
+*   **Loss of Advantages (Inefficient):** Code becomes cluttered with error checks, manual cleanup is error-prone, transaction atomicity might be compromised if cleanup fails.
+
+#### (iv) Hardcore Combined Problem (Packages & Exception Handling)
+
+This section will be combined with the Triggers hardcore problem below, as they often work together in complex scenarios.
+
+---
+
+### Category: Triggers: DML triggers, :NEW and :OLD qualifiers, conditional predicates
+
+#### (i) Meanings, Values, Relations, and Advantages
+
+**Exercise 1.7: Basic AFTER INSERT Row-Level Trigger**
+*   **Problem:** Create a trigger `trgAfterNewEmployee` that fires *after* a new row is inserted into the `Employees` table. For each inserted row, the trigger should print a message to `DBMS_OUTPUT` saying "New employee added: [Employee's Full Name] with ID: [Employee ID]". Use the `:NEW` pseudorecord.
+*   **Focus:** Understand basic `AFTER INSERT FOR EACH ROW` trigger syntax and the usage of `:NEW`.
+*   **Relations:**
+    *   **Oracle:** `PL/SQL Language Reference (F46753-09)`, Chapter 10, "DML Triggers" (p. 10-4) and "Correlation Names and Pseudorecords" (p. 10-28). `Get Started Guide (F79574-03)`, "About OLD and NEW Pseudorecords" (p. 6-3).
+    *   **PostgreSQL Bridge:** PostgreSQL triggers have similar concepts (`NEW` record for `INSERT`/`UPDATE`, `OLD` for `UPDATE`/`DELETE`). The `CREATE TRIGGER ... FOR EACH ROW EXECUTE FUNCTION ...` syntax is different. Oracle's PL/SQL trigger body is defined inline.
+*   **Advantages Demonstrated:** Automating actions (like logging or derived calculations) based on DML events.
+
+**Exercise 1.8: BEFORE UPDATE Statement-Level Trigger with Conditional Predicates**
+*   **Problem:** Create a trigger `trgBeforeEmployeeUpdateAudit` that fires *before* any `UPDATE` statement is executed on the `Employees` table.
+    1.  The trigger should log a generic message to the `AuditLog` table: `tableName` = 'Employees', `operationType` = 'BATCH UPDATE START'.
+    2.  This trigger should be a statement-level trigger.
+    3.  Test by updating multiple employee salaries in a single `UPDATE` statement.
+*   **Focus:** Understand `BEFORE UPDATE` statement-level triggers and how conditional predicates like `UPDATING` work (though `UPDATING` is more useful with multiple DML events, this sets the stage).
+*   **Relations:**
+    *   **Oracle:** `PL/SQL Language Reference (F46753-09)`, Chapter 10, "Conditional Predicates for Detecting Triggering DML Statement" (p. 10-5). `Get Started Guide (F79574-03)`, "Tutorial: Creating a Trigger that Logs Table Changes" (p. 6-3) uses these.
+    *   **PostgreSQL Bridge:** PostgreSQL triggers can also be statement-level (`FOR EACH STATEMENT`). Conditional logic within the trigger function would achieve similar predicate effects.
+*   **Advantages Demonstrated:** Performing an action once per DML statement, regardless of how many rows are affected. Useful for setting up audit trails or global checks.
+
+**Exercise 1.9: Using `:OLD` and `:NEW` in an UPDATE Trigger with a WHEN Clause**
+*   **Problem:** Create a trigger `trgLogSignificantSalaryChange` that fires *after* an `UPDATE` on the `salary` column of the `Employees` table *for each row*.
+    1.  The trigger should only fire if the new salary is at least 10% greater than the old salary (`WHEN (NEW.salary > OLD.salary * 1.10)`).
+    2.  If it fires, it should insert a record into `AuditLog` with `tableName`='Employees', `operationType`='SIG_SAL_INC', `recordId`=`:NEW.employeeId`, `oldValue`=`:OLD.salary`, `newValue`=`:NEW.salary`.
+    Test by updating salaries, some significantly, some not.
+*   **Focus:** Combine `:OLD`, `:NEW`, `FOR EACH ROW`, and the `WHEN` clause for fine-grained trigger control.
+*   **Relations:**
+    *   **Oracle:** Reinforces `:OLD`/`:NEW` and introduces the trigger's `WHEN` clause. `PL/SQL Language Reference (F46753-09)`, Chapter 10, "Correlation Names and Pseudorecords" (p. 10-28) and the `CREATE TRIGGER` syntax for the `WHEN` clause.
+    *   **PostgreSQL Bridge:** PostgreSQL trigger functions can use `OLD` and `NEW` records. The conditional logic (WHEN clause) in Oracle triggers is a concise way to control firing without an explicit IF statement at the beginning of the trigger body.
+*   **Advantages Demonstrated:** Efficiently targeting trigger logic to specific conditions on row data changes, reducing unnecessary trigger executions.
+
+#### (ii) Disadvantages and Pitfalls (Triggers)
+
+**Exercise 2.5: The Mutating Table Error (ORA-04091)**
+*   **Problem:**
+    1.  Create a trigger `trgEnforceMaxDepartmentSalary` on the `Employees` table that fires `BEFORE INSERT OR UPDATE OF salary, departmentId`.
+    2.  Inside the trigger (for each row), attempt to query the `Employees` table to find the maximum salary for the `:NEW.departmentId` and ensure the `:NEW.salary` does not exceed this maximum by more than 20%. If it does, raise an application error.
+    3.  Attempt to insert a new employee or update an existing one in a way that would cause the trigger to query the `Employees` table. Observe the ORA-04091 error. Explain why it occurs.
+*   **Focus:** Demonstrate the common mutating table error.
+*   **Pitfall:** A trigger cannot query or modify the same table that is currently being modified by the DML statement that fired the trigger (for row-level triggers).
+*   **Relevant Docs:** `PL/SQL Language Reference (F46753-09)`, Chapter 10, "Mutating-Table Restriction" (p. 10-42).
+
+**Exercise 2.6: Trigger Cascading and Performance**
+*   **Problem:**
+    1.  Create table `TableA` with a column `val NUMBER`.
+    2.  Create table `TableB` with a column `val NUMBER`.
+    3.  Create a trigger `trgCascadeAtoB` on `TableA` that fires `AFTER INSERT FOR EACH ROW`. This trigger inserts a new row into `TableB` with `:NEW.val * 2`.
+    4.  Create a trigger `trgCascadeBtoA` on `TableB` that fires `AFTER INSERT FOR EACH ROW`. This trigger attempts to insert a new row into `TableA` with `:NEW.val / 2`.
+    What happens when you insert a row into `TableA`? Discuss the potential for infinite loops and performance issues with cascading triggers.
+*   **Focus:** Illustrate the dangers of uncontrolled trigger cascading.
+*   **Pitfall:** Cascading triggers can lead to complex, hard-to-debug chains of events, infinite loops (ORA-00036: maximum number of recursive SQL levels exceeded), and significant performance degradation.
+*   **Relevant Docs:** `PL/SQL Language Reference (F46753-09)`, Chapter 10, "Order in Which Triggers Fire" (p. 10-46) touches on cascading.
+
+#### (iii) Contrasting with Inefficient Common Solutions (Triggers)
+
+**Exercise 3.3: Complex Validation in Application Code vs. Trigger**
+*   **Scenario:** A business rule states that whenever an order item's quantity is updated, if the product is 'Laptop Pro' and the new quantity exceeds 5, the `status` of the corresponding order in the `Orders` table must be set to 'ReviewRequired'.
+*   **Inefficient Common Solution (Problem):** The application code handles this logic. After every `UPDATE` to `OrderItems`, the application code explicitly checks the product name and quantity, and if necessary, issues a separate `UPDATE` statement to the `Orders` table.
+*   **Oracle-Idiomatic Solution (Solution):** Create an `AFTER UPDATE OF quantity ON OrderItems FOR EACH ROW` trigger. Inside the trigger, check if `:NEW.productId` corresponds to 'Laptop Pro' (requires a lookup to `Products` table) and if `:NEW.quantity > 5`. If both are true, update the `status` of the `Orders` table where `orderId = :NEW.orderId`.
+*   **Discussion Point:** Explain how a trigger centralizes this business rule in the database, ensuring it's applied consistently regardless of how the `OrderItems` table is updated (e.g., by different applications, direct SQL). This reduces code duplication and potential for the rule to be missed in some application paths.
+*   **Focus:** Demonstrates triggers as a robust way to enforce complex, cross-table business rules that might be inconsistently applied or forgotten in application-level code.
+*   **Loss of Advantages (Inefficient):** Rule enforcement is decentralized and depends on all application paths correctly implementing it. Increased network traffic if the checks and subsequent updates are done from the client. Potential for data inconsistency if some paths miss the logic.
+
+#### (iv) Hardcore Combined Problem (Packages, Exception Handling, Triggers)
+
+**Exercise 4.2: Comprehensive Order and Inventory Management with Auditing and Error Handling**
+*   **Problem:**
+    Enhance the `OrderManagementPkg` from a previous exercise (or create it if not done) and integrate it with robust auditing and error handling through triggers.
+
+    **Requirements:**
+    1.  **`ProductStockPkg` Package:**
+        *   **Specification:**
+            *   Public procedure `CheckAndAdjustStock(pProductId IN NUMBER, pQuantityChange IN NUMBER, pOperationType IN VARCHAR2)` (pOperationType can be 'DECREMENT' for sale, 'INCREMENT' for restock).
+            *   User-defined exception `ProductNotFoundException`.
+            *   User-defined exception `CriticalStockLevelException`.
+        *   **Body:**
+            *   Implement `CheckAndAdjustStock`:
+                *   If `pOperationType` is 'DECREMENT':
+                    *   Check if product exists. If not, raise `ProductNotFoundException`.
+                    *   Check if current `stockQuantity - pQuantityChange < 0`. If so, raise the `InsufficientStockException` (from `OrderManagementPkg` or declare it here).
+                    *   Update `Products` table to decrement stock.
+                    *   If the new `stockQuantity` falls below 5 (but is >= 0), raise `CriticalStockLevelException` *after* successfully updating the stock (this is a warning, the transaction should still commit).
+                *   If `pOperationType` is 'INCREMENT':
+                    *   Update `Products` table to increment stock.
+            *   Use `PRAGMA EXCEPTION_INIT` to associate `ProductNotFoundException` with -20010 and `CriticalStockLevelException` with -20011.
+            *   Include a `WHEN OTHERS` handler to log to `DBMS_OUTPUT` and `RAISE`.
+
+    2.  **Modified `OrderManagementPkg` Package:**
+        *   **Body:**
+            *   The `PlaceOrder` procedure should now call `ProductStockPkg.CheckAndAdjustStock` to decrement stock instead of updating the `Products` table directly.
+            *   `PlaceOrder` must handle `ProductNotFoundException` and `InsufficientStockException` from `ProductStockPkg` and re-raise them as appropriate application errors (e.g., using `RAISE_APPLICATION_ERROR` with different error codes or messages).
+            *   `PlaceOrder` should *not* directly handle `CriticalStockLevelException`; this exception should propagate out of `PlaceOrder` if raised by `ProductStockPkg`.
+
+    3.  **Trigger `trgEnforceOrder IntegrityAndAudit`:**
+        *   Create a compound DML trigger on the `OrderItems` table for `INSERT`, `UPDATE`, `DELETE`.
+        *   **`BEFORE EACH ROW` section:**
+            *   If `INSERTING` or `UPDATING quantity`: Ensure `:NEW.itemPrice` is not null and is greater than 0. If not, `RAISE_APPLICATION_ERROR(-20012, 'Item price must be positive.')`.
+            *   If `UPDATING quantity`: Store `:OLD.quantity` in a package-level variable (e.g., in a new utility package or within `OrderManagementPkg` if appropriate, but for this exercise, a simple helper package `TriggerStatePkg` with a PL/SQL record/array might be used to hold old quantities if needed across timing points, though for this specific rule, it might not be strictly necessary for the BEFORE EACH ROW part).
+        *   **`AFTER EACH ROW` section:**
+            *   If `INSERTING`: This is where the stock adjustment logically happens *via the package call*. Since `PlaceOrder` now calls `ProductStockPkg`, this specific trigger section might not need to call it again if all order item creations go through the package. However, for direct DML on `OrderItems` outside the package, this would be the place. For this exercise, assume `PlaceOrder` is the primary path. If direct DML on `OrderItems` is possible, this section would also call `ProductStockPkg.CheckAndAdjustStock` to decrement stock for `:NEW.productId` and `:NEW.quantity`.
+            *   If `DELETING`: Call `ProductStockPkg.CheckAndAdjustStock` to increment stock for `:OLD.productId` and `:OLD.quantity` (restocking).
+            *   If `UPDATING quantity`: Calculate the difference (`:NEW.quantity - :OLD.quantity`). Call `ProductStockPkg.CheckAndAdjustStock` with this difference (positive if increase, negative if decrease).
+            *   Log the DML operation (`INSERT`, `UPDATE`, `DELETE`) on `OrderItems` to the `AuditLog` table, including `orderItemId`, `productId`, old/new `quantity` (if applicable).
+        *   **Exception Handling within the trigger:** Catch exceptions from `ProductStockPkg` (like `InsufficientStockException`) and `RAISE_APPLICATION_ERROR` with a trigger-specific message (e.g., -20013, "Stock adjustment failed for order item.").
+
+    4.  **Test Scenarios (Anonymous Blocks):**
+        *   **Scenario A (Success with warning):** Use `OrderManagementPkg.PlaceOrder` to order a product such that its stock quantity drops to 3 (e.g., 'Wireless Mouse' initially 200, order 197). Verify order creation, stock update, audit log, and that `CriticalStockLevelException` (-20011) is propagated and caught by the anonymous block.
+        *   **Scenario B (Failure - insufficient stock):** Attempt to place an order for 'Laptop Pro' (initial stock 50) with a quantity of 60. Verify `InsufficientStockException` (via the re-raised application error from `PlaceOrder`) is caught and no changes are made.
+        *   **Scenario C (Direct DML - Delete):** Directly delete an `OrderItem`. Verify stock is incremented via `ProductStockPkg.CheckAndAdjustStock` called from `trgEnforceOrderIntegrityAndAudit` and an audit entry is made.
+        *   **Scenario D (Direct DML - Update price to invalid):** Attempt to directly update an `OrderItem` to have a negative `itemPrice`. Verify the `BEFORE EACH ROW` part of `trgEnforceOrderIntegrityAndAudit` raises error -20012.
+
+*   **Focus:** This complex problem integrates package design (multiple packages interacting), advanced exception handling (user-defined, `PRAGMA EXCEPTION_INIT`, `RAISE_APPLICATION_ERROR`, propagation, handling exceptions from called procedures), and complex trigger logic (compound trigger, multiple timing points, conditional logic, `:OLD`/`:NEW`, calling packages from triggers).
+*   **Preceding Concepts Used:** All concepts from Chunk 7, plus PL/SQL Fundamentals (Chunk 5), Procedures/Functions (Chunk 6), and SQL DML/Data Types (Chunks 1-3).
+*   **PostgreSQL Bridge:** This demonstrates a sophisticated use of Oracle's PL/SQL features. While PostgreSQL can achieve parts of this with functions and triggers, Oracle's packages provide superior organization and state management. Compound triggers are an Oracle-specific feature for handling multiple DML events and timing points within a single trigger unit, which can be more efficient and manageable than multiple simple triggers for complex logic. The way exceptions are declared and handled with pragmas is also Oracle-specific.
+
 ---
 
 ## Key Takeaways & Best Practices
