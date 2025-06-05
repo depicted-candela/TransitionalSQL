@@ -2,509 +2,784 @@
     <link rel="stylesheet" href="../styles/solutions.css">
 </head>
 
+<body>
 <div class="container">
+    <h1>PL/SQL Resilience: Packages, Errors, and Automation - Solutions</h1>
+    <div class="exercise-set">
+    <h2>Dataset for Exercises (Corrected with Schema Prefix)</h2>
+    <p>This dataset is essential for the exercises. Ensure it's created in your Oracle DB 23ai environment. The <code>plsqlresilience</code> schema prefix is used as implied by the exercise descriptions.</p>
+    
+```sql
+-- Drop tables if they exist to ensure a clean slate
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE plsqlresilience.OrderItems';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE plsqlresilience.Orders';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE plsqlresilience.Products';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE plsqlresilience.AuditLog';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE plsqlresilience.Employees';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE plsqlresilience.Departments';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
 
-# Solutions: PL/SQL Resilience - Packages, Errors, and Automation
+-- Drop sequences if they exist
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE plsqlresilience.DepartmentSeq';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE plsqlresilience.EmployeeSeq';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE plsqlresilience.ProductSeq';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE plsqlresilience.OrderSeq';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE plsqlresilience.OrderItemSeq';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
 
-<div class="rhyme">
-With packages neat, and errors well caught,<br>
-Triggers automated, resilience is wrought.
-</div>
+-- Create Tables
+CREATE TABLE plsqlresilience.Departments (
+    departmentId NUMBER PRIMARY KEY,
+    departmentName VARCHAR2(100) NOT NULL,
+    locationCity VARCHAR2(100)
+);
 
-## Introduction / Purpose of Solutions
+CREATE TABLE plsqlresilience.Employees (
+    employeeId NUMBER PRIMARY KEY,
+    firstName VARCHAR2(50),
+    lastName VARCHAR2(50) NOT NULL,
+    email VARCHAR2(100) UNIQUE,
+    salary NUMBER(10, 2),
+    departmentId NUMBER,
+    hireDate DATE DEFAULT SYSDATE,
+    CONSTRAINT fkEmployeeDepartment FOREIGN KEY (departmentId) REFERENCES plsqlresilience.Departments(departmentId)
+);
 
-Welcome to the solutions for the exercises on PL/SQL Packages, Exception Handling, and Triggers! This document is your guide to understanding the optimal ways to implement these crucial Oracle features. The goal here isn't just to verify if your code "worked," but to deepen your understanding of *why* certain approaches are preferred, especially the Oracle-specific nuances that make PL/SQL a powerful and resilient language.
+CREATE TABLE plsqlresilience.Products (
+    productId NUMBER PRIMARY KEY,
+    productName VARCHAR2(100) NOT NULL,
+    unitPrice NUMBER(10, 2) CHECK (unitPrice > 0),
+    stockQuantity NUMBER DEFAULT 0 CHECK (stockQuantity >= 0)
+);
 
-Even if your solutions produced the correct output, we encourage you to review the provided explanations. You might discover alternative techniques, best practices, or further insights into Oracle's architecture. For those transitioning from PostgreSQL, these solutions will specifically highlight how Oracle handles these concepts, often offering more structured or feature-rich approaches.
+CREATE TABLE plsqlresilience.Orders (
+    orderId NUMBER PRIMARY KEY,
+    customerId NUMBER,
+    orderDate DATE DEFAULT SYSDATE,
+    status VARCHAR2(20) DEFAULT 'Pending' CHECK (status IN ('Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'))
+);
 
-## Reviewing the Dataset
+CREATE TABLE plsqlresilience.OrderItems (
+    orderItemId NUMBER PRIMARY KEY,
+    orderId NUMBER NOT NULL,
+    productId NUMBER NOT NULL,
+    quantity NUMBER CHECK (quantity > 0),
+    itemPrice NUMBER(10, 2),
+    CONSTRAINT fkOrderItemOrder FOREIGN KEY (orderId) REFERENCES plsqlresilience.Orders(orderId),
+    CONSTRAINT fkOrderItemProduct FOREIGN KEY (productId) REFERENCES plsqlresilience.Products(productId)
+);
 
-As a quick refresher, these exercises operate on a dataset comprising `Departments`, `Employees`, `Products`, `Orders`, `OrderItems`, and an `AuditLog` table. The relationships are fairly standard: employees belong to departments, orders contain order items which refer to products, and the audit log tracks changes. If you haven't set up this dataset, please refer back to the exercise document for the `CREATE TABLE` and `INSERT` scripts and ensure they are executed in your Oracle DB 23ai environment. A correctly set up dataset is vital for the solutions to run as expected.
+CREATE TABLE plsqlresilience.AuditLog (
+    logId NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    tableName VARCHAR2(50),
+    operationType VARCHAR2(10),
+    changedBy VARCHAR2(100) DEFAULT USER,
+    changeTimestamp TIMESTAMP DEFAULT SYSTIMESTAMP,
+    oldValue CLOB,
+    newValue CLOB,
+    recordId VARCHAR2(100)
+);
 
-## Solution Structure Overview
+-- Create Sequences
+CREATE SEQUENCE plsqlresilience.DepartmentSeq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE plsqlresilience.EmployeeSeq START WITH 100 INCREMENT BY 1;
+CREATE SEQUENCE plsqlresilience.ProductSeq START WITH 1000 INCREMENT BY 1;
+CREATE SEQUENCE plsqlresilience.OrderSeq START WITH 5000 INCREMENT BY 1;
+CREATE SEQUENCE plsqlresilience.OrderItemSeq START WITH 10000 INCREMENT BY 1;
 
-Each solution presented below will typically follow this structure:
-1.  **Problem Recap:** A brief restatement of the exercise problem for context.
-2.  **Solution Code:** The complete and optimal Oracle SQL and PL/SQL code.
-3.  **Detailed Explanation:** A step-by-step breakdown of the solution, explaining the logic, Oracle-specific features used, and how it addresses the problem requirements. For concepts with PostgreSQL parallels, the explanation will often bridge the understanding by highlighting Oracle's unique implementation or advantages.
+-- Populate plsqlresilience.Departments
+INSERT INTO plsqlresilience.Departments (departmentId, departmentName, locationCity) VALUES (plsqlresilience.DepartmentSeq.NEXTVAL, 'Sales', 'New York');
+INSERT INTO plsqlresilience.Departments (departmentId, departmentName, locationCity) VALUES (plsqlresilience.DepartmentSeq.NEXTVAL, 'HR', 'London');
+INSERT INTO plsqlresilience.Departments (departmentId, departmentName, locationCity) VALUES (plsqlresilience.DepartmentSeq.NEXTVAL, 'IT', 'Bangalore');
 
-When reviewing, try to:
-*   Compare your approach to the provided solution.
-*   Understand the rationale behind Oracle-specific constructs.
-*   Note any pitfalls or common errors discussed in the explanations.
+-- Populate plsqlresilience.Employees
+INSERT INTO plsqlresilience.Employees (employeeId, firstName, lastName, email, salary, departmentId, hireDate) VALUES (plsqlresilience.EmployeeSeq.NEXTVAL, 'John', 'Doe', 'john.doe@example.com', 60000, 1, TO_DATE('2022-01-15', 'YYYY-MM-DD'));
+INSERT INTO plsqlresilience.Employees (employeeId, firstName, lastName, email, salary, departmentId, hireDate) VALUES (plsqlresilience.EmployeeSeq.NEXTVAL, 'Jane', 'Smith', 'jane.smith@example.com', 75000, 1, TO_DATE('2021-03-22', 'YYYY-MM-DD'));
+INSERT INTO plsqlresilience.Employees (employeeId, firstName, lastName, email, salary, departmentId, hireDate) VALUES (plsqlresilience.EmployeeSeq.NEXTVAL, 'Alice', 'Wonder', 'alice.wonder@example.com', 50000, 2, TO_DATE('2022-07-10', 'YYYY-MM-DD'));
+INSERT INTO plsqlresilience.Employees (employeeId, firstName, lastName, email, salary, departmentId, hireDate) VALUES (plsqlresilience.EmployeeSeq.NEXTVAL, 'Bob', 'Builder', 'bob.builder@example.com', 90000, 3, TO_DATE('2020-11-01', 'YYYY-MM-DD'));
 
-## Solutions for Chunk 7
+-- Populate plsqlresilience.Products
+INSERT INTO plsqlresilience.Products (productId, productName, unitPrice, stockQuantity) VALUES (plsqlresilience.ProductSeq.NEXTVAL, 'Laptop Pro', 1200, 50);
+INSERT INTO plsqlresilience.Products (productId, productName, unitPrice, stockQuantity) VALUES (plsqlresilience.ProductSeq.NEXTVAL, 'Wireless Mouse', 25, 200);
+INSERT INTO plsqlresilience.Products (productId, productName, unitPrice, stockQuantity) VALUES (plsqlresilience.ProductSeq.NEXTVAL, 'Keyboard Ultra', 75, 10);
+INSERT INTO plsqlresilience.Products (productId, productName, unitPrice, stockQuantity) VALUES (plsqlresilience.ProductSeq.NEXTVAL, 'Monitor HD', 300, 0); -- Out of stock for exception handling
 
-### Category: Packages: Specification, body, benefits, overloading
+COMMIT;
+```
 
-#### (i) Meanings, Values, Relations, and Advantages
+<hr>
+    <h2>Category: Packages: Specification, body, benefits, overloading</h2>
+    <h3>(i) Meanings, Values, Relations, and Advantages</h3>
+<h4>Exercise 1.1: Basic Package Creation and Usage</h4>
+    <p><strong>Solution:</strong></p>
 
-**Exercise 1.1: Basic Package Creation and Usage**
-*   <span class="problem-label">Problem Recap:</span> Create `EmployeeUtils` package with `GetEmployeeFullName` function and `UpdateEmployeeSalary` procedure. Test them.
+```sql
+-- Package Specification
+CREATE OR REPLACE PACKAGE plsqlresilience.EmployeeUtils AS
+    FUNCTION GetEmployeeFullName (p_employeeId IN plsqlresilience.Employees.employeeId%TYPE)
+        RETURN VARCHAR2;
 
-*   **Solution Code:**
-    ```sql
-    -- Package Specification
-    CREATE OR REPLACE PACKAGE EmployeeUtils AS
-        FUNCTION GetEmployeeFullName (pEmployeeId IN Employees.employeeId%TYPE) RETURN VARCHAR2;
-        PROCEDURE UpdateEmployeeSalary (pEmployeeId IN Employees.employeeId%TYPE, pNewSalary IN Employees.salary%TYPE);
-    END EmployeeUtils;
-    /
+    PROCEDURE UpdateEmployeeSalary (p_employeeId IN plsqlresilience.Employees.employeeId%TYPE,
+                                    p_newSalary  IN plsqlresilience.Employees.salary%TYPE);
+END EmployeeUtils;
+/
 
-    -- Package Body
-    CREATE OR REPLACE PACKAGE BODY EmployeeUtils AS
-        FUNCTION GetEmployeeFullName (pEmployeeId IN Employees.employeeId%TYPE) RETURN VARCHAR2 IS
-            vFullName VARCHAR2(101);
-        BEGIN
-            SELECT firstName || ' ' || lastName
-            INTO vFullName
-            FROM Employees
-            WHERE employeeId = pEmployeeId;
-            RETURN vFullName;
-        EXCEPTION
-            WHEN NO_DATA_FOUND THEN
-                RETURN 'Employee not found';
-        END GetEmployeeFullName;
-
-        PROCEDURE UpdateEmployeeSalary (pEmployeeId IN Employees.employeeId%TYPE, pNewSalary IN Employees.salary%TYPE) IS
-        BEGIN
-            UPDATE Employees
-            SET salary = pNewSalary
-            WHERE employeeId = pEmployeeId;
-
-            IF SQL%NOTFOUND THEN
-                DBMS_OUTPUT.PUT_LINE('Employee ' || pEmployeeId || ' not found for salary update.');
-            ELSE
-                DBMS_OUTPUT.PUT_LINE('Salary updated for employee ' || pEmployeeId);
-                COMMIT; 
-            END IF;
-        EXCEPTION
-            WHEN OTHERS THEN
-                DBMS_OUTPUT.PUT_LINE('Error updating salary: ' || SQLERRM);
-                ROLLBACK; 
-        END UpdateEmployeeSalary;
-    END EmployeeUtils;
-    /
-
-    -- Anonymous block to test
-    SET SERVEROUTPUT ON;
-    DECLARE
-        empFullName VARCHAR2(101);
-        existingEmployeeId NUMBER := 100; 
-        newSalaryAmount NUMBER := 65000;
+-- Package Body
+CREATE OR REPLACE PACKAGE BODY plsqlresilience.EmployeeUtils AS
+    FUNCTION GetEmployeeFullName (p_employeeId IN plsqlresilience.Employees.employeeId%TYPE)
+        RETURN VARCHAR2
+    IS
+        v_fullName VARCHAR2(101); -- Max 50 for first + 1 space + 50 for last
     BEGIN
-        -- Test GetEmployeeFullName
-        empFullName := EmployeeUtils.GetEmployeeFullName(existingEmployeeId);
-        DBMS_OUTPUT.PUT_LINE('Full Name for employee ' || existingEmployeeId || ': ' || empFullName);
+        SELECT firstName || ' ' || lastName
+        INTO v_fullName
+        FROM plsqlresilience.Employees
+        WHERE employeeId = p_employeeId;
+        RETURN v_fullName;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN 'Employee not found';
+    END GetEmployeeFullName;
 
-        -- Test UpdateEmployeeSalary
-        DBMS_OUTPUT.PUT_LINE('Updating salary for employee ' || existingEmployeeId || ' to ' || newSalaryAmount);
-        EmployeeUtils.UpdateEmployeeSalary(pEmployeeId => existingEmployeeId, pNewSalary => newSalaryAmount);
+    PROCEDURE UpdateEmployeeSalary (p_employeeId IN plsqlresilience.Employees.employeeId%TYPE,
+                                    p_newSalary  IN plsqlresilience.Employees.salary%TYPE)
+    IS
+    BEGIN
+        UPDATE plsqlresilience.Employees
+        SET salary = p_newSalary
+        WHERE employeeId = p_employeeId;
 
-        -- Verify the update by fetching again (optional, or check table directly)
-        SELECT salary INTO newSalaryAmount FROM Employees WHERE employeeId = existingEmployeeId;
-        DBMS_OUTPUT.PUT_LINE('New salary for employee ' || existingEmployeeId || ' is: ' || newSalaryAmount);
-        
+        IF SQL%ROWCOUNT = 0 THEN
+            DBMS_OUTPUT.PUT_LINE('Employee ID ' || p_employeeId || ' not found or salary not changed.');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Salary updated for employee ID ' || p_employeeId || '.');
+            COMMIT; -- Or handle transaction management at a higher level
+        END IF;
     EXCEPTION
         WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('An error occurred in the test block: ' || SQLERRM);
-    END;
-    /
-    ```
-*   **Detailed Explanation:**
-    1.  **Package Specification (`EmployeeUtils AS ... END EmployeeUtils;`):** This is the public interface.
-        *   `FUNCTION GetEmployeeFullName (...) RETURN VARCHAR2;`: Declares a function that takes an employee ID and returns their full name as a string.
-        *   `PROCEDURE UpdateEmployeeSalary (...);`: Declares a procedure to update an employee's salary.
-        *   The use of `%TYPE` for parameter `pEmployeeId` and `pNewSalary` in `UpdateEmployeeSalary` (and `GetEmployeeFullName`) ensures that if the underlying table column types change, this code is less likely to break. This demonstrates a best practice learned in PL/SQL Fundamentals (Chunk 5).
-    2.  **Package Body (`EmployeeUtils AS ... END EmployeeUtils;`):** This contains the implementation of the declared subprograms.
-        *   **`GetEmployeeFullName` Implementation:**
-            *   A local variable `vFullName` is declared.
-            *   A `SELECT` statement retrieves the `firstName` and `lastName` from the `Employees` table, concatenates them, and stores the result in `vFullName`. This uses basic SQL DML (Chunk 2) and string concatenation (Chunk 2).
-            *   An `EXCEPTION` block handles the predefined `NO_DATA_FOUND` exception (covered later in this chunk's exercises but good practice to include early), returning a message if the employee doesn't exist.
-        *   **`UpdateEmployeeSalary` Implementation:**
-            *   An `UPDATE` statement modifies the `salary` in the `Employees` table.
-            *   `SQL%NOTFOUND` (an implicit cursor attribute from Chunk 6) is used to check if any row was updated.
-            *   `COMMIT` is used to make the change permanent. Transaction control (Chunk 2) is essential.
-            *   A `WHEN OTHERS` exception handler is included to catch any other unexpected errors during the update, display an error message using `SQLERRM` (covered later in this chunk), and `ROLLBACK` the transaction.
-    3.  **Anonymous Block:**
-        *   `SET SERVEROUTPUT ON;` enables output for `DBMS_OUTPUT`.
-        *   It declares variables and then calls the package subprograms using dot notation (`PackageName.SubprogramName`).
-        *   This demonstrates how client PL/SQL code or other database objects would interact with the package.
+            DBMS_OUTPUT.PUT_LINE('Error updating salary: ' || SQLERRM);
+            ROLLBACK; -- Rollback on error
+    END UpdateEmployeeSalary;
+END EmployeeUtils;
+/
+-- Anonymous block to test the package
+DECLARE
+    v_empId    plsqlresilience.Employees.employeeId%TYPE := 100; -- Assuming employee 100 exists
+    v_fullName VARCHAR2(101);
+    v_newSal   plsqlresilience.Employees.salary%TYPE := 65000;
+BEGIN
+    -- Test GetEmployeeFullName
+    v_fullName := plsqlresilience.EmployeeUtils.GetEmployeeFullName(v_empId);
+    DBMS_OUTPUT.PUT_LINE('Full name for employee ' || v_empId || ': ' || v_fullName);
 
-<div class="oracle-specific">
-**Oracle Nugget:** Packages are fundamental to modular PL/SQL development. They bundle related logic and data, improve organization, and manage dependencies effectively. Unlike PostgreSQL's schema-based function grouping, Oracle packages provide true encapsulation with public and private members.
-</div>
+    -- Test UpdateEmployeeSalary
+    plsqlresilience.EmployeeUtils.UpdateEmployeeSalary(p_employeeId => v_empId, p_newSalary => v_newSal);
 
-**Exercise 1.2: Package Variables and State**
-*   <span class="problem-label">Problem Recap:</span> Add public `defaultRaisePercentage` and private `totalRaisesProcessed` to `EmployeeUtils`. Modify `UpdateEmployeeSalary` to use these. Add `GetTotalRaisesProcessed`.
+    -- Verify update (optional, can be checked with a SELECT statement)
+    SELECT salary INTO v_newSal FROM plsqlresilience.Employees WHERE employeeId = v_empId;
+    DBMS_OUTPUT.PUT_LINE('Verified new salary for employee ' || v_empId || ': ' || v_newSal);
 
-*   **Solution Code:**
-    ```sql
-    -- Package Specification (Modified)
-    CREATE OR REPLACE PACKAGE EmployeeUtils AS
-        defaultRaisePercentage NUMBER := 5; -- Public variable with default
+    -- Test with a non-existent employee
+    v_fullName := plsqlresilience.EmployeeUtils.GetEmployeeFullName(999);
+    DBMS_OUTPUT.PUT_LINE('Full name for employee 999: ' || v_fullName);
 
-        FUNCTION GetEmployeeFullName (pEmployeeId IN Employees.employeeId%TYPE) RETURN VARCHAR2;
-        PROCEDURE UpdateEmployeeSalary (
-            pEmployeeId IN Employees.employeeId%TYPE, 
-            pNewSalary IN Employees.salary%TYPE DEFAULT NULL, -- Make newSalary optional
-            pRaisePercentage IN NUMBER DEFAULT NULL -- Optional raise percentage
-        );
-        FUNCTION GetTotalRaisesProcessed RETURN NUMBER;
-    END EmployeeUtils;
-    /
+    plsqlresilience.EmployeeUtils.UpdateEmployeeSalary(p_employeeId => 999, p_newSalary => 50000);
+END;
+/
+```
 
-    -- Package Body (Modified)
-    CREATE OR REPLACE PACKAGE BODY EmployeeUtils AS
-        totalRaisesProcessed NUMBER := 0; -- Private package variable
+<h4>Exercise 1.2: Package Variables and State</h4>
+    <p><strong>Solution:</strong></p>
 
-        FUNCTION GetEmployeeFullName (pEmployeeId IN Employees.employeeId%TYPE) RETURN VARCHAR2 IS
-            vFullName VARCHAR2(101);
-        BEGIN
-            SELECT firstName || ' ' || lastName
-            INTO vFullName
-            FROM Employees
-            WHERE employeeId = pEmployeeId;
-            RETURN vFullName;
-        EXCEPTION
-            WHEN NO_DATA_FOUND THEN
-                RETURN 'Employee ID ' || pEmployeeId || ' not found';
-        END GetEmployeeFullName;
+```sql
+-- Package Specification
+CREATE OR REPLACE PACKAGE plsqlresilience.EmployeeUtils AS
+    defaultRaisePercentage NUMBER := 5; -- Public variable
 
-        PROCEDURE UpdateEmployeeSalary (
-            pEmployeeId IN Employees.employeeId%TYPE, 
-            pNewSalary IN Employees.salary%TYPE DEFAULT NULL,
-            pRaisePercentage IN NUMBER DEFAULT NULL
-        ) IS
-            vCalculatedSalary Employees.salary%TYPE;
-            vCurrentSalary Employees.salary%TYPE;
-        BEGIN
-            SELECT salary INTO vCurrentSalary FROM Employees WHERE employeeId = pEmployeeId;
+    FUNCTION GetEmployeeFullName (p_employeeId IN plsqlresilience.Employees.employeeId%TYPE)
+        RETURN VARCHAR2;
 
-            IF pNewSalary IS NOT NULL THEN
-                vCalculatedSalary := pNewSalary;
-            ELSIF pRaisePercentage IS NOT NULL THEN
-                vCalculatedSalary := vCurrentSalary * (1 + pRaisePercentage / 100);
+    PROCEDURE UpdateEmployeeSalary (p_employeeId     IN plsqlresilience.Employees.employeeId%TYPE,
+                                    p_newSalary      IN plsqlresilience.Employees.salary%TYPE DEFAULT NULL,
+                                    p_raisePercentage IN NUMBER DEFAULT NULL); -- Optional parameter
+
+    FUNCTION GetTotalRaisesProcessed RETURN NUMBER;
+END EmployeeUtils;
+/
+
+-- Package Body
+CREATE OR REPLACE PACKAGE BODY plsqlresilience.EmployeeUtils AS
+    totalRaisesProcessed NUMBER := 0; -- Private variable, initialized
+
+    FUNCTION GetEmployeeFullName (p_employeeId IN plsqlresilience.Employees.employeeId%TYPE)
+        RETURN VARCHAR2
+    IS
+        v_fullName VARCHAR2(101);
+    BEGIN
+        SELECT firstName || ' ' || lastName
+        INTO v_fullName
+        FROM plsqlresilience.Employees
+        WHERE employeeId = p_employeeId;
+        RETURN v_fullName;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN 'Employee not found';
+    END GetEmployeeFullName;
+
+    PROCEDURE UpdateEmployeeSalary (p_employeeId     IN plsqlresilience.Employees.employeeId%TYPE,
+                                    p_newSalary      IN plsqlresilience.Employees.salary%TYPE DEFAULT NULL,
+                                    p_raisePercentage IN NUMBER DEFAULT NULL)
+    IS
+        v_calculatedSalary plsqlresilience.Employees.salary%TYPE;
+        v_currentSalary    plsqlresilience.Employees.salary%TYPE;
+        v_actualRaisePct   NUMBER;
+    BEGIN
+        SELECT salary INTO v_currentSalary FROM plsqlresilience.Employees WHERE employeeId = p_employeeId;
+
+        IF p_newSalary IS NOT NULL THEN
+            v_calculatedSalary := p_newSalary;
+        ELSE
+            IF p_raisePercentage IS NOT NULL THEN
+                v_actualRaisePct := p_raisePercentage;
             ELSE
-                vCalculatedSalary := vCurrentSalary * (1 + defaultRaisePercentage / 100);
+                v_actualRaisePct := defaultRaisePercentage; -- Use package public variable
             END IF;
-            
-            UPDATE Employees
-            SET salary = ROUND(vCalculatedSalary, 2) -- Round to 2 decimal places for currency
-            WHERE employeeId = pEmployeeId;
+            v_calculatedSalary := v_currentSalary * (1 + (v_actualRaisePct / 100));
+        END IF;
 
-            IF SQL%FOUND THEN
-                totalRaisesProcessed := totalRaisesProcessed + 1;
-                DBMS_OUTPUT.PUT_LINE('Salary updated for employee ' || pEmployeeId || '. Total raises processed this session: ' || totalRaisesProcessed);
-                COMMIT;
+        UPDATE plsqlresilience.Employees
+        SET salary = v_calculatedSalary
+        WHERE employeeId = p_employeeId;
+
+        IF SQL%ROWCOUNT > 0 THEN
+            totalRaisesProcessed := totalRaisesProcessed + 1; -- Increment private variable
+            DBMS_OUTPUT.PUT_LINE('Salary updated for employee ID ' || p_employeeId || ' to ' || v_calculatedSalary || '.');
+            COMMIT;
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Employee ID ' || p_employeeId || ' not found.');
+        END IF;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+             DBMS_OUTPUT.PUT_LINE('Employee ID ' || p_employeeId || ' not found for salary update.');
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error updating salary: ' || SQLERRM);
+            ROLLBACK;
+    END UpdateEmployeeSalary;
+
+    FUNCTION GetTotalRaisesProcessed RETURN NUMBER IS
+    BEGIN
+        RETURN totalRaisesProcessed;
+    END GetTotalRaisesProcessed;
+
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('EmployeeUtils package initialized. Default raise: ' || defaultRaisePercentage || '%');
+END EmployeeUtils;
+/
+
+-- Anonymous block to test
+DECLARE
+    v_empId1 plsqlresilience.Employees.employeeId%TYPE := 100;
+    v_empId2 plsqlresilience.Employees.employeeId%TYPE := 101;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Initial total raises: ' || plsqlresilience.EmployeeUtils.GetTotalRaisesProcessed());
+
+    -- Call with explicit new salary
+    plsqlresilience.EmployeeUtils.UpdateEmployeeSalary(p_employeeId => v_empId1, p_newSalary => 70000);
+
+    -- Call with explicit raise percentage
+    plsqlresilience.EmployeeUtils.UpdateEmployeeSalary(p_employeeId => v_empId2, p_raisePercentage => 10);
+
+    -- Call using default raise percentage (p_newSalary is NULL, p_raisePercentage is NULL)
+    plsqlresilience.EmployeeUtils.UpdateEmployeeSalary(p_employeeId => 102); -- Assuming emp 102 exists
+
+    DBMS_OUTPUT.PUT_LINE('Final total raises processed: ' || plsqlresilience.EmployeeUtils.GetTotalRaisesProcessed());
+END;
+/
+```
+    
+<h4>Exercise 1.3: Package Subprogram Overloading</h4>
+    <p><strong>Solution:</strong></p>
+    
+```sql
+-- Add to EmployeeUtils Package Specification:
+/*
+CREATE OR REPLACE PACKAGE plsqlresilience.EmployeeUtils AS
+    defaultRaisePercentage NUMBER := 5;
+
+    FUNCTION GetEmployeeFullName (p_employeeId IN plsqlresilience.Employees.employeeId%TYPE)
+        RETURN VARCHAR2;
+
+    -- Overloaded version
+    FUNCTION GetEmployeeFullName (p_firstName IN plsqlresilience.Employees.firstName%TYPE,
+                                  p_lastName  IN plsqlresilience.Employees.lastName%TYPE)
+        RETURN VARCHAR2;
+
+    PROCEDURE UpdateEmployeeSalary (p_employeeId     IN plsqlresilience.Employees.employeeId%TYPE,
+                                    p_newSalary      IN plsqlresilience.Employees.salary%TYPE DEFAULT NULL,
+                                    p_raisePercentage IN NUMBER DEFAULT NULL);
+
+    FUNCTION GetTotalRaisesProcessed RETURN NUMBER;
+END EmployeeUtils;
+/
+*/
+
+-- Add to EmployeeUtils Package Body:
+/*
+CREATE OR REPLACE PACKAGE BODY plsqlresilience.EmployeeUtils AS
+    totalRaisesProcessed NUMBER := 0;
+
+    FUNCTION GetEmployeeFullName (p_employeeId IN plsqlresilience.Employees.employeeId%TYPE)
+        RETURN VARCHAR2
+    IS
+        v_fullName VARCHAR2(101);
+    BEGIN
+        SELECT firstName || ' ' || lastName
+        INTO v_fullName
+        FROM plsqlresilience.Employees
+        WHERE employeeId = p_employeeId;
+        RETURN v_fullName;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN 'Employee ID ' || p_employeeId || ' not found';
+    END GetEmployeeFullName;
+
+    -- Overloaded version implementation
+    FUNCTION GetEmployeeFullName (p_firstName IN plsqlresilience.Employees.firstName%TYPE,
+                                  p_lastName  IN plsqlresilience.Employees.lastName%TYPE)
+        RETURN VARCHAR2
+    IS
+    BEGIN
+        RETURN p_firstName || ' ' || p_lastName;
+    END GetEmployeeFullName;
+
+    PROCEDURE UpdateEmployeeSalary (p_employeeId     IN plsqlresilience.Employees.employeeId%TYPE,
+                                    p_newSalary      IN plsqlresilience.Employees.salary%TYPE DEFAULT NULL,
+                                    p_raisePercentage IN NUMBER DEFAULT NULL)
+    IS
+        v_calculatedSalary plsqlresilience.Employees.salary%TYPE;
+        v_currentSalary    plsqlresilience.Employees.salary%TYPE;
+        v_actualRaisePct   NUMBER;
+    BEGIN
+        SELECT salary INTO v_currentSalary FROM plsqlresilience.Employees WHERE employeeId = p_employeeId;
+
+        IF p_newSalary IS NOT NULL THEN
+            v_calculatedSalary := p_newSalary;
+        ELSE
+            IF p_raisePercentage IS NOT NULL THEN
+                v_actualRaisePct := p_raisePercentage;
             ELSE
-                DBMS_OUTPUT.PUT_LINE('Employee ' || pEmployeeId || ' not found for salary update.');
+                v_actualRaisePct := defaultRaisePercentage;
             END IF;
-        EXCEPTION
-            WHEN NO_DATA_FOUND THEN -- If SELECT salary INTO vCurrentSalary fails
-                 DBMS_OUTPUT.PUT_LINE('Employee ' || pEmployeeId || ' not found.');
-            WHEN OTHERS THEN
-                DBMS_OUTPUT.PUT_LINE('Error updating salary: ' || SQLERRM);
-                ROLLBACK; 
-        END UpdateEmployeeSalary;
+            v_calculatedSalary := v_currentSalary * (1 + (v_actualRaisePct / 100));
+        END IF;
 
-        FUNCTION GetTotalRaisesProcessed RETURN NUMBER IS
-        BEGIN
-            RETURN totalRaisesProcessed;
-        END GetTotalRaisesProcessed;
+        UPDATE plsqlresilience.Employees
+        SET salary = v_calculatedSalary
+        WHERE employeeId = p_employeeId;
 
+        IF SQL%ROWCOUNT > 0 THEN
+            totalRaisesProcessed := totalRaisesProcessed + 1;
+            DBMS_OUTPUT.PUT_LINE('Salary updated for employee ID ' || p_employeeId || ' to ' || v_calculatedSalary || '.');
+            COMMIT;
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Employee ID ' || p_employeeId || ' not found.');
+        END IF;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+             DBMS_OUTPUT.PUT_LINE('Employee ID ' || p_employeeId || ' not found for salary update.');
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error updating salary: ' || SQLERRM);
+            ROLLBACK;
+    END UpdateEmployeeSalary;
+
+    FUNCTION GetTotalRaisesProcessed RETURN NUMBER IS
     BEGIN
-        DBMS_OUTPUT.PUT_LINE('EmployeeUtils package initialized. Default Raise: ' || defaultRaisePercentage || '%.');
-    END EmployeeUtils;
-    /
+        RETURN totalRaisesProcessed;
+    END GetTotalRaisesProcessed;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('EmployeeUtils package initialized. Default raise: ' || defaultRaisePercentage || '%');
+END EmployeeUtils;
+/
+*/
 
-    -- Anonymous block to test
-    SET SERVEROUTPUT ON;
-    DECLARE
-        vTotalRaises NUMBER;
-        empId1 NUMBER := 100;
-        empId2 NUMBER := 101;
+-- Assuming the EmployeeUtils package from Exercise 1.2 is already created,
+-- we'll modify it to include the overloaded function.
+-- First, re-create the specification with the new overloaded function.
+CREATE OR REPLACE PACKAGE plsqlresilience.EmployeeUtils AS
+    defaultRaisePercentage NUMBER := 5;
+
+    FUNCTION GetEmployeeFullName (p_employeeId IN plsqlresilience.Employees.employeeId%TYPE)
+        RETURN VARCHAR2;
+
+    -- Overloaded version
+    FUNCTION GetEmployeeFullName (p_firstName IN plsqlresilience.Employees.firstName%TYPE,
+                                  p_lastName  IN plsqlresilience.Employees.lastName%TYPE)
+        RETURN VARCHAR2;
+
+    PROCEDURE UpdateEmployeeSalary (p_employeeId     IN plsqlresilience.Employees.employeeId%TYPE,
+                                    p_newSalary      IN plsqlresilience.Employees.salary%TYPE DEFAULT NULL,
+                                    p_raisePercentage IN NUMBER DEFAULT NULL);
+
+    FUNCTION GetTotalRaisesProcessed RETURN NUMBER;
+END EmployeeUtils;
+/
+
+-- Then, re-create the body with the implementation for the overloaded function.
+CREATE OR REPLACE PACKAGE BODY plsqlresilience.EmployeeUtils AS
+    totalRaisesProcessed NUMBER := 0;
+
+    FUNCTION GetEmployeeFullName (p_employeeId IN plsqlresilience.Employees.employeeId%TYPE)
+        RETURN VARCHAR2
+    IS
+        v_fullName VARCHAR2(101);
     BEGIN
-        DBMS_OUTPUT.PUT_LINE('--- Test 1: Update with default raise ---');
-        EmployeeUtils.UpdateEmployeeSalary(pEmployeeId => empId1);
-        
-        DBMS_OUTPUT.PUT_LINE('--- Test 2: Update with specific percentage ---');
-        EmployeeUtils.UpdateEmployeeSalary(pEmployeeId => empId2, pRaisePercentage => 10);
+        SELECT firstName || ' ' || lastName
+        INTO v_fullName
+        FROM plsqlresilience.Employees
+        WHERE employeeId = p_employeeId;
+        RETURN v_fullName;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN 'Employee ID ' || p_employeeId || ' not found';
+    END GetEmployeeFullName;
 
-        DBMS_OUTPUT.PUT_LINE('--- Test 3: Update with specific new salary ---');
-        EmployeeUtils.UpdateEmployeeSalary(pEmployeeId => empId1, pNewSalary => 70000);
+    -- Overloaded version implementation
+    FUNCTION GetEmployeeFullName (p_firstName IN plsqlresilience.Employees.firstName%TYPE,
+                                  p_lastName  IN plsqlresilience.Employees.lastName%TYPE)
+        RETURN VARCHAR2
+    IS
+    BEGIN
+        RETURN p_firstName || ' ' || p_lastName;
+    END GetEmployeeFullName;
 
-        vTotalRaises := EmployeeUtils.GetTotalRaisesProcessed();
-        DBMS_OUTPUT.PUT_LINE('Total raises processed in this session: ' || vTotalRaises);
-    END;
-    /
-    ```
-*   **Detailed Explanation:**
-    1.  **`defaultRaisePercentage` (Public):** Declared in the specification, making it accessible outside the package (e.g., `EmployeeUtils.defaultRaisePercentage`). It's initialized to `5`.
-    2.  **`totalRaisesProcessed` (Private):** Declared in the body, so it's only accessible within the package body. It's initialized to `0` in its declaration. The package initialization block (the `BEGIN...END;` at the end of the package body) runs once per session when the package is first referenced and can also be used for more complex initialization of package state variables.
-    3.  **`UpdateEmployeeSalary` Modification:**
-        *   Now accepts `pNewSalary` and `pRaisePercentage` as optional parameters (using `DEFAULT NULL`).
-        *   It prioritizes `pNewSalary`, then `pRaisePercentage`, then the package's `defaultRaisePercentage`. This uses IF-THEN-ELSIF logic (Chunk 5).
-        *   It increments the private `totalRaisesProcessed` variable if the update is successful (`SQL%FOUND`).
-    4.  **`GetTotalRaisesProcessed` Function:** A simple public function to return the current value of the private `totalRaisesProcessed`. This demonstrates encapsulation – controlling access to internal state.
-    5.  **Package Initialization Block (`BEGIN ... END EmployeeUtils;` at the end of the package body):** This block executes once per session when any part of the package is first accessed. Here, it just prints an initialization message.
-    6.  **Test Block:** Shows calls to `UpdateEmployeeSalary` using different parameter combinations and then retrieves the session-specific count of raises.
+    PROCEDURE UpdateEmployeeSalary (p_employeeId     IN plsqlresilience.Employees.employeeId%TYPE,
+                                    p_newSalary      IN plsqlresilience.Employees.salary%TYPE DEFAULT NULL,
+                                    p_raisePercentage IN NUMBER DEFAULT NULL)
+    IS
+        v_calculatedSalary plsqlresilience.Employees.salary%TYPE;
+        v_currentSalary    plsqlresilience.Employees.salary%TYPE;
+        v_actualRaisePct   NUMBER;
+    BEGIN
+        SELECT salary INTO v_currentSalary FROM plsqlresilience.Employees WHERE employeeId = p_employeeId;
 
-<div class="postgresql-bridge">
-**Bridging from PostgreSQL:** PostgreSQL functions can have default parameter values. However, the concept of persistent package state (like `totalRaisesProcessed` which maintains its value across multiple calls to `UpdateEmployeeSalary` *within the same database session*) is a key Oracle feature. In PostgreSQL, you might achieve similar session-level state using temporary tables or session-level variables set via `SET session.variable = value;`, but Oracle packages offer a more structured and type-safe way to manage this.
-</div>
-
-**Exercise 1.3: Package Subprogram Overloading**
-*   <span class="problem-label">Problem Recap:</span> Overload `GetEmployeeFullName` in `EmployeeUtils` to also accept `firstName` and `lastName` as parameters.
-
-*   **Solution Code:**
-    ```sql
-    -- Package Specification (Modified for Overloading)
-    CREATE OR REPLACE PACKAGE EmployeeUtils AS
-        defaultRaisePercentage NUMBER := 5; 
-
-        -- Original version
-        FUNCTION GetEmployeeFullName (pEmployeeId IN Employees.employeeId%TYPE) RETURN VARCHAR2;
-        
-        -- Overloaded version
-        FUNCTION GetEmployeeFullName (pFirstName IN Employees.firstName%TYPE, pLastName IN Employees.lastName%TYPE) RETURN VARCHAR2;
-
-        PROCEDURE UpdateEmployeeSalary (
-            pEmployeeId IN Employees.employeeId%TYPE, 
-            pNewSalary IN Employees.salary%TYPE DEFAULT NULL,
-            pRaisePercentage IN NUMBER DEFAULT NULL 
-        );
-        FUNCTION GetTotalRaisesProcessed RETURN NUMBER;
-    END EmployeeUtils;
-    /
-
-    -- Package Body (Modified for Overloading)
-    CREATE OR REPLACE PACKAGE BODY EmployeeUtils AS
-        totalRaisesProcessed NUMBER := 0; 
-
-        -- Original version implementation
-        FUNCTION GetEmployeeFullName (pEmployeeId IN Employees.employeeId%TYPE) RETURN VARCHAR2 IS
-            vFullName VARCHAR2(101);
-        BEGIN
-            SELECT firstName || ' ' || lastName
-            INTO vFullName
-            FROM Employees
-            WHERE employeeId = pEmployeeId;
-            RETURN vFullName;
-        EXCEPTION
-            WHEN NO_DATA_FOUND THEN
-                RETURN 'Employee ID ' || pEmployeeId || ' not found';
-        END GetEmployeeFullName;
-
-        -- Overloaded version implementation
-        FUNCTION GetEmployeeFullName (pFirstName IN Employees.firstName%TYPE, pLastName IN Employees.lastName%TYPE) RETURN VARCHAR2 IS
-        BEGIN
-            RETURN pFirstName || ' ' || pLastName;
-        END GetEmployeeFullName;
-
-        PROCEDURE UpdateEmployeeSalary (
-            pEmployeeId IN Employees.employeeId%TYPE, 
-            pNewSalary IN Employees.salary%TYPE DEFAULT NULL,
-            pRaisePercentage IN NUMBER DEFAULT NULL
-        ) IS
-            vCalculatedSalary Employees.salary%TYPE;
-            vCurrentSalary Employees.salary%TYPE;
-        BEGIN
-            SELECT salary INTO vCurrentSalary FROM Employees WHERE employeeId = pEmployeeId;
-
-            IF pNewSalary IS NOT NULL THEN
-                vCalculatedSalary := pNewSalary;
-            ELSIF pRaisePercentage IS NOT NULL THEN
-                vCalculatedSalary := vCurrentSalary * (1 + pRaisePercentage / 100);
+        IF p_newSalary IS NOT NULL THEN
+            v_calculatedSalary := p_newSalary;
+        ELSE
+            IF p_raisePercentage IS NOT NULL THEN
+                v_actualRaisePct := p_raisePercentage;
             ELSE
-                vCalculatedSalary := vCurrentSalary * (1 + defaultRaisePercentage / 100);
+                v_actualRaisePct := defaultRaisePercentage;
             END IF;
-            
-            UPDATE Employees
-            SET salary = ROUND(vCalculatedSalary, 2)
-            WHERE employeeId = pEmployeeId;
+            v_calculatedSalary := ROUND(v_currentSalary * (1 + (v_actualRaisePct / 100)), 2);
+        END IF;
 
-            IF SQL%FOUND THEN
-                totalRaisesProcessed := totalRaisesProcessed + 1;
-                DBMS_OUTPUT.PUT_LINE('Salary updated for employee ' || pEmployeeId || '.');
-                COMMIT;
-            ELSE
-                DBMS_OUTPUT.PUT_LINE('Employee ' || pEmployeeId || ' not found for salary update.');
-            END IF;
-        EXCEPTION
-            WHEN NO_DATA_FOUND THEN
-                 DBMS_OUTPUT.PUT_LINE('Employee ' || pEmployeeId || ' not found.');
-            WHEN OTHERS THEN
-                DBMS_OUTPUT.PUT_LINE('Error updating salary: ' || SQLERRM);
-                ROLLBACK; 
-        END UpdateEmployeeSalary;
+        UPDATE plsqlresilience.Employees
+        SET salary = v_calculatedSalary
+        WHERE employeeId = p_employeeId;
 
-        FUNCTION GetTotalRaisesProcessed RETURN NUMBER IS
-        BEGIN
-            RETURN totalRaisesProcessed;
-        END GetTotalRaisesProcessed;
+        IF SQL%ROWCOUNT > 0 THEN
+            totalRaisesProcessed := totalRaisesProcessed + 1;
+            DBMS_OUTPUT.PUT_LINE('Salary updated for employee ID ' || p_employeeId || ' to ' || v_calculatedSalary || '.');
+            COMMIT;
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Employee ID ' || p_employeeId || ' not found for salary update or salary unchanged.');
+        END IF;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+             DBMS_OUTPUT.PUT_LINE('Employee ID ' || p_employeeId || ' not found for salary update.');
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error updating salary: ' || SQLERRM);
+            ROLLBACK;
+    END UpdateEmployeeSalary;
+
+    FUNCTION GetTotalRaisesProcessed RETURN NUMBER IS
     BEGIN
-        DBMS_OUTPUT.PUT_LINE('EmployeeUtils package (with overloading) initialized.');
-    END EmployeeUtils;
-    /
+        RETURN totalRaisesProcessed;
+    END GetTotalRaisesProcessed;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('EmployeeUtils package initialized. Default raise: ' || defaultRaisePercentage || '%');
+END EmployeeUtils;
+/
 
-    -- Anonymous block to test overloading
-    SET SERVEROUTPUT ON;
-    DECLARE
-        fullNameById VARCHAR2(101);
-        fullNameByNames VARCHAR2(101);
+-- Anonymous block to test
+DECLARE
+    v_empId    plsqlresilience.Employees.employeeId%TYPE := 100;
+    v_fullName1 VARCHAR2(101);
+    v_fullName2 VARCHAR2(101);
+BEGIN
+    -- Call original version
+    v_fullName1 := plsqlresilience.EmployeeUtils.GetEmployeeFullName(p_employeeId => v_empId);
+    DBMS_OUTPUT.PUT_LINE('Full name (by ID '||v_empId||'): ' || v_fullName1);
+
+    -- Call overloaded version
+    v_fullName2 := plsqlresilience.EmployeeUtils.GetEmployeeFullName(p_firstName => 'Test', p_lastName => 'User');
+    DBMS_OUTPUT.PUT_LINE('Full name (by names): ' || v_fullName2);
+END;
+/
+```
+
+<h3>(ii) Disadvantages and Pitfalls</h3>
+<h4>Exercise 2.1: Package State Invalidation</h4>
+    <p><strong>Solution:</strong></p>
+    
+```sql
+-- Package Specification
+CREATE OR REPLACE PACKAGE plsqlresilience.StatefulPkg AS
+    counter NUMBER := 0;
+    PROCEDURE IncrementCounter;
+END StatefulPkg;
+/
+
+-- Package Body
+CREATE OR REPLACE PACKAGE BODY plsqlresilience.StatefulPkg AS
+    PROCEDURE IncrementCounter IS
     BEGIN
-        fullNameById := EmployeeUtils.GetEmployeeFullName(pEmployeeId => 100);
-        DBMS_OUTPUT.PUT_LINE('Full name (by ID 100): ' || fullNameById);
+        counter := counter + 1;
+        DBMS_OUTPUT.PUT_LINE('Counter is now: ' || counter);
+    END IncrementCounter;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('StatefulPkg initialized. Counter: ' || counter);
+END StatefulPkg;
+/
 
-        fullNameByNames := EmployeeUtils.GetEmployeeFullName(pFirstName => 'Jane', pLastName => 'Smith');
-        DBMS_OUTPUT.PUT_LINE('Full name (by names): ' || fullNameByNames);
-    END;
-    /
-    ```
-*   **Detailed Explanation:**
-    1.  **Specification Change:** A second `FUNCTION GetEmployeeFullName` declaration is added, but this one takes `pFirstName` and `pLastName` as `VARCHAR2` parameters. The PL/SQL compiler can distinguish between these two functions because their parameter lists differ in type and/or number.
-    2.  **Body Change:** The implementation for the new overloaded function is added. It simply concatenates the provided first and last names. The original function implementation remains unchanged.
-    3.  **Test Block:** The anonymous block now demonstrates calling both versions of `GetEmployeeFullName`. Oracle determines which version to execute based on the data types of the arguments passed.
+-- In Session 1:
+SET SERVEROUTPUT ON;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Session 1: First call');
+    plsqlresilience.StatefulPkg.IncrementCounter;
+    DBMS_OUTPUT.PUT_LINE('Session 1: Second call');
+    plsqlresilience.StatefulPkg.IncrementCounter;
+END;
+/
+-- Expected output in Session 1:
+-- StatefulPkg initialized. Counter: 0
+-- Session 1: First call
+-- Counter is now: 1
+-- Session 1: Second call
+-- Counter is now: 2
 
-<div class="oracle-specific">
-**Oracle Insight:** Overloading allows you to create multiple subprograms with the same name but different parameter signatures. This enhances code flexibility and readability, as users can call the version of the subprogram that best suits the data they have. It's a common practice in Oracle's own supplied packages.
-</div>
+-- In Session 2:
+ALTER PACKAGE plsqlresilience.StatefulPkg COMPILE BODY;
+-- Output: Package Body STATEFULPKG compiled.
 
-#### (ii) Disadvantages and Pitfalls
+-- Back in Session 1:
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Session 1: Third call after recompile');
+    plsqlresilience.StatefulPkg.IncrementCounter;
+END;
+/
+-- Expected output in Session 1 after recompile:
+-- Session 1: Third call after recompile
+-- ORA-04068: existing state of package "PLSQLRESILIENCE.STATEFULPKG" has been discarded
+-- ORA-06508: PL/SQL: could not find program unit being called: "PLSQLRESILIENCE.STATEFULPKG"
+-- ORA-06512: at line 3
+--
+-- If called again after the ORA-04068:
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Session 1: Fourth call');
+    plsqlresilience.StatefulPkg.IncrementCounter;
+END;
+/
+-- Expected output in Session 1 for the fourth call:
+-- StatefulPkg initialized. Counter: 0  (Package re-initializes)
+-- Session 1: Fourth call
+-- Counter is now: 1
+```
 
-**Exercise 2.1: Package State Invalidation**
-*   <span class="problem-label">Problem Recap:</span> Create `StatefulPkg` with a counter. Observe its behavior after recompiling the package body from another session.
-*   **Solution Code:**
-    ```sql
-    -- Package Specification
-    CREATE OR REPLACE PACKAGE StatefulPkg AS
-        counter NUMBER := 0;
-        PROCEDURE IncrementCounter;
-    END StatefulPkg;
-    /
+<p><strong>Explanation:</strong> When the package body of <code>StatefulPkg</code> is recompiled in Session 2, Oracle invalidates the existing state of this package in all sessions that are currently using it, including Session 1. When Session 1 attempts to call <code>IncrementCounter</code> again, it encounters ORA-04068. The package's state (the value of <code>counter</code>) is lost. If Session 1 calls a subprogram in the package *after* the ORA-04068 has been raised and handled (or if the block simply finishes and a new block starts), the package will be re-instantiated and its initialization block will run again, resetting <code>counter</code> to 0 (or its initial declared value if different from the initialization block's effect).</p>
+    <div class="oracle-specific">
+    <p>Refer to <code>PL/SQL Language Reference</code>, Chapter 11, "Package State" (p. 11-7): "If the body of an instantiated, stateful package is recompiled ... the next invocation of a subprogram in the package causes Oracle Database to discard the existing package state and raise the exception ORA-04068." Starting with Oracle Database 19c, Release Update 19.23, the <code>SESSION_EXIT_ON_PACKAGE_STATE_ERROR</code> initialization parameter can change this behavior to exit the session instead (p. 11-8).</p>
+    </div>
+<h4>Exercise 2.2: Overloading Pitfall - Ambiguity with Implicit Conversions</h4>
+    <p><strong>Solution:</strong></p>
+    
+```sql
+CREATE OR REPLACE PACKAGE plsqlresilience.OverloadDemo AS
+    PROCEDURE ProcessValue(pValue IN NUMBER);
+    PROCEDURE ProcessValue(pValue IN VARCHAR2);
+END OverloadDemo;
+/
 
-    -- Package Body
-    CREATE OR REPLACE PACKAGE BODY StatefulPkg AS
-        PROCEDURE IncrementCounter IS
-        BEGIN
-            counter := counter + 1;
-            DBMS_OUTPUT.PUT_LINE('Counter is now: ' || counter);
-        END IncrementCounter;
+CREATE OR REPLACE PACKAGE BODY plsqlresilience.OverloadDemo AS
+    PROCEDURE ProcessValue(pValue IN NUMBER) IS
     BEGIN
-        DBMS_OUTPUT.PUT_LINE('StatefulPkg initialized. Counter at initialization: ' || counter); 
-    END StatefulPkg;
-    /
+        DBMS_OUTPUT.PUT_LINE('NUMBER version called. Value: ' || TO_CHAR(pValue));
+    END ProcessValue;
 
-    -- In SQL*Plus Session 1:
-    SET SERVEROUTPUT ON;
+    PROCEDURE ProcessValue(pValue IN VARCHAR2) IS
     BEGIN
-        DBMS_OUTPUT.PUT_LINE('--- Session 1: First calls ---');
-        StatefulPkg.IncrementCounter;
-        StatefulPkg.IncrementCounter;
-    END;
-    /
-    -- Expected Output from Session 1 (First calls):
-    -- StatefulPkg initialized. Counter at initialization: 0
-    -- Counter is now: 1
-    -- Counter is now: 2
+        DBMS_OUTPUT.PUT_LINE('VARCHAR2 version called. Value: ' || pValue);
+    END ProcessValue;
+END OverloadDemo;
+/
 
-    -- In SQL*Plus Session 2 (or another SQL Developer worksheet):
-    -- ALTER PACKAGE StatefulPkg COMPILE BODY;
-    -- Statement processed.
+-- Test block
+SET SERVEROUTPUT ON;
+DECLARE
+    v_date DATE := SYSDATE;
+    v_num  NUMBER := 123;
+    v_char VARCHAR2(10) := 'Hello';
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('--- Testing OverloadDemo ---');
+    plsqlresilience.OverloadDemo.ProcessValue(v_num);  -- Calls NUMBER version
+    plsqlresilience.OverloadDemo.ProcessValue(v_char); -- Calls VARCHAR2 version
 
-    -- Back in SQL*Plus Session 1:
+    DBMS_OUTPUT.PUT_LINE('Attempting to call with DATE:');
+    -- plsqlresilience.OverloadDemo.ProcessValue(v_date);
+    -- This line above would cause: PLS-00307: too many declarations of 'PROCESSVALUE' match this call
+
+    -- Oracle can implicitly convert DATE to VARCHAR2.
+    -- If only the VARCHAR2 version existed, it would be called.
+    -- If only the NUMBER version existed, it would error (no implicit DATE to NUMBER).
+    -- With both, it's ambiguous.
+    -- To resolve, explicitly convert:
+    DBMS_OUTPUT.PUT_LINE('Explicitly calling VARCHAR2 version with DATE:');
+    plsqlresilience.OverloadDemo.ProcessValue(TO_CHAR(v_date, 'YYYY-MM-DD HH24:MI:SS'));
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLCODE || ' - ' || SQLERRM);
+END;
+/
+```
+
+<p><strong>Analysis:</strong> When <code>ProcessValue(v_date)</code> is called, Oracle attempts to find a matching <code>ProcessValue</code> procedure.
+    Oracle allows implicit conversion from <code>DATE</code> to <code>VARCHAR2</code>. It does *not* implicitly convert <code>DATE</code> to <code>NUMBER</code> for procedure calls.
+    However, if multiple overloads could potentially match after an implicit conversion (even if one conversion is "better" or more direct than another, unless one is an exact match and others require conversion), PL/SQL might consider it ambiguous. In this specific case, <code>DATE</code> can be implicitly converted to <code>VARCHAR2</code>. If there were also a version accepting <code>TIMESTAMP</code>, and <code>DATE</code> could implicitly convert to that too, it could lead to PLS-00307 "too many declarations of 'PROCESSVALUE' match this call".
+    The most common pitfall occurs when actual parameters of numeric types (e.g. <code>PLS_INTEGER</code>) are passed to overloaded procedures where one formal parameter is <code>NUMBER</code> and another is, say, <code>BINARY_FLOAT</code>. PL/SQL might prefer the "closest" numeric type, but complex rules apply (see "Formal Parameters that Differ Only in Numeric Data Type" p.9-30 in Subprograms chapter).
+    
+**Resolution:** To resolve ambiguity, explicitly convert the actual parameter to the type of the desired overloaded subprogram. For the <code>DATE</code> example, if we want the <code>VARCHAR2</code> version:
+    <code>plsqlresilience.OverloadDemo.ProcessValue(TO_CHAR(v_date, 'YYYY-MM-DD'));</code></p>
+    <div class="oracle-specific">
+    <p>As per PL/SQL Language Reference Chapter 9, page 9-32 ("Subprogram Overload Errors"), the compiler catches overload errors. If an invocation is ambiguous because the actual parameter could match multiple overloaded formal parameters through implicit conversions, PLS-00307 is raised. For numeric types, PL/SQL has a preference order (e.g., PLS_INTEGER, then NUMBER, then BINARY_FLOAT, then BINARY_DOUBLE, as per p. 9-31), but direct matches are preferred over conversions.</p>
+    </div>
+    <h3>(iii) Contrasting with Inefficient Common Solutions</h3>
+<h4>Exercise 3.1: Package vs. Standalone Utilities for String Operations</h4>
+    <p><strong>Solution:</strong></p>
+    <p><strong>Inefficient Solution (Standalone Functions):</strong></p>
+    
+```sql
+CREATE OR REPLACE FUNCTION plsqlresilience.ReverseString_standalone (pInputString IN VARCHAR2) RETURN VARCHAR2 IS
+    vReversedString VARCHAR2(4000); -- Max size for VARCHAR2 in PL/SQL
+BEGIN
+    IF pInputString IS NULL THEN
+        RETURN NULL;
+    END IF;
+    FOR i IN REVERSE 1..LENGTH(pInputString) LOOP
+        vReversedString := vReversedString || SUBSTR(pInputString, i, 1);
+    END LOOP;
+    RETURN vReversedString;
+END;
+/
+
+CREATE OR REPLACE FUNCTION plsqlresilience.CountVowels_standalone (pInputString IN VARCHAR2) RETURN NUMBER IS
+    vVowelCount NUMBER := 0;
+    vChar CHAR(1);
+BEGIN
+    IF pInputString IS NULL THEN
+        RETURN 0;
+    END IF;
+    FOR i IN 1..LENGTH(pInputString) LOOP
+        vChar := UPPER(SUBSTR(pInputString, i, 1));
+        IF vChar IN ('A', 'E', 'I', 'O', 'U') THEN
+            vVowelCount := vVowelCount + 1;
+        END IF;
+    END LOOP;
+    RETURN vVowelCount;
+END;
+/
+
+CREATE OR REPLACE FUNCTION plsqlresilience.IsPalindrome_standalone (pInputString IN VARCHAR2) RETURN BOOLEAN IS
+    vCleanedString VARCHAR2(4000);
+    vReversedString VARCHAR2(4000);
+BEGIN
+    IF pInputString IS NULL THEN
+        RETURN NULL; -- Or FALSE, depending on definition
+    END IF;
+    -- Simple cleaning: remove spaces and convert to upper case
+    vCleanedString := UPPER(REPLACE(pInputString, ' ', ''));
+    vReversedString := plsqlresilience.ReverseString_standalone(vCleanedString); -- Reuses the standalone reverse
+    RETURN vCleanedString = vReversedString;
+END;
+/
+```
+<p><strong>Oracle-Idiomatic Solution (Package-Based):</strong></p>
+    
+```sql
+-- Package Specification
+CREATE OR REPLACE PACKAGE plsqlresilience.StringUtilities AS
+    FUNCTION ReverseString (pInputString IN VARCHAR2) RETURN VARCHAR2;
+    FUNCTION CountVowels (pInputString IN VARCHAR2) RETURN NUMBER;
+    FUNCTION IsPalindrome (pInputString IN VARCHAR2) RETURN BOOLEAN;
+END StringUtilities;
+/
+
+-- Package Body
+CREATE OR REPLACE PACKAGE BODY plsqlresilience.StringUtilities AS
+
+    -- Potentially a private helper function if more complex cleaning is needed
+    -- For this example, IsPalindrome will call the public ReverseString
+
+    FUNCTION ReverseString (pInputString IN VARCHAR2) RETURN VARCHAR2 IS
+        vReversedString VARCHAR2(4000);
     BEGIN
-        DBMS_OUTPUT.PUT_LINE('--- Session 1: Call after recompile in Session 2 ---');
-        StatefulPkg.IncrementCounter;
-    END;
-    /
-    -- Expected Output from Session 1 (Call after recompile):
-    -- ORA-04068: existing state of package "YOUR_SCHEMA.STATEFULPKG" has been discarded
-    -- ORA-06508: PL/SQL: could not find program unit being called: "YOUR_SCHEMA.STATEFULPKG"
-    -- ORA-06512: at line 3 
-    -- (Note: If you run it a third time in Session 1, it might re-initialize and work, showing the counter from 1 again)
-    ```
-*   **Detailed Explanation:**
-    1.  **Initial State:** When `StatefulPkg.IncrementCounter` is first called in Session 1, the package is loaded into the session's memory, its initialization block runs (setting `counter` to 0 if not already initialized at declaration, and printing the message), and `counter` is incremented. The state (`counter = 2`) persists for Session 1.
-    2.  **Recompilation:** Recompiling the package body (`ALTER PACKAGE StatefulPkg COMPILE BODY;`) in Session 2 invalidates the compiled state of the package across all sessions that might have an older version loaded.
-    3.  **State Invalidation (ORA-04068):** When Session 1 attempts to call `IncrementCounter` again, Oracle detects that the package body it has in memory is no longer valid due to the recompile. It discards the old state and raises `ORA-04068`. The subsequent `ORA-06508` means it couldn't immediately find/re-load the program unit.
-    4.  **Resolution:** If Session 1 calls `StatefulPkg.IncrementCounter` yet *again* after the `ORA-04068` error, Oracle will typically reload and re-initialize the package for that session. The `counter` would start again from 0 (or its declaration-time initialization), and the initialization block message would print again.
-*   **Pitfall:** Uncontrolled recompilation of stateful packages in a production environment can lead to unexpected errors and loss of session-specific data held in package variables.
-*   **Relevant Docs:** `PL/SQL Language Reference (F46753-09)`, Chapter 11, "Package State" (p. 11-7). The behavior with `SESSION_EXIT_ON_PACKAGE_STATE_ERROR` (Oracle 19.23+) is also relevant for how applications can handle this.
-
-**Exercise 2.2: Overloading Pitfall - Ambiguity with Implicit Conversions**
-*   <span class="problem-label">Problem Recap:</span> Create `OverloadDemo` with `ProcessValue(NUMBER)` and `ProcessValue(VARCHAR2)`. Call it with a `DATE`.
-
-*   **Solution Code:**
-    ```sql
-    CREATE OR REPLACE PACKAGE OverloadDemo AS
-        PROCEDURE ProcessValue(pValue IN NUMBER);
-        PROCEDURE ProcessValue(pValue IN VARCHAR2);
-    END OverloadDemo;
-    /
-
-    CREATE OR REPLACE PACKAGE BODY OverloadDemo AS
-        PROCEDURE ProcessValue(pValue IN NUMBER) IS
-        BEGIN
-            DBMS_OUTPUT.PUT_LINE('Called ProcessValue(NUMBER) with: ' || pValue);
-        END ProcessValue;
-
-        PROCEDURE ProcessValue(pValue IN VARCHAR2) IS
-        BEGIN
-            DBMS_OUTPUT.PUT_LINE('Called ProcessValue(VARCHAR2) with: ' || pValue);
-        END ProcessValue;
-    END OverloadDemo;
-    /
-
-    -- Test block
-    SET SERVEROUTPUT ON;
-    DECLARE
-        myDate DATE := SYSDATE;
-    BEGIN
-        DBMS_OUTPUT.PUT_LINE('Attempting to call ProcessValue with a DATE:');
-        OverloadDemo.ProcessValue(myDate); 
-    END;
-    /
-    ```
-*   **Detailed Explanation:**
-    *   **What Happens:** When you call `OverloadDemo.ProcessValue(myDate)`, Oracle attempts to find a matching `ProcessValue` procedure. Since there's no version that directly accepts a `DATE`, it tries implicit conversions.
-    *   A `DATE` can be implicitly converted to `VARCHAR2` (using the session's `NLS_DATE_FORMAT`).
-    *   A `DATE` *cannot* be implicitly converted directly to `NUMBER` in a way that makes sense for general numeric processing without an explicit conversion function like `TO_NUMBER(TO_CHAR(myDate, 'J'))`.
-    *   Therefore, the PL/SQL compiler will choose the `ProcessValue(pValue IN VARCHAR2)` version.
-    *   **Output:**
-        ```
-        Attempting to call ProcessValue with a DATE:
-        Called ProcessValue(VARCHAR2) with: <current_date_in_NLS_DATE_FORMAT>
-        ```
-    *   **Why this is a Pitfall:** While it works here by converting to `VARCHAR2`, if there were, for instance, another overloaded procedure `ProcessValue(pAnotherType)` to which `DATE` could also be implicitly converted, you might get a PLS-00307 (too many declarations of 'PROCESSVALUE' match this call) if the conversion "cost" is similar. More subtly, the developer might have *intended* a numeric representation or a different string format, but the implicit conversion takes over, potentially leading to logic errors if the `VARCHAR2` version handles the data differently than expected for a date.
-    *   **Resolution:** To avoid ambiguity or ensure the correct version is called:
-        1.  **Explicit Conversion:** `OverloadDemo.ProcessValue(TO_CHAR(myDate, 'YYYY-MM-DD'));` or `OverloadDemo.ProcessValue(TO_NUMBER(TO_CHAR(myDate, 'J')));` (if a numeric representation like Julian date was intended and a `NUMBER` overload existed).
-        2.  **Create a Specific Overload:** Add `PROCEDURE ProcessValue(pValue IN DATE);` to the package. This is the best approach for clarity and type safety.
-*   **Relevant Docs:** `PL/SQL Language Reference (F46753-09)`, Chapter 9, section "Formal Parameters that Differ Only in Numeric Data Type" (p. 9-30) gives rules for numeric type precedence, and the general concept of implicit conversion applies across types.
-
-#### (iii) Contrasting with Inefficient Common Solutions
-
-**Exercise 3.1: Package vs. Standalone Utilities**
-*   <span class="problem-label">Scenario Recap:</span> A developer needs `ReverseString`, `CountVowels`, and `IsPalindrome` string utility functions.
-*   **Inefficient Common Solution (Standalone Functions):**
-    ```sql
-    CREATE OR REPLACE FUNCTION ReverseString (pInputString IN VARCHAR2) RETURN VARCHAR2 IS
-        vReversedString VARCHAR2(4000) := '';
-    BEGIN
-        IF pInputString IS NULL THEN RETURN NULL; END IF;
+        IF pInputString IS NULL THEN
+            RETURN NULL;
+        END IF;
         FOR i IN REVERSE 1..LENGTH(pInputString) LOOP
             vReversedString := vReversedString || SUBSTR(pInputString, i, 1);
         END LOOP;
         RETURN vReversedString;
     END ReverseString;
-    /
 
-    CREATE OR REPLACE FUNCTION CountVowels (pInputString IN VARCHAR2) RETURN NUMBER IS
+    FUNCTION CountVowels (pInputString IN VARCHAR2) RETURN NUMBER IS
         vVowelCount NUMBER := 0;
         vChar CHAR(1);
     BEGIN
-        IF pInputString IS NULL THEN RETURN 0; END IF;
+        IF pInputString IS NULL THEN
+            RETURN 0;
+        END IF;
         FOR i IN 1..LENGTH(pInputString) LOOP
             vChar := UPPER(SUBSTR(pInputString, i, 1));
             IF vChar IN ('A', 'E', 'I', 'O', 'U') THEN
@@ -513,728 +788,829 @@ When reviewing, try to:
         END LOOP;
         RETURN vVowelCount;
     END CountVowels;
-    /
 
-    CREATE OR REPLACE FUNCTION IsPalindrome (pInputString IN VARCHAR2) RETURN BOOLEAN IS
+    FUNCTION IsPalindrome (pInputString IN VARCHAR2) RETURN BOOLEAN IS
         vCleanedString VARCHAR2(4000);
-        vReversedString VARCHAR2(4000);
+        -- No need to declare vReversedString if calling the package's own ReverseString
     BEGIN
-        IF pInputString IS NULL THEN RETURN NULL; END IF; -- Or TRUE/FALSE depending on definition
-        vCleanedString := REGEXP_REPLACE(UPPER(pInputString), '[^A-Z0-9]', '');
-        IF LENGTH(vCleanedString) = 0 THEN RETURN TRUE; END IF; -- Empty or all non-alphanum is a palindrome
-        
-        -- Could call the standalone ReverseString here, or implement again
-        FOR i IN REVERSE 1..LENGTH(vCleanedString) LOOP
-            vReversedString := vReversedString || SUBSTR(vCleanedString, i, 1);
-        END LOOP;
-        
-        RETURN vCleanedString = vReversedString;
+        IF pInputString IS NULL THEN
+            RETURN NULL; -- Or FALSE
+        END IF;
+        vCleanedString := UPPER(REPLACE(pInputString, ' ', ''));
+        -- Calls the public ReverseString from within the same package
+        RETURN vCleanedString = ReverseString(vCleanedString);
     END IsPalindrome;
-    /
-    ```
-*   **Oracle-Idiomatic Solution (Package):**
-    ```sql
-    CREATE OR REPLACE PACKAGE StringUtils AS
-        FUNCTION ReverseString (pInputString IN VARCHAR2) RETURN VARCHAR2;
-        FUNCTION CountVowels (pInputString IN VARCHAR2) RETURN NUMBER;
-        FUNCTION IsPalindrome (pInputString IN VARCHAR2) RETURN BOOLEAN;
-    END StringUtils;
-    /
 
-    CREATE OR REPLACE PACKAGE BODY StringUtils AS
-        FUNCTION ReverseString (pInputString IN VARCHAR2) RETURN VARCHAR2 IS
-            vReversedString VARCHAR2(4000) := '';
-        BEGIN
-            IF pInputString IS NULL THEN RETURN NULL; END IF;
-            FOR i IN REVERSE 1..LENGTH(pInputString) LOOP
-                vReversedString := vReversedString || SUBSTR(pInputString, i, 1);
-            END LOOP;
-            RETURN vReversedString;
-        END ReverseString;
-
-        FUNCTION CountVowels (pInputString IN VARCHAR2) RETURN NUMBER IS
-            vVowelCount NUMBER := 0;
-            vChar CHAR(1);
-        BEGIN
-            IF pInputString IS NULL THEN RETURN 0; END IF;
-            FOR i IN 1..LENGTH(pInputString) LOOP
-                vChar := UPPER(SUBSTR(pInputString, i, 1));
-                IF vChar IN ('A', 'E', 'I', 'O', 'U') THEN
-                    vVowelCount := vVowelCount + 1;
-                END IF;
-            END LOOP;
-            RETURN vVowelCount;
-        END CountVowels;
-
-        FUNCTION IsPalindrome (pInputString IN VARCHAR2) RETURN BOOLEAN IS
-            vCleanedString VARCHAR2(4000);
-            -- No need to declare vReversedString if calling the package's ReverseString
-        BEGIN
-            IF pInputString IS NULL THEN RETURN NULL; END IF;
-            vCleanedString := REGEXP_REPLACE(UPPER(pInputString), '[^A-Z0-9]', '');
-            IF LENGTH(vCleanedString) = 0 THEN RETURN TRUE; END IF;
-            
-            RETURN vCleanedString = StringUtils.ReverseString(vCleanedString); -- Call package function
-        END IsPalindrome;
-    END StringUtils;
-    /
-    ```
-*   **Detailed Explanation & Discussion:**
-    *   **Inefficient Approach (Standalone Functions):**
-        *   **Namespace Pollution:** Each function (`ReverseString`, `CountVowels`, `IsPalindrome`) becomes a top-level schema object. With many utilities, this can clutter the schema.
-        *   **Grant Management:** If these utilities need to be granted to other users, each function must be granted individually.
-        *   **Dependency Management:** If `IsPalindrome` were to internally call `ReverseString` (as it logically could), a change to `ReverseString`'s signature could potentially invalidate `IsPalindrome`, requiring its recompilation. While Oracle handles this, packages offer finer-grained control.
-        *   **No Private Helpers:** If there was a common internal helper function needed by all three (e.g., a character cleaning function), it would either have to be a standalone public function (further polluting the namespace) or duplicated within each function.
-    *   **Oracle-Idiomatic Approach (Package `StringUtils`):**
-        *   **Modularity & Organization:** All related string utilities are grouped logically within a single package `StringUtils`. This makes the codebase cleaner and easier to understand. The package itself becomes the unit of deployment and management for these utilities.
-        *   **Encapsulation:** The package specification defines the public API. The implementation details are hidden within the package body. `IsPalindrome` can directly call `StringUtils.ReverseString` (or just `ReverseString` if called from within the same package body).
-        *   **Simplified Grant Management:** You can grant `EXECUTE` permission on the entire `StringUtils` package to other users/roles, rather than on individual functions.
-        *   **Performance:** When the first subprogram in a package is called, the entire package (or parts of it) is loaded into memory for the session. Subsequent calls to other subprograms in the same package within that session can be faster as they don't require disk I/O to fetch the code.
-        *   **Private Members:** The package body can contain private functions, procedures, types, and variables that are only accessible within the package body. This is useful for helper routines or shared internal state that shouldn't be exposed publicly. (Though not explicitly used in this simple example, it's a major advantage).
-    *   **Loss of Advantages (Inefficient):** The standalone approach loses the organizational benefits, simplified security management, potential performance gains from shared memory, and the ability to have truly private helper routines that packages provide. It leads to a less structured and potentially harder-to-maintain codebase as the number of utilities grows.
-
-<div class="postgresql-bridge">
-**Bridging from PostgreSQL:** PostgreSQL uses schemas to organize functions. You can create `CREATE FUNCTION myschema.myfunction(...)`. This provides namespacing. However, Oracle packages go further by allowing a package specification (the API) and a package body (the implementation), public/private members, and package-level state. This level of encapsulation and state management within a single named unit is a key differentiator.
-</div>
-
-### Category: Exception Handling
-
-#### (i) Meanings, Values, Relations, and Advantages
-
-**Exercise 1.4: Handling Predefined Exceptions**
-*   <span class="problem-label">Problem:</span> Write a PL/SQL anonymous block that attempts to:
-    1.  Divide a number by zero.
-    2.  Fetch a row from the `Employees` table with an `employeeId` that does not exist.
-    Include separate exception handlers for `ZERO_DIVIDE` and `NO_DATA_FOUND`. In each handler, use `DBMS_OUTPUT.PUT_LINE` to display a user-friendly message and the values of `SQLCODE` and `SQLERRM`.
-*   **Focus:** Practice handling common predefined exceptions and accessing `SQLCODE` and `SQLERRM`.
-*   **Relations:**
-    *   **Oracle:** Introduces predefined exceptions and error information functions. Refer to `PL/SQL Language Reference (F46753-09)`, Chapter 12: "PL/SQL Error Handling", sections "Predefined Exceptions" (p. 12-11), "SQLCODE Function" (p. 14-177), and "SQLERRM Function" (p. 14-178).
-    *   **PostgreSQL Bridge:** PostgreSQL also has predefined exceptions (e.g., `division_by_zero`, `no_data_found`). The concept of catching specific errors is similar. However, the exact exception names and the functions to get error details (`SQLSTATE`, `SQLERRM` in PG) differ. Oracle's `SQLCODE` returns a number, while `SQLERRM` returns the message.
-*   **Advantages Demonstrated:** Graceful error recovery, providing informative messages to the user or for logging.
-
-**Exercise 1.5: Declaring and Raising User-Defined Exceptions**
-
-*   <span class="problem-label">Problem Recap:</span> Create a procedure `AdjustStock` that takes `pProductId` (NUMBER) and `pQuantityChange` (NUMBER).
-    *   Declare `InvalidStockOperationException`.
-    *   Raise it if `pQuantityChange` is 0 or if applying it results in negative stock.
-    *   Otherwise, update `stockQuantity`.
-    *   Handle `InvalidStockOperationException` within the procedure.
-
-*   **Solution Code:**
-    ```sql
-    CREATE OR REPLACE PROCEDURE AdjustStock (
-        pProductId IN Products.productId%TYPE,
-        pQuantityChange IN NUMBER
-    ) AS
-        InvalidStockOperationException EXCEPTION; -- Declare the user-defined exception
-        vCurrentStock Products.stockQuantity%TYPE;
-        vProductName Products.productName%TYPE;
-    BEGIN
-        -- Get current stock and product name for messages
-        BEGIN
-            SELECT stockQuantity, productName
-            INTO vCurrentStock, vProductName
-            FROM Products
-            WHERE productId = pProductId;
-        EXCEPTION
-            WHEN NO_DATA_FOUND THEN
-                DBMS_OUTPUT.PUT_LINE('Error: Product ID ' || pProductId || ' not found.');
-                RETURN; -- Exit procedure if product not found
-        END;
-
-        IF pQuantityChange = 0 THEN
-            RAISE InvalidStockOperationException; -- Raise with default or no message
-        END IF;
-
-        IF (vCurrentStock + pQuantityChange) < 0 THEN
-            -- It's often better to raise with RAISE_APPLICATION_ERROR for custom messages
-            -- But for this exercise, we'll stick to the basic RAISE and handle the message in the EXCEPTION block
-            RAISE InvalidStockOperationException; 
-        END IF;
-
-        -- If no exception, update the stock
-        UPDATE Products
-        SET stockQuantity = stockQuantity + pQuantityChange
-        WHERE productId = pProductId;
-
-        DBMS_OUTPUT.PUT_LINE('Stock for product ' || vProductName || ' (ID: ' || pProductId || ') adjusted by ' || pQuantityChange || 
-                             '. New quantity: ' || (vCurrentStock + pQuantityChange));
-        COMMIT;
-
-    EXCEPTION
-        WHEN InvalidStockOperationException THEN
-            IF pQuantityChange = 0 THEN
-                DBMS_OUTPUT.PUT_LINE('Error: Quantity change cannot be zero for product ' || vProductName || ' (ID: ' || pProductId || ').');
-            ELSE -- Implies negative stock scenario
-                DBMS_OUTPUT.PUT_LINE('Error: Operation for product ' || vProductName || ' (ID: ' || pProductId || 
-                                     ') would result in negative stock. Current: ' || vCurrentStock || ', Change: ' || pQuantityChange);
-            END IF;
-            ROLLBACK; -- Ensure atomicity if an error occurred
-        WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('An unexpected error occurred: ' || SQLCODE || ' - ' || SQLERRM);
-            ROLLBACK;
-    END AdjustStock;
-    /
-
-    -- Test Scenarios
-    SET SERVEROUTPUT ON;
-    BEGIN
-        DBMS_OUTPUT.PUT_LINE('--- Test 1: Valid stock increase ---');
-        AdjustStock(pProductId => 1000, pQuantityChange => 10); -- Laptop Pro, initial stock 50
-
-        DBMS_OUTPUT.PUT_LINE('--- Test 2: Valid stock decrease (sale) ---');
-        AdjustStock(pProductId => 1000, pQuantityChange => -5);
-
-        DBMS_OUTPUT.PUT_LINE('--- Test 3: Quantity change is zero ---');
-        AdjustStock(pProductId => 1001, pQuantityChange => 0); -- Wireless Mouse
-
-        DBMS_OUTPUT.PUT_LINE('--- Test 4: Operation results in negative stock ---');
-        AdjustStock(pProductId => 1002, pQuantityChange => -15); -- Keyboard Ultra, initial stock 10
-
-        DBMS_OUTPUT.PUT_LINE('--- Test 5: Non-existent product ---');
-        AdjustStock(pProductId => 9999, pQuantityChange => 5);
-    END;
-    /
-    ```
-
-*   **Detailed Explanation:**
-    1.  **`InvalidStockOperationException EXCEPTION;`**: This line in the declaration section of the `AdjustStock` procedure defines a new, user-named exception.
-    2.  **`RAISE InvalidStockOperationException;`**: This statement is used to explicitly signal that the `InvalidStockOperationException` has occurred.
-        *   It's used when `pQuantityChange` is 0.
-        *   It's also used if the calculation `(vCurrentStock + pQuantityChange)` would be less than 0.
-    3.  **Exception Handler (`EXCEPTION WHEN InvalidStockOperationException THEN ...`)**: This block of code executes only if `InvalidStockOperationException` is raised within the `BEGIN...END` block of the procedure.
-        *   It uses an `IF` statement to differentiate between the "zero quantity change" and "negative stock" scenarios to provide a more specific error message via `DBMS_OUTPUT.PUT_LINE`.
-        *   `ROLLBACK` is included to undo any partial changes if an error occurs, ensuring the operation is atomic.
-    4.  **Pre-check for Product Existence**: An inner `BEGIN...EXCEPTION...END` block is used to gracefully handle the case where `pProductId` doesn't exist. This prevents the main logic from failing on a `NO_DATA_FOUND` before it even gets to the stock operation checks.
-    5.  **`WHEN OTHERS THEN ...`**: A general handler is good practice to catch any other unexpected issues.
-    6.  **Test Scenarios**: The anonymous block demonstrates calling `AdjustStock` with various inputs to trigger different outcomes, including successful updates and the defined exceptions.
-
-<div class="postgresql-bridge">
-**Bridging from PostgreSQL:**
-In PostgreSQL, you would typically raise an exception like this:
-`RAISE EXCEPTION 'Quantity change cannot be zero' USING ERRCODE = 'P0001';` (where P0001 is a custom error code).
-The catching mechanism in PL/pgSQL would be:
-`EXCEPTION WHEN SQLSTATE 'P0001' THEN ...` or by a condition name if you've mapped it.
-Oracle's approach separates the declaration of the exception name (`InvalidStockOperationException EXCEPTION;`) from the act of raising it (`RAISE InvalidStockOperationException;`). This named exception can then be caught directly by its name, which can improve readability.
-</div>
-
-**Exercise 1.6: Using `PRAGMA EXCEPTION_INIT`**
-
-*   <span class="problem-label">Problem Recap:</span> Create a `Promotions` table. Attempt an insert that violates a rule (e.g., discount > 100). Map the resulting Oracle error (or a custom one) to `InvalidDiscountException` using `PRAGMA EXCEPTION_INIT` and handle it.
-
-*   **Solution Code:**
-    ```sql
-    -- Drop table if it exists
-    BEGIN
-        EXECUTE IMMEDIATE 'DROP TABLE Promotions';
-    EXCEPTION WHEN OTHERS THEN NULL;
-    END;
-    /
-
-    -- Create table with a check constraint
-    CREATE TABLE Promotions (
-        promotionId NUMBER PRIMARY KEY,
-        discountPercentage NUMBER,
-        CONSTRAINT chkDiscount CHECK (discountPercentage BETWEEN 0 AND 100)
-    );
-
-    -- PL/SQL block demonstrating PRAGMA EXCEPTION_INIT
-    SET SERVEROUTPUT ON;
-    DECLARE
-        InvalidDiscountException EXCEPTION;
-        -- ORA-02290 is the error for check constraint violation.
-        PRAGMA EXCEPTION_INIT(InvalidDiscountException, -2290); 
-        
-        vPromotionId Promotions.promotionId%TYPE := 1;
-        vDiscount Promotions.discountPercentage%TYPE;
-    BEGIN
-        DBMS_OUTPUT.PUT_LINE('Attempting to insert an invalid discount...');
-        vDiscount := 150; -- This will violate the check constraint
-
-        BEGIN -- Inner block for the DML operation
-            INSERT INTO Promotions (promotionId, discountPercentage)
-            VALUES (vPromotionId, vDiscount);
-            DBMS_OUTPUT.PUT_LINE('Promotion ' || vPromotionId || ' inserted with discount ' || vDiscount || '%.');
-            COMMIT;
-        EXCEPTION
-            WHEN InvalidDiscountException THEN
-                DBMS_OUTPUT.PUT_LINE('Error: Invalid discount percentage (' || vDiscount || '%). ORA-' || 
-                                     TO_CHAR(ABS(SQLCODE)) || ': ' || SQLERRM);
-                DBMS_OUTPUT.PUT_LINE('Associated PL/SQL Exception: InvalidDiscountException was caught.');
-            WHEN OTHERS THEN
-                DBMS_OUTPUT.PUT_LINE('An unexpected error occurred: ' || SQLCODE || ' - ' || SQLERRM);
-        END;
-
-        DBMS_OUTPUT.PUT_LINE('---');
-        DBMS_OUTPUT.PUT_LINE('Attempting to insert a valid discount...');
-        vPromotionId := 2;
-        vDiscount := 10;
-        
-        BEGIN -- Inner block for the DML operation
-            INSERT INTO Promotions (promotionId, discountPercentage)
-            VALUES (vPromotionId, vDiscount);
-            DBMS_OUTPUT.PUT_LINE('Promotion ' || vPromotionId || ' inserted with discount ' || vDiscount || '%.');
-            COMMIT;
-        EXCEPTION
-            WHEN InvalidDiscountException THEN -- Should not happen for valid discount
-                DBMS_OUTPUT.PUT_LINE('Error: Invalid discount percentage (' || vDiscount || '%). Handled by InvalidDiscountException.');
-            WHEN OTHERS THEN
-                DBMS_OUTPUT.PUT_LINE('An unexpected error occurred: ' || SQLCODE || ' - ' || SQLERRM);
-        END;
-
-    END;
-    /
-    ```
-
-*   **Detailed Explanation:**
-    1.  **`Promotions` Table:** Created with a `CHECK` constraint to ensure `discountPercentage` is between 0 and 100. This constraint will raise `ORA-02290` if violated.
-    2.  **`InvalidDiscountException EXCEPTION;`**: Declares a user-defined exception.
-    3.  **`PRAGMA EXCEPTION_INIT(InvalidDiscountException, -2290);`**: This is the key part.
-        *   `PRAGMA EXCEPTION_INIT` is a compiler directive (not a runtime statement).
-        *   It associates the PL/SQL exception name `InvalidDiscountException` with the Oracle error number `-2290` (which corresponds to `ORA-02290`, check constraint violation).
-        *   The error number *must* be a negative integer, excluding -100 (`NO_DATA_FOUND`).
-    4.  **First `INSERT` Attempt:**
-        *   `vDiscount` is set to `150`, which violates the `chkDiscount` constraint.
-        *   The `INSERT` statement will cause Oracle to raise `ORA-02290`.
-        *   Because of the `PRAGMA EXCEPTION_INIT` directive, this `ORA-02290` is now also known by the PL/SQL name `InvalidDiscountException`.
-        *   The `WHEN InvalidDiscountException THEN` handler catches the error, and a user-friendly message including `SQLCODE` and `SQLERRM` is displayed.
-    5.  **Second `INSERT` Attempt:**
-        *   `vDiscount` is set to `10` (valid).
-        *   The `INSERT` succeeds, and no exception is raised.
-    6.  **Inner Blocks for DML:** The `INSERT` statements are wrapped in their own `BEGIN...EXCEPTION...END` blocks. This is a good practice to isolate DML that might raise exceptions and handle them specifically, allowing the main block to continue if desired.
-
-<div class="oracle-specific">
-**Oracle Power Tool: `PRAGMA EXCEPTION_INIT`**
-This pragma is extremely useful for making your error handling code more readable and maintainable. Instead of catching generic `WHEN OTHERS` or specific but cryptic `ORA-xxxxx` numbers, you can give meaningful names to Oracle errors relevant to your application's logic. This allows you to handle system-level errors (like constraint violations, deadlocks, etc.) with the same clarity as your custom user-defined exceptions.
-</div>
-
-#### (ii) Disadvantages and Pitfalls (Exception Handling)
-
-**Exercise 2.3: Overuse of `WHEN OTHERS THEN NULL;`**
-
-*   <span class="problem-label">Problem Recap:</span> Create `ProcessProduct` procedure which retrieves `unitPrice`. Include `EXCEPTION WHEN OTHERS THEN NULL;`. Test with valid, non-existent, and NULL `productId`. Explain pitfalls.
-
-*   **Solution Code:**
-    ```sql
-    CREATE OR REPLACE PROCEDURE ProcessProduct (
-        pProductId IN Products.productId%TYPE
-    ) AS
-        vUnitPrice Products.unitPrice%TYPE;
-    BEGIN
-        DBMS_OUTPUT.PUT_LINE('Processing product ID: ' || NVL(TO_CHAR(pProductId), 'NULL'));
-        
-        SELECT unitPrice
-        INTO vUnitPrice
-        FROM Products
-        WHERE productId = pProductId;
-        
-        DBMS_OUTPUT.PUT_LINE('Unit price for product ID ' || pProductId || ' is: ' || vUnitPrice);
-        
-    EXCEPTION
-        WHEN OTHERS THEN
-            NULL; -- This is the problematic handler
-    END ProcessProduct;
-    /
-
-    -- Test Scenarios
-    SET SERVEROUTPUT ON;
-    BEGIN
-        DBMS_OUTPUT.PUT_LINE('--- Test 1: Valid Product ID (Laptop Pro, ID 1000) ---');
-        ProcessProduct(pProductId => 1000); 
-        -- Expected: Prints price.
-        
-        DBMS_OUTPUT.PUT_LINE('--- Test 2: Non-existent Product ID ---');
-        ProcessProduct(pProductId => 9999); 
-        -- Expected without bad handler: ORA-01403: no data found
-        -- With bad handler: Nothing printed, error is swallowed.
-
-        DBMS_OUTPUT.PUT_LINE('--- Test 3: NULL Product ID ---');
-        ProcessProduct(pProductId => NULL); 
-        -- Expected without bad handler: ORA-01403: no data found (as productId = NULL will not match any row unless there's a NULL PK, which is unlikely)
-        -- With bad handler: Nothing printed, error is swallowed.
-    END;
-    /
-    ```
-
-*   **Detailed Explanation & Pitfalls:**
-    1.  **Procedure Logic:** The procedure attempts to select the `unitPrice` for a given `pProductId`.
-    2.  **`EXCEPTION WHEN OTHERS THEN NULL;`**: This is the critical part. This handler catches *any and all* exceptions that occur within the `BEGIN...END` block and then does absolutely nothing (`NULL` is a do-nothing statement).
-    3.  **Test 1 (Valid Product ID):**
-        *   The `SELECT` statement succeeds.
-        *   The unit price is printed.
-        *   The exception handler is not invoked.
-    4.  **Test 2 (Non-existent Product ID):**
-        *   The `SELECT` statement will not find a matching `productId` and would normally raise the predefined `NO_DATA_FOUND` exception (ORA-01403).
-        *   However, the `WHEN OTHERS THEN NULL;` handler catches this `NO_DATA_FOUND` exception.
-        *   Since the handler does `NULL;`, the exception is effectively "swallowed" or ignored.
-        *   No error message is shown to the user or logged. The program continues as if nothing went wrong, which is highly misleading.
-    5.  **Test 3 (NULL Product ID):**
-        *   The `SELECT ... WHERE productId = NULL` will not match any rows (standard SQL behavior unless `productId` can actually be NULL and you have `ANSI_NULLS OFF`, which is not default Oracle behavior and generally not recommended for primary keys).
-        *   This would also typically raise `NO_DATA_FOUND`.
-        *   Again, the `WHEN OTHERS THEN NULL;` handler catches and silences this error.
-
-    **Pitfalls of `WHEN OTHERS THEN NULL;` (or `WHEN OTHERS THEN -- do nothing`):**
-    *   **Masks All Errors:** It catches every possible runtime error, from expected ones like `NO_DATA_FOUND` to critical unexpected ones like `STORAGE_ERROR`, `SYS_INVALID_ROWID`, or even programmer errors like `VALUE_ERROR` from an incorrect data type assignment.
-    *   **Debugging Nightmare:** When errors are silently ignored, it becomes incredibly difficult to diagnose problems. The application might produce incorrect results, corrupt data, or behave erratically without any indication of where or why the problem originated.
-    *   **Data Integrity Risks:** If an error during a DML operation is swallowed, the transaction might partially complete, leaving the database in an inconsistent state.
-    *   **False Sense of Security:** The code *appears* to run without errors, but it's failing silently.
-    *   **Hides Important Information:** `SQLCODE` and `SQLERRM` which provide crucial details about the error are not examined or logged.
-
-    **Best Practice:**
-    *   Handle specific exceptions that you anticipate and can recover from.
-    *   If you use `WHEN OTHERS`, it should generally be at the outermost level of your program unit (or in specific controlled scenarios) and *must* include:
-        *   Logging of the error details (e.g., `SQLCODE`, `SQLERRM`, `DBMS_UTILITY.FORMAT_ERROR_STACK`, `DBMS_UTILITY.FORMAT_ERROR_BACKTRACE`).
-        *   A `RAISE;` or `RAISE_APPLICATION_ERROR;` statement to propagate the error or a more meaningful application-specific error, unless the error is truly benign and intentionally ignored (a very rare case).
-
-**Exercise 2.4: Exception Raised in Declaration Section**
-
-*   <span class="problem-label">Problem Recap:</span> Declare a `CONSTANT NUMBER(2)` and initialize it to `100`. Include a `VALUE_ERROR` handler in the same block. Observe if it's caught.
-
-*   **Solution Code:**
-    ```sql
-    SET SERVEROUTPUT ON;
-    BEGIN -- Outer (or only) block
-        DECLARE
-            -- This declaration will raise VALUE_ERROR (ORA-06502) because 100 does not fit in NUMBER(2)
-            myConst CONSTANT NUMBER(2) := 100; 
-        BEGIN
-            DBMS_OUTPUT.PUT_LINE('This line will not be reached.');
-            DBMS_OUTPUT.PUT_LINE('myConst = ' || myConst);
-        EXCEPTION
-            WHEN VALUE_ERROR THEN -- This handler is in the same block as the faulty declaration
-                DBMS_OUTPUT.PUT_LINE('VALUE_ERROR caught within the declaration block - THIS WILL NOT HAPPEN.');
-        END;
-    EXCEPTION -- Exception handler for the outer block
-        WHEN VALUE_ERROR THEN
-            DBMS_OUTPUT.PUT_LINE('VALUE_ERROR caught by the ENCLOSING block.');
-            DBMS_OUTPUT.PUT_LINE('SQLCODE: ' || SQLCODE || ', SQLERRM: ' || SQLERRM);
-         WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('Some other error caught by enclosing block: ' || SQLERRM);
-    END;
-    /
-    ```
-
-*   **Detailed Explanation:**
-    1.  **`myConst CONSTANT NUMBER(2) := 100;`**:
-        *   `NUMBER(2)` can store integers from -99 to 99.
-        *   Attempting to initialize it with `100` will cause an `ORA-06502: PL/SQL: numeric or value error` (which is a `VALUE_ERROR` in PL/SQL) during the elaboration of the declaration section.
-    2.  **Exception Propagation:**
-        *   When an exception is raised in the *declaration section* of a PL/SQL block, control *immediately* passes to the exception-handling section of the *enclosing block* (if one exists).
-        *   The exception handler within the *same block* where the declaration error occurred is **bypassed**.
-    3.  **Execution and Output:**
-        *   The `DECLARE` section of the inner anonymous block (if we consider the outer `BEGIN...END;` as the main block and the inner `DECLARE...BEGIN...EXCEPTION...END;` as a sub-block, though here it's simpler as a single block with a faulty declaration) attempts to initialize `myConst`.
-        *   The `VALUE_ERROR` is raised.
-        *   The `WHEN VALUE_ERROR THEN` handler *within that same block's EXCEPTION section* is **not** executed.
-        *   If this entire structure was nested inside another `BEGIN...EXCEPTION...END;` block, that outer block's handler would catch it. In this standalone example, the error propagates to the SQL*Plus environment (or the calling environment).
-        *   If we add an outer block with an exception handler as shown in the corrected solution code above, the output will be:
-            ```
-            VALUE_ERROR caught by the ENCLOSING block.
-            SQLCODE: -6502, SQLERRM: ORA-06502: PL/SQL: numeric or value error: number precision too large
-            ```
-
-<div class="oracle-specific">
-**Oracle PL/SQL Behavior:** This behavior is crucial to understand. Exceptions in declarations are handled by the parent scope, not the current scope's exception handler. This is because the block's executable section (and thus its own exception handlers) only get control *after* all declarations have been successfully processed. If a declaration fails, the block itself is not considered to have started execution properly.
-</div>
-
-#### (iii) Contrasting with Inefficient Common Solutions (Exception Handling)
-
-**Exercise 3.2: Error Checking vs. Exception Handling for `NO_DATA_FOUND`**
-*   **Scenario:** A developer needs to retrieve an employee's salary. If the employee doesn't exist, a default salary of 0 should be used.
-*   **Less Idiomatic/Potentially Inefficient Common Solution (Problem):** The developer first performs a `SELECT COUNT(*)` to check if the employee exists, and then, based on the count, either performs another `SELECT` to get the salary or assigns the default. Write this PL/SQL block.
-    ```sql
-    -- Example of a less idiomatic (two-query) approach
-    DECLARE
-        vEmployeeId Employees.employeeId%TYPE := 999; -- Non-existent ID
-        vSalary Employees.salary%TYPE;
-        vEmployeeCount NUMBER;
-    BEGIN
-        SELECT COUNT(*) INTO vEmployeeCount FROM Employees WHERE employeeId = vEmployeeId;
-        IF vEmployeeCount > 0 THEN
-            SELECT salary INTO vSalary FROM Employees WHERE employeeId = vEmployeeId;
-        ELSE
-            vSalary := 0;
-        END IF;
-        DBMS_OUTPUT.PUT_LINE('Salary: ' || vSalary);
-    END;
-    /
-    ```
-*   **Oracle-Idiomatic Solution (Solution):** Use a single `SELECT INTO` statement and an exception handler for `NO_DATA_FOUND` to assign the default salary.
-    ```sql
-    DECLARE
-        vEmployeeId Employees.employeeId%TYPE := 999; -- Non-existent ID
-        vSalary Employees.salary%TYPE;
-    BEGIN
-        BEGIN -- Inner block for specific exception handling
-            SELECT salary INTO vSalary FROM Employees WHERE employeeId = vEmployeeId;
-        EXCEPTION
-            WHEN NO_DATA_FOUND THEN
-                vSalary := 0;
-        END;
-        DBMS_OUTPUT.PUT_LINE('Salary: ' || vSalary);
-    END;
-    /
-    ```
-*   **Focus:** Demonstrate that using exception handling for expected conditions like `NO_DATA_FOUND` can be more concise and often more efficient than explicit pre-checks in Oracle.
-*   **Loss of Advantages (Inefficient):** The pre-check approach involves two separate SQL executions (one `COUNT(*)` and one actual data retrieval), which is generally less performant than a single `SELECT INTO` with an exception handler for a case where data might not be found. It also makes the code more verbose.
-*   **Note:** While `NO_DATA_FOUND` is an exception, it's often considered a normal outcome in many scenarios (e.g., "is this user registered?"). For such "expected not found" cases, exception handling is idiomatic in Oracle.
-
-### Category: Triggers
-
-#### (i) Meanings, Values, Relations, and Advantages
-
-**Exercise 1.7: Basic DML Trigger (`AFTER INSERT`)**
-*   <span class="problem-label">Problem:</span> Create an `AFTER INSERT ON Orders FOR EACH ROW` trigger named `LogNewOrder`. This trigger should insert a record into the `AuditLog` table indicating that a new order was placed. Log the `tableName` ('Orders'), `operationType` ('INSERT'), and the `recordId` (the `:NEW.orderId`).
-    Test by inserting a new order.
-*   **Focus:** Basic DML trigger syntax, `AFTER INSERT` timing, `FOR EACH ROW` clause, and using the `:NEW` pseudorecord.
-*   **Relations:**
-    *   **Oracle:** Introduces core trigger concepts. Refer to `PL/SQL Language Reference (F46753-09)`, Chapter 10: "PL/SQL Triggers", sections "DML Triggers" (p. 10-4) and "Correlation Names and Pseudorecords" (p. 10-28). Also, `Get Started with Oracle Database Development (F79574-03)`, Chapter 6 is a good practical intro.
-    *   **PostgreSQL Bridge:** PostgreSQL has a very similar trigger mechanism (`CREATE TRIGGER ... AFTER INSERT ON ... FOR EACH ROW EXECUTE FUNCTION ...`). The main difference is that Oracle trigger logic is directly embedded in the `CREATE TRIGGER` statement, while PostgreSQL triggers call a separate function. The `:NEW` and `:OLD` concepts (though named `NEW` and `OLD` in PG) are analogous.
-*   **Advantages Demonstrated:** Automating actions (auditing) based on data modifications.
-
-**Exercise 1.8: Trigger with Conditional Logic (`UPDATING` predicate)**
-*   <span class="problem-label">Problem:</span> Create an `AFTER UPDATE ON Products FOR EACH ROW` trigger named `NotifyStockChange`.
-    1.  Inside the trigger, use the `UPDATING('stockQuantity')` conditional predicate.
-    2.  If `stockQuantity` was updated AND the new `stockQuantity` is less than 5, use `DBMS_OUTPUT.PUT_LINE` to simulate sending a low stock notification (e.g., "Low stock alert for Product ID: [product_id], New Quantity: [new_quantity]").
-    Test by updating `stockQuantity` for a product to a value less than 5, and then update another column (e.g., `unitPrice`) for the same product.
-*   **Focus:** Using conditional predicates (`UPDATING`) within a trigger to execute logic only when specific columns are affected.
-*   **Relations:**
-    *   **Oracle:** Focuses on conditional predicates. Refer to `PL/SQL Language Reference (F46753-09)`, Chapter 10, section "Conditional Predicates for Detecting Triggering DML Statement" (p. 10-5).
-    *   **PostgreSQL Bridge:** PostgreSQL triggers can also achieve conditional logic within the trigger function using IF statements on the `NEW` and `OLD` values or by checking `TG_OP`. The `UPDATING('column_name')` predicate is a concise Oracle feature.
-*   **Advantages Demonstrated:** More granular control over trigger execution, improving performance by only running logic when necessary.
-
-**Exercise 1.9: Trigger Using `:OLD` and `:NEW`**
-*   <span class="problem-label">Problem:</span> Create a `BEFORE UPDATE ON Employees FOR EACH ROW` trigger named `PreventSalaryDecrease`.
-    This trigger should prevent any update that attempts to decrease an employee's salary. If a salary decrease is attempted, use `RAISE_APPLICATION_ERROR` with a custom error number (-20002) and a message "Salary decrease is not allowed."
-    Test by attempting to decrease an employee's salary and then by attempting to increase it.
-*   **Focus:** Using `:OLD` and `:NEW` to compare values before and after an update, and using `RAISE_APPLICATION_ERROR` to enforce a business rule.
-*   **Relations:**
-    *   **Oracle:** Reinforces `:OLD`/`:NEW` and introduces `RAISE_APPLICATION_ERROR` for custom error signaling from triggers. Refer to `PL/SQL Language Reference (F46753-09)`, Chapter 12, section "RAISE_APPLICATION_ERROR Procedure" (p. 12-18).
-    *   **PostgreSQL Bridge:** PostgreSQL trigger functions use `NEW` and `OLD` records. To prevent an update, a PG trigger function would `RETURN NULL` (for a `BEFORE` trigger) or `RAISE EXCEPTION`. Oracle's `RAISE_APPLICATION_ERROR` is the standard way to return custom errors from PL/SQL to the calling environment.
-*   **Advantages Demonstrated:** Enforcing complex business rules at the database level, providing clear error messages for violations.
-
-#### (ii) Disadvantages and Pitfalls (Triggers)
-
-**Exercise 2.5: The Mutating Table Error (ORA-04091)**
-*   <span class="problem-label">Problem:</span>
-    1.  Create a `BEFORE UPDATE OF salary ON Employees FOR EACH ROW` trigger named `CheckAvgSalary`.
-    2.  Inside this trigger, attempt to query the `Employees` table itself to calculate the average salary of the employee's department (e.g., `SELECT AVG(salary) FROM Employees WHERE departmentId = :NEW.departmentId;`).
-    3.  Try to update an employee's salary.
-    Observe the error (ORA-04091). Explain why this error occurs and what the term "mutating table" means in this context.
-*   **Focus:** Demonstrate the common "mutating table" error.
-*   **Disadvantage/Pitfall:** Row-level triggers cannot query or modify the table on which they are defined because it's in a state of flux (mutating). This is a fundamental restriction to ensure data consistency.
-*   **Relevant Docs:** `PL/SQL Language Reference (F46753-09)`, Chapter 10, section "Mutating-Table Restriction" (p. 10-42).
-
-**Exercise 2.6: Cascading Triggers and Performance**
-*   <span class="problem-label">Problem (Conceptual):**</span>
-    Imagine you have three tables: `TableA`, `TableB`, and `TableC`.
-    *   An `AFTER INSERT` trigger on `TableA` inserts a row into `TableB`.
-    *   An `AFTER INSERT` trigger on `TableB` inserts a row into `TableC`.
-    *   An `AFTER INSERT` trigger on `TableC` updates a row in `TableA`.
-    What potential issue might arise here? How can the `OPEN_CURSORS` database parameter be relevant?
-*   **Focus:** Understand the concept of cascading triggers and their potential for complexity, performance issues, or even infinite loops if not designed carefully.
-*   **Disadvantage/Pitfall:**
-    *   **Complexity:** Hard to debug and understand the flow of execution.
-    *   **Performance:** Multiple DML operations and trigger firings can slow down the initial DML.
-    *   **Recursion/Infinite Loops:** If a trigger on TableA causes an action that eventually fires the same trigger on TableA again (directly or indirectly), it can lead to an infinite loop (though Oracle has limits to prevent true infinite loops, it will hit a recursion depth error).
-    *   **`OPEN_CURSORS`:** Each trigger execution and each SQL statement within a trigger consumes cursors. Deeply cascading triggers can exhaust the `OPEN_CURSORS` limit, leading to ORA-01000 errors.
-*   **Relevant Docs:** `PL/SQL Language Reference (F46753-09)`, Chapter 10, section "Order in Which Triggers Fire" (p. 10-46) mentions the 32-trigger cascade limit.
-
-#### (iii) Contrasting with Inefficient Common Solutions (Triggers)
-
-**Exercise 3.3: Auditing Manually in Application vs. Using Triggers**
-*   **Scenario:** Every time a product's `stockQuantity` is updated, the change needs to be logged into the `AuditLog` table.
-*   **Inefficient/Error-Prone Common Solution (Problem):** The application developer decides to write code in every part of their application (e.g., Java, Python, or another PL/SQL procedure) that updates product stock to also manually insert a record into `AuditLog`. *You don't need to write the application code, just describe why this approach is problematic.*
-*   **Oracle-Idiomatic Solution (Solution):** Implement the `trgUpdateProductStockAudit` trigger from Exercise 1.7 (or a similar one).
-*   **Focus:** Showcasing the reliability and consistency benefits of using database triggers for auditing over manual application-level logging.
-*   **Loss of Advantages (Inefficient/Problematic):**
-    *   **Inconsistency:** Developers might forget to add the audit log insert in some parts of the application.
-    *   **Duplication of Code:** Audit logic is repeated in multiple places.
-    *   **Bypass:** Ad-hoc SQL updates made directly to the database (e.g., by a DBA for maintenance) would bypass the application-level audit.
-    *   **Maintenance Overhead:** If the audit requirements change, all application code performing the update and audit needs to be modified.
-    With a database trigger, the audit logic is centralized, enforced for *all* DML operations on the table (regardless of the source), and easier to maintain.
-
-#### (iv) Hardcore Combined Problem
-
-**Exercise 4.1: Order Processing System with Auditing and Error Handling**
-*   <span class="problem-label">Problem Recap:**</span> Build `OrderManagementPkg` to place orders, handle insufficient stock with custom exceptions, and use triggers to audit stock and salary changes.
-*   **Solution Code:**
-    ```sql
-    -- Package Specification: OrderManagementPkg
-    CREATE OR REPLACE PACKAGE OrderManagementPkg AS
-        InsufficientStockException EXCEPTION;
-        PRAGMA EXCEPTION_INIT(InsufficientStockException, -20001);
-
-        PROCEDURE PlaceOrder(
-            pCustomerId IN Orders.customerId%TYPE,
-            pProductId IN Products.productId%TYPE,
-            pQuantity IN OrderItems.quantity%TYPE,
-            pItemPrice IN OrderItems.itemPrice%TYPE
-        );
-    END OrderManagementPkg;
-    /
-
-    -- Package Body: OrderManagementPkg
-    CREATE OR REPLACE PACKAGE BODY OrderManagementPkg AS
-        PROCEDURE PlaceOrder(
-            pCustomerId IN Orders.customerId%TYPE,
-            pProductId IN Products.productId%TYPE,
-            pQuantity IN OrderItems.quantity%TYPE,
-            pItemPrice IN OrderItems.itemPrice%TYPE
-        ) IS
-            vOrderId Orders.orderId%TYPE;
-            vOrderItemId OrderItems.orderItemId%TYPE;
-            vCurrentStock Products.stockQuantity%TYPE;
-            vProductName Products.productName%TYPE;
-        BEGIN
-            -- Check stock first
-            SELECT productName, stockQuantity 
-            INTO vProductName, vCurrentStock
-            FROM Products
-            WHERE productId = pProductId;
-
-            IF vCurrentStock < pQuantity THEN
-                RAISE_APPLICATION_ERROR(-20001, 'Insufficient stock for product: ' || vProductName || 
-                                               '. Requested: ' || pQuantity || ', Available: ' || vCurrentStock);
-            END IF;
-
-            -- If stock is sufficient, proceed with order creation and stock update
-            -- All of this should be part of the same transaction.
-            -- A SAVEPOINT could be used here if parts of the order could proceed even if others fail,
-            -- but for this exercise, we'll treat the whole order placement as atomic.
-
-            INSERT INTO Orders (orderId, customerId, orderDate, status)
-            VALUES (orderSeq.NEXTVAL, pCustomerId, SYSDATE, 'Processing')
-            RETURNING orderId INTO vOrderId; -- Oracle 23ai RETURNING INTO for sequences
-
-            INSERT INTO OrderItems (orderItemId, orderId, productId, quantity, itemPrice)
-            VALUES (orderItemSeq.NEXTVAL, vOrderId, pProductId, pQuantity, pItemPrice);
-            
-            UPDATE Products
-            SET stockQuantity = stockQuantity - pQuantity
-            WHERE productId = pProductId;
-
-            DBMS_OUTPUT.PUT_LINE('Order ' || vOrderId || ' placed successfully.');
-            COMMIT; -- Commit the successful transaction
-
-        EXCEPTION
-            WHEN NO_DATA_FOUND THEN -- Product not found
-                RAISE_APPLICATION_ERROR(-20003, 'Product ID ' || pProductId || ' not found.');
-                -- No explicit ROLLBACK needed here as DML hasn't happened or will be rolled back by unhandled exception
-            WHEN OTHERS THEN
-                DBMS_OUTPUT.PUT_LINE('Unexpected error in PlaceOrder: ' || SQLCODE || ' - ' || SQLERRM);
-                ROLLBACK; -- Rollback on any other unexpected error
-                RAISE; -- Re-raise the original exception
-        END PlaceOrder;
-    END OrderManagementPkg;
-    /
-
-    -- Trigger: trgUpdateProductStockAudit
-    CREATE OR REPLACE TRIGGER trgUpdateProductStockAudit
-    AFTER UPDATE OF stockQuantity ON Products
-    FOR EACH ROW
-    BEGIN
-        INSERT INTO AuditLog (tableName, operationType, recordId, oldValue, newValue)
-        VALUES ('Products', 'UPDATE', :OLD.productId, TO_CHAR(:OLD.stockQuantity), TO_CHAR(:NEW.stockQuantity));
-    END;
-    /
-
-    -- Trigger: trgLogEmployeeSalaryChanges
-    CREATE OR REPLACE TRIGGER trgLogEmployeeSalaryChanges
-    AFTER UPDATE OF salary ON Employees
-    FOR EACH ROW
-    WHEN (NEW.salary <> OLD.salary) -- Conditional Predicate
-    BEGIN
-        INSERT INTO AuditLog (tableName, operationType, recordId, oldValue, newValue)
-        VALUES ('Employees', 'UPDATE', :OLD.employeeId, TO_CHAR(:OLD.salary), TO_CHAR(:NEW.salary));
-    END;
-    /
-
-    -- Test Scenario 1: Successful order
-    SET SERVEROUTPUT ON;
-    BEGIN
-        DBMS_OUTPUT.PUT_LINE('--- Test Scenario 1: Successful Order ---');
-        OrderManagementPkg.PlaceOrder(pCustomerId => 1, pProductId => 1000, pQuantity => 2, pItemPrice => 1200);
-        -- Verify data in Orders, OrderItems, Products, AuditLog tables manually or with SELECTs
-    EXCEPTION
-        WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('Error in Test Scenario 1: ' || SQLERRM);
-    END;
-    /
-
-    -- Test Scenario 2: Insufficient stock
-    BEGIN
-        DBMS_OUTPUT.PUT_LINE('--- Test Scenario 2: Insufficient Stock ---');
-        -- Product 1003 (Monitor HD) has stockQuantity = 0
-        OrderManagementPkg.PlaceOrder(pCustomerId => 2, pProductId => 1003, pQuantity => 1, pItemPrice => 300);
-    EXCEPTION
-        WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('Caught expected error in Test Scenario 2: ' || SQLCODE || ' - ' || SQLERRM);
-            -- Verify no order/orderitem created and stock for product 1003 is still 0
-    END;
-    /
-
-    -- Test Scenario 3: Update employee salary (should log)
-    BEGIN
-        DBMS_OUTPUT.PUT_LINE('--- Test Scenario 3: Update Employee Salary (should log) ---');
-        UPDATE Employees SET salary = salary + 5000 WHERE employeeId = 100;
-        COMMIT;
-        -- Verify AuditLog for employee 100
-    EXCEPTION
-        WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('Error in Test Scenario 3: ' || SQLERRM);
-    END;
-    /
+END StringUtilities;
+/
+
+-- Test the package
+SET SERVEROUTPUT ON;
+DECLARE
+    test_str VARCHAR2(50) := 'Madam Im Adam';
+    rev_str VARCHAR2(50);
+    vowel_count NUMBER;
+    is_pal BOOLEAN;
+BEGIN
+    rev_str := plsqlresilience.StringUtilities.ReverseString(test_str);
+    DBMS_OUTPUT.PUT_LINE('Original: ' || test_str || ', Reversed: ' || rev_str);
+
+    vowel_count := plsqlresilience.StringUtilities.CountVowels(test_str);
+    DBMS_OUTPUT.PUT_LINE('Vowels in "' || test_str || '": ' || vowel_count);
+
+    is_pal := plsqlresilience.StringUtilities.IsPalindrome(test_str);
+    IF is_pal THEN
+        DBMS_OUTPUT.PUT_LINE('"' || test_str || '" is a palindrome.');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('"' || test_str || '" is NOT a palindrome.');
+    END IF;
+
+    test_str := 'Oracle';
+    is_pal := plsqlresilience.StringUtilities.IsPalindrome(test_str);
+    IF is_pal THEN
+        DBMS_OUTPUT.PUT_LINE('"' || test_str || '" is a palindrome.');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('"' || test_str || '" is NOT a palindrome.');
+    END IF;
+END;
+/
+```
+<p><strong>Discussion of Advantages of Package Solution:</strong></p>
+    <ol>
+        <li><strong>Organization & Modularity:</strong> All related string utilities are grouped under a single, named package (<code>StringUtilities</code>). This makes the codebase cleaner and easier to navigate. (PL/SQL Ref, Ch 11, "Reasons to Use Packages" p. 11-2: Modularity).</li>
+        <li><strong>Maintainability:</strong> Changes or additions to string utilities are made within the package context. If a private helper function was used (e.g., for advanced string cleaning shared by multiple public functions), it could be modified without affecting the public interface. (PL/SQL Ref, Ch 11, "Hidden Implementation Details" p. 11-2).</li>
+        <li><strong>Deployment & Dependency Management:</strong> Deploying the <code>StringUtilities</code> package deploys all its functionalities. Oracle manages dependencies at the package level, potentially reducing recompilation cascades compared to dependencies on multiple individual functions. (PL/SQL Ref, Ch 11, "Better Performance" p. 11-3, related to preventing cascading dependencies).</li>
+        <li><strong>Encapsulation & Information Hiding:</strong> The package body can contain private variables and subprograms not exposed to the outside world. For instance, a more complex <code>NormalizeString</code> private function could be used by <code>IsPalindrome</code> and potentially other future string functions, without cluttering the public API. (PL/SQL Ref, Ch 11, "What is a Package?" p. 11-1, discussion of private items).</li>
+        <li><strong>Performance:</strong> The first time any subprogram in a package is called, the entire package is loaded into memory. Subsequent calls to any subprogram in that same package (within the same session) do not require further disk I/O for loading the code. (PL/SQL Ref, Ch 11, "Better Performance" p. 11-3).</li>
+        <li><strong>Security & Privileges:</strong> Privileges can be granted on the package as a whole, rather than on each individual function. (PL/SQL Ref, Ch 11, "Easier to Grant Roles" p. 11-3).</li>
+    </ol>
+    <hr>
+<h2>Category: Exception Handling: Predefined exceptions, user-defined exceptions, SQLCODE, SQLERRM, PRAGMA EXCEPTION_INIT</h2>
+    <h3>(i) Meanings, Values, Relations, and Advantages</h3>
+<h4>Exercise 1.4: Handling Predefined Exceptions</h4>
+<p><strong>Solution:</strong></p>
     
-    -- Test Scenario 4: Update employee salary to same value (should NOT log)
-    DECLARE
-        vCurrentSalary Employees.salary%TYPE;
+```sql
+SET SERVEROUTPUT ON;
+DECLARE
+    v_salary plsqlresilience.Employees.salary%TYPE;
+    v_nonExistentEmpId plsqlresilience.Employees.employeeId%TYPE := 9999;
+    v_num NUMBER := 10;
+    v_divisor NUMBER := 0;
+    v_result NUMBER;
+BEGIN
+    -- Attempt 1: Select for non-existent employee
     BEGIN
-        DBMS_OUTPUT.PUT_LINE('--- Test Scenario 4: Update Employee Salary to same value (should NOT log) ---');
-        SELECT salary INTO vCurrentSalary FROM Employees WHERE employeeId = 101;
-        UPDATE Employees SET salary = vCurrentSalary WHERE employeeId = 101;
-        COMMIT;
-        -- Verify AuditLog - no new entry for employee 101 for this specific operation.
+        DBMS_OUTPUT.PUT_LINE('Attempting to select salary for employee ID ' || v_nonExistentEmpId);
+        SELECT salary
+        INTO v_salary
+        FROM plsqlresilience.Employees
+        WHERE employeeId = v_nonExistentEmpId;
+        DBMS_OUTPUT.PUT_LINE('Salary: ' || v_salary); -- This line won't be reached
     EXCEPTION
-        WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('Error in Test Scenario 4: ' || SQLERRM);
+        WHEN NO_DATA_FOUND THEN
+            DBMS_OUTPUT.PUT_LINE('Handler: Employee with ID ' || v_nonExistentEmpId || ' not found.');
     END;
-    /
-    ```
-*   **Detailed Explanation:**
-    1.  **`OrderManagementPkg` Specification:**
-        *   Declares `InsufficientStockException` for clear, business-specific error handling.
-        *   `PRAGMA EXCEPTION_INIT` associates this custom PL/SQL exception with an Oracle error number (-20001). This allows calling applications (like Java) to potentially catch this specific Oracle error number if the exception propagates unhandled by PL/SQL up to the client.
-        *   Defines the public interface `PlaceOrder`.
-    2.  **`OrderManagementPkg` Body:**
-        *   **`PlaceOrder` Procedure:**
-            *   **Pre-check for Stock:** Before any DML, it queries the `Products` table to get the `productName` (for a user-friendly message) and `stockQuantity`. This uses `SELECT INTO` (Chunk 5).
-            *   **Raise Custom Exception:** If `vCurrentStock < pQuantity`, it uses `RAISE_APPLICATION_ERROR(-20001, ...)` to raise the custom error with a dynamic message. This immediately halts processing within the `BEGIN...END` block of `PlaceOrder` and transfers control to its `EXCEPTION` section.
-            *   **Atomic Operations:** If stock is sufficient, it performs `INSERT` into `Orders` (using `orderSeq.NEXTVAL` - Chunk 2 SQL features), then `INSERT` into `OrderItems`, and finally `UPDATE`s `Products` stock.
-            *   The Oracle 23ai feature `RETURNING orderId INTO vOrderId` is used with the INSERT into `Orders` to get the newly generated `orderId` without a separate `SELECT` statement.
-            *   **Transaction Control:** `COMMIT` is issued only after all DML operations succeed. If any exception occurs before the `COMMIT` (either the stock check or an unexpected DML error), the `EXCEPTION` block's `ROLLBACK` (or the implicit rollback on unhandled exception propagation) will undo all changes made within the procedure call.
-            *   **Exception Handling:**
-                *   `WHEN NO_DATA_FOUND THEN`: Catches the case where the `pProductId` doesn't exist in the `Products` table during the initial stock check. It then raises a different custom application error.
-                *   `WHEN OTHERS THEN`: Catches any other unexpected SQL or PL/SQL errors. It logs the `SQLCODE` and `SQLERRM` (Oracle built-in error functions) and then `RAISE`s the original exception to let the calling environment know something went wrong. This is crucial for not silently swallowing unexpected errors.
-    3.  **`trgUpdateProductStockAudit` Trigger:**
-        *   `AFTER UPDATE OF stockQuantity ON Products`: Fires after an update operation specifically on the `stockQuantity` column of the `Products` table.
-        *   `FOR EACH ROW`: Indicates it's a row-level trigger, meaning it fires for each row affected by the `UPDATE` statement.
-        *   The trigger body simply `INSERT`s a new record into `AuditLog`, using `:OLD.productId` (the product ID of the row being updated), `:OLD.stockQuantity` (the value before the update), and `:NEW.stockQuantity` (the value after the update). The `:OLD` and `:NEW` are pseudorecords (this Chunk).
-    4.  **`trgLogEmployeeSalaryChanges` Trigger:**
-        *   `AFTER UPDATE OF salary ON Employees`: Fires after the `salary` column is updated.
-        *   `WHEN (NEW.salary <> OLD.salary)`: This is a conditional predicate (this Chunk). The trigger body will only execute if the new salary is actually different from the old salary, preventing unnecessary audit logs for "updates" that don't change the value.
-        *   The body logs the change to `AuditLog` using `:OLD` and `:NEW` values.
-    5.  **Test Scenarios:** The anonymous blocks demonstrate various use cases, including successful operations, expected error handling (insufficient stock), and the conditional logic of the salary update trigger.
+
+    DBMS_OUTPUT.PUT_LINE('---'); -- Separator
+
+    -- Attempt 2: Divide by zero
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('Attempting to divide ' || v_num || ' by ' || v_divisor);
+        v_result := v_num / v_divisor;
+        DBMS_OUTPUT.PUT_LINE('Result: ' || v_result); -- This line won't be reached
+    EXCEPTION
+        WHEN ZERO_DIVIDE THEN
+            DBMS_OUTPUT.PUT_LINE('Handler: Cannot divide by zero.');
+    END;
+END;
+/
+```
+
+<h4>Exercise 1.5: User-Defined Exceptions and PRAGMA EXCEPTION_INIT</h4>
+<p><strong>Solution:</strong></p>
+
+```sql
+SET SERVEROUTPUT ON;
+DECLARE
+    NegativeSalaryException EXCEPTION;
+    PRAGMA EXCEPTION_INIT(NegativeSalaryException, -20002);
+
+    v_empId plsqlresilience.Employees.employeeId%TYPE := 100; -- Assuming employee 100 exists
+    v_attemptedSalary1 plsqlresilience.Employees.salary%TYPE := -500;
+    v_attemptedSalary2 plsqlresilience.Employees.salary%TYPE := -600;
+BEGIN
+    -- Part 1: Raise user-defined exception directly
+    DBMS_OUTPUT.PUT_LINE('Attempting to update salary for employee ' || v_empId || ' to ' || v_attemptedSalary1 || ' using custom RAISE.');
+    BEGIN
+        IF v_attemptedSalary1 < 0 THEN
+            RAISE NegativeSalaryException; -- Explicitly raise the custom exception
+        END IF;
+        -- UPDATE plsqlresilience.Employees SET salary = v_attemptedSalary1 WHERE employeeId = v_empId;
+        -- DBMS_OUTPUT.PUT_LINE('Salary updated (this should not happen for negative salary).');
+    EXCEPTION
+        WHEN NegativeSalaryException THEN
+            DBMS_OUTPUT.PUT_LINE('Handler: Error - Salary cannot be negative (caught direct raise).');
+    END;
+
+    DBMS_OUTPUT.PUT_LINE('---');
+
+    -- Part 2: Raise using RAISE_APPLICATION_ERROR and catch with PRAGMA EXCEPTION_INIT
+    DBMS_OUTPUT.PUT_LINE('Attempting to update salary for employee ' || v_empId || ' to ' || v_attemptedSalary2 || ' using RAISE_APPLICATION_ERROR.');
+    BEGIN
+        IF v_attemptedSalary2 < 0 THEN
+            RAISE_APPLICATION_ERROR(-20002, 'Salary cannot be negative from RAISE_APPLICATION_ERROR.');
+        END IF;
+        -- UPDATE plsqlresilience.Employees SET salary = v_attemptedSalary2 WHERE employeeId = v_empId;
+        -- DBMS_OUTPUT.PUT_LINE('Salary updated (this should not happen for negative salary).');
+    EXCEPTION
+        WHEN NegativeSalaryException THEN -- This handler will catch the error associated via PRAGMA
+            DBMS_OUTPUT.PUT_LINE('Handler: Error - Salary cannot be negative (caught RAISE_APPLICATION_ERROR via PRAGMA).');
+            DBMS_OUTPUT.PUT_LINE('SQLCODE: ' || SQLCODE || ', SQLERRM: ' || SQLERRM);
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Some other error occurred: ' || SQLERRM);
+    END;
+END;
+/
+```
+<div class="oracle-specific">
+    <p>Reference: "User-Defined Exceptions" (PL/SQL Ref, Ch 12, p. 12-13) shows declaring an exception. "EXCEPTION_INIT Pragma" (PL/SQL Ref, Ch 14, p. 14-74) details associating an exception name with an Oracle error number. "RAISE_APPLICATION_ERROR Procedure" (PL/SQL Ref, Ch 12, p. 12-18) is used to issue user-defined error messages from stored subprograms.</p>
+</div>
+<h4>Exercise 1.6: Using SQLCODE and SQLERRM</h4>
+<p><strong>Solution:</strong></p>
+    
+```sql
+SET SERVEROUTPUT ON;
+DECLARE
+    v_longString VARCHAR2(20) := 'This string is too long'; -- Longer than 10
+    v_deptId plsqlresilience.Departments.departmentId%TYPE := plsqlresilience.DepartmentSeq.NEXTVAL;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Attempting to insert a string longer than column definition...');
+    INSERT INTO plsqlresilience.Departments (departmentId, departmentName, locationCity)
+    VALUES (v_deptId, 'Test Department', v_longString); -- locationCity is VARCHAR2(100) in dataset, so this is fine.
+                                                    -- Let's try inserting into employee email with a long string
+                                                    -- to trigger ORA-12899 value too large for column
+    INSERT INTO plsqlresilience.Employees (employeeId, lastName, email)
+    VALUES (plsqlresilience.EmployeeSeq.NEXTVAL, 'TestLastName', 'this_email_is_definitely_much_longer_than_one_hundred_characters_and_should_cause_an_error@example.com');
+
+    DBMS_OUTPUT.PUT_LINE('Insert successful (this should not happen).');
+    COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('An OTHERS exception occurred:');
+        DBMS_OUTPUT.PUT_LINE('SQLCODE: ' || SQLCODE);
+        DBMS_OUTPUT.PUT_LINE('SQLERRM: ' || SQLERRM);
+        ROLLBACK;
+END;
+/
+-- Expected Output (will vary based on exact constraint violated, but for ORA-12899):
+-- Attempting to insert a string longer than column definition...
+-- An OTHERS exception occurred:
+-- SQLCODE: -12899
+-- SQLERRM: ORA-12899: value too large for column "PLSQLRESILIENCE"."EMPLOYEES"."EMAIL" (actual: 108, maximum: 100)
+```
+<div class="oracle-specific">
+        <p><code>SQLCODE</code> returns the numeric error code and <code>SQLERRM</code> returns the associated error message. This is particularly useful in a <code>WHEN OTHERS</code> handler to identify unexpected errors. (PL/SQL Ref, Ch 12, p. 12-27, "Retrieving Error Code and Error Message").</p>
+    </div>
+    <h3>(ii) Disadvantages and Pitfalls</h3>
+<h4>Exercise 2.3: Overly Broad WHEN OTHERS Handler</h4>
+    <p><strong>Solution:</strong></p>
+    
+```sql
+CREATE OR REPLACE PROCEDURE plsqlresilience.ProcessEmployeeData(pEmployeeId IN plsqlresilience.Employees.employeeId%TYPE) IS
+    v_old_salary plsqlresilience.Employees.salary%TYPE;
+    v_new_salary plsqlresilience.Employees.salary%TYPE;
+BEGIN
+    -- Get old salary for audit
+    SELECT salary INTO v_old_salary FROM plsqlresilience.Employees WHERE employeeId = pEmployeeId;
+    v_new_salary := v_old_salary * 1.10;
+
+    -- 1. Update salary
+    UPDATE plsqlresilience.Employees
+    SET salary = v_new_salary
+    WHERE employeeId = pEmployeeId;
+    DBMS_OUTPUT.PUT_LINE('Salary updated for employee ' || pEmployeeId);
+
+    -- 2. Insert into AuditLog
+    INSERT INTO plsqlresilience.AuditLog (tableName, operationType, recordId, oldValue, newValue)
+    VALUES ('Employees', 'SAL_UPDATE', TO_CHAR(pEmployeeId), TO_CHAR(v_old_salary), TO_CHAR(v_new_salary));
+    DBMS_OUTPUT.PUT_LINE('Audit log entry created for employee ' || pEmployeeId);
+
+    -- 3. Attempt to update Departments table (e.g., with a non-existent column or constraint violation)
+    -- Forcing an error: departmentId 999 likely does not exist.
+    UPDATE plsqlresilience.Departments
+    SET departmentName = departmentName || ' - Verified'
+    WHERE departmentId = (SELECT departmentId FROM plsqlresilience.Employees WHERE employeeId = pEmployeeId) + 999; --This will fail silently or throw an error swallowed by WHEN OTHERS
+
+    -- Or try to update a non-existent column:
+    -- UPDATE plsqlresilience.Departments
+    -- SET NonExistentColumn = 'Test'
+    -- WHERE departmentId = (SELECT departmentId FROM plsqlresilience.Employees WHERE employeeId = pEmployeeId);
+
+    DBMS_OUTPUT.PUT_LINE('Department update attempted for employee ' || pEmployeeId);
+    COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('An unspecified error occurred in ProcessEmployeeData for employee ' || pEmployeeId || '. SQLCODE: ' || SQLCODE);
+        -- The original problem specified just logging and exiting.
+        -- In a real scenario, you might rollback, but the exercise focuses on the pitfall of *not* re-raising.
+        -- ROLLBACK; -- Good practice, but not part of the pitfall demonstration itself
+END ProcessEmployeeData;
+/
+
+-- Test
+SET SERVEROUTPUT ON;
+BEGIN
+    -- Create a department and employee that will cause the department update to fail
+    -- if we try to update a department that doesn't exist for the audit part.
+    -- Let's assume employee 100 exists in department 1.
+    -- The department update will try to update department 1 + 999, which should fail.
+    plsqlresilience.ProcessEmployeeData(100);
+END;
+/
+```
+<p><strong>Discussion of Disadvantages:</strong></p>
+    <ol>
+        <li><strong>Masks the Real Error:</strong> The generic message "An unspecified error occurred" provides no clue about what actually went wrong (e.g., was it the salary update, the audit log insert, or the department update?). The original error (SQLCODE, SQLERRM, and stack trace) is lost.</li>
+        <li><strong>Debugging Nightmare:</strong> Without knowing the specific error, debugging becomes incredibly difficult. Developers have to guess or add extensive logging to pinpoint the failure.</li>
+        <li><strong>Incorrect Program Flow:</strong> The procedure exits as if it completed normally (or at least handled the error gracefully), but critical operations might have failed silently. The caller might assume success when partial failure occurred.</li>
+        <li><strong>Data Inconsistency:</strong> If the <code>COMMIT</code> happens before the error or the error occurs mid-transaction and there's no <code>ROLLBACK</code> in the <code>WHEN OTHERS</code>, partial changes might be committed, leading to inconsistent data. (Although in this specific example, the implicit commit from DDL or an explicit commit after successful operations would be problematic if an error in step 3 occurred).</li>
+        <li><strong>Violation of Best Practices:</strong> Generally, <code>WHEN OTHERS</code> should be used sparingly, primarily for top-level error logging and then re-raising the exception (<code>RAISE;</code> or <code>RAISE_APPLICATION_ERROR</code>) or logging detailed error information (SQLCODE, SQLERRM, DBMS_UTILITY.FORMAT_ERROR_STACK).</li>
+    </ol>
+    <div class="oracle-specific">
+        <p>The PL/SQL Reference (Chapter 12, page 12-27, "Unhandled Exceptions") emphasizes that if an exception is not handled, it propagates. A <code>WHEN OTHERS THEN NULL;</code> or just logging without re-raising effectively stops this propagation, hiding the problem. Page 12-9 recommends that the last statement in an OTHERS handler be either RAISE or an invocation of RAISE_APPLICATION_ERROR, or a subroutine marked with SUPPRESSES_WARNING_6009 if PLW-06009 is enabled and an issue.</p>
+    </div>
+<h4>Exercise 2.4: Exception Propagation and Scope</h4>
+    <p><strong>Solution:</strong></p>
+    
+```sql
+SET SERVEROUTPUT ON;
+-- Scenario 1: InnerException handled, OuterException raised by inner and handled by outer
+DECLARE
+    OuterException EXCEPTION;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Outer block started.');
+    DECLARE
+        InnerException EXCEPTION;
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE(' Inner block started.');
+        BEGIN
+            DBMS_OUTPUT.PUT_LINE('  Innermost try block started.');
+            RAISE InnerException;
+        EXCEPTION
+            WHEN InnerException THEN
+                DBMS_OUTPUT.PUT_LINE('  InnerException caught and handled by inner block.');
+        END;
+
+        DBMS_OUTPUT.PUT_LINE(' Inner block: Raising OuterException...');
+        RAISE OuterException; -- This will propagate to the outer block
+        DBMS_OUTPUT.PUT_LINE(' Inner block: This line will not be reached.');
+    EXCEPTION
+        WHEN OTHERS THEN -- This would catch OuterException if not handled by a specific handler above.
+            DBMS_OUTPUT.PUT_LINE(' Inner block OTHERS: Should not happen if OuterException is specifically handled by outer.');
+    END;
+    DBMS_OUTPUT.PUT_LINE('Outer block: This line will not be reached if OuterException was raised.');
+EXCEPTION
+    WHEN OuterException THEN
+        DBMS_OUTPUT.PUT_LINE('OuterException caught and handled by outer block.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Outer block OTHERS: Some other unhandled exception.');
+END;
+/
+
+DBMS_OUTPUT.PUT_LINE('--- Scenario 2 ---');
+
+-- Scenario 2: InnerException NOT handled by inner, propagates out
+DECLARE
+    OuterException EXCEPTION; -- Not used in this specific scenario path but good for context
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Outer block started.');
+    DECLARE
+        InnerException EXCEPTION;
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE(' Inner block started.');
+        DBMS_OUTPUT.PUT_LINE(' Inner block: Raising InnerException (will not be handled here)...');
+        RAISE InnerException;
+        DBMS_OUTPUT.PUT_LINE(' Inner block: This line will not be reached.');
+    -- No handler for InnerException in this inner block
+    END;
+    DBMS_OUTPUT.PUT_LINE('Outer block: This line will not be reached if InnerException propagated.');
+EXCEPTION
+    WHEN OTHERS THEN -- This will catch InnerException as it's not OuterException
+        DBMS_OUTPUT.PUT_LINE('Outer block OTHERS: Unhandled exception from inner block caught. SQLCODE: ' || SQLCODE || ' SQLERRM: ' || SQLERRM);
+        IF SQLCODE = -6510 THEN -- PL/SQL: unhandled user-defined exception has code -06510 before ORA- prefix
+             DBMS_OUTPUT.PUT_LINE(' (This is likely the propagated InnerException which is a user-defined exception)');
+        END IF;
+END;
+/
+```
+<p><strong>Explanation:</strong></p>
+    <ul>
+        <li><strong>Scenario 1:</strong>
+            <ol>
+                <li><code>InnerException</code> is raised in the innermost block.</li>
+                <li>The inner block's <code>EXCEPTION WHEN InnerException</code> handler catches it.</li>
+                <li>The inner block then explicitly raises <code>OuterException</code>.</li>
+                <li>Control transfers to the outer block's exception-handling section.</li>
+                <li>The outer block's <code>EXCEPTION WHEN OuterException</code> handler catches it.</li>
+            </ol>
+        </li>
+        <li><strong>Scenario 2:</strong>
+            <ol>
+                <li><code>InnerException</code> is raised in the inner block.</li>
+                <li>The inner block has no handler for <code>InnerException</code>.</li>
+                <li>The exception propagates out of the inner block to its enclosing block (the outer block).</li>
+                <li>The outer block's <code>WHEN OTHERS</code> handler catches <code>InnerException</code> (since it's not <code>OuterException</code>). User-defined exceptions, when unhandled and propagated, typically result in ORA-06510.</li>
+            </ol>
+        </li>
+    </ul>
+    <p>This demonstrates that if an exception is not handled in the current block, it propagates to the immediate enclosing block. The scope of an exception declared in an inner block is limited to that block; once propagated out, it can only be caught by <code>WHEN OTHERS</code> unless it was associated with an error number using <code>PRAGMA EXCEPTION_INIT</code> and the outer block handles that specific error number or a named exception linked to it. (PL/SQL Ref, Ch 12, p. 12-19, "Exception Propagation").</p>
+    <h3>(iii) Contrasting with Inefficient Common Solutions</h3>
+<h4>Exercise 3.2: Manual Error Checking vs. Exception Handling</h4>
+    <p><strong>Solution:</strong></p>
+    <p><strong>Inefficient Common Solution (Manual Checking):</strong></p>
+    
+```sql
+CREATE OR REPLACE FUNCTION plsqlresilience.GetEmployeeSalary_Manual (
+    p_employeeId IN plsqlresilience.Employees.employeeId%TYPE
+) RETURN NUMBER IS
+    v_salary plsqlresilience.Employees.salary%TYPE;
+    v_count NUMBER;
+    v_error_indicator NUMBER := -1; -- Special value for multiple rows
+BEGIN
+    -- Check for existence and uniqueness
+    SELECT COUNT(*)
+    INTO v_count
+    FROM plsqlresilience.Employees
+    WHERE employeeId = p_employeeId;
+
+    IF v_count = 0 THEN
+        RETURN NULL; -- Employee does not exist
+    ELSIF v_count = 1 THEN
+        -- Fetch the salary
+        SELECT salary
+        INTO v_salary
+        FROM plsqlresilience.Employees
+        WHERE employeeId = p_employeeId;
+        RETURN v_salary;
+    ELSE -- v_count > 1 (should not happen with primary key, but for demonstration)
+        RETURN v_error_indicator; -- Multiple employees found
+    END IF;
+END GetEmployeeSalary_Manual;
+/
+```
+
+<p><strong>Oracle-Idiomatic Solution (Exception Handling):</strong></p>
+    
+```sql
+CREATE OR REPLACE FUNCTION plsqlresilience.GetEmployeeSalary_Exceptions (
+    p_employeeId IN plsqlresilience.Employees.employeeId%TYPE
+) RETURN NUMBER IS
+    v_salary plsqlresilience.Employees.salary%TYPE;
+    v_error_indicator NUMBER := -1; -- For TOO_MANY_ROWS
+BEGIN
+    SELECT salary
+    INTO v_salary
+    FROM plsqlresilience.Employees
+    WHERE employeeId = p_employeeId;
+    RETURN v_salary;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN NULL; -- Employee does not exist
+    WHEN TOO_MANY_ROWS THEN
+        RETURN v_error_indicator; -- Multiple employees found
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Unexpected error in GetEmployeeSalary_Exceptions: ' || SQLERRM);
+        RETURN NULL; -- Or re-raise, or return a specific error code
+END GetEmployeeSalary_Exceptions;
+/
+
+-- Test blocks
+SET SERVEROUTPUT ON;
+DECLARE
+    sal_manual NUMBER;
+    sal_except NUMBER;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('--- Testing Manual Check ---');
+    sal_manual := plsqlresilience.GetEmployeeSalary_Manual(100); -- Exists
+    DBMS_OUTPUT.PUT_LINE('Salary for 100 (Manual): ' || NVL(TO_CHAR(sal_manual), 'NULL'));
+    sal_manual := plsqlresilience.GetEmployeeSalary_Manual(999); -- Non-existent
+    DBMS_OUTPUT.PUT_LINE('Salary for 999 (Manual): ' || NVL(TO_CHAR(sal_manual), 'NULL'));
+
+    DBMS_OUTPUT.PUT_LINE('--- Testing Exception Handling ---');
+    sal_except := plsqlresilience.GetEmployeeSalary_Exceptions(100); -- Exists
+    DBMS_OUTPUT.PUT_LINE('Salary for 100 (Except): ' || NVL(TO_CHAR(sal_except), 'NULL'));
+    sal_except := plsqlresilience.GetEmployeeSalary_Exceptions(999); -- Non-existent
+    DBMS_OUTPUT.PUT_LINE('Salary for 999 (Except): ' || NVL(TO_CHAR(sal_except), 'NULL'));
+
+    -- To test TOO_MANY_ROWS, you'd need a table where employeeId is not unique
+    -- or a query that could return multiple rows for the INTO clause.
+    -- For example (hypothetical, as employeeId is PK):
+    -- INSERT INTO plsqlresilience.Employees (employeeId, lastName, salary) VALUES (777, 'Dup1', 500);
+    -- INSERT INTO plsqlresilience.Employees (employeeId, lastName, salary) VALUES (777, 'Dup2', 600);
+    -- COMMIT;
+    -- sal_except := plsqlresilience.GetEmployeeSalary_Exceptions(777);
+    -- DBMS_OUTPUT.PUT_LINE('Salary for 777 (Except): ' || NVL(TO_CHAR(sal_except), 'NULL'));
+END;
+/
+```
+
+<p><strong>Discussion:</strong></p>
+    <ul>
+        <li><strong>Verbosity:</strong> The manual checking approach is more verbose. It requires an initial <code>COUNT(*)</code> query and then conditional logic to perform the actual data retrieval. The exception handling version is more concise.</li>
+        <li><strong>Performance:</strong> The manual approach executes at least two SQL statements (<code>COUNT(*)</code> then potentially <code>SELECT salary</code>) to get the salary or determine non-existence. The exception handling approach executes only one <code>SELECT salary</code>. If the data is found, it's more efficient. The overhead of raising and catching an exception is generally acceptable, especially compared to an extra database query. (PL/SQL Ref, Ch 12, "Advantages of Exception Handlers" p. 12-7).</li>
+        <li><strong>Clarity and Intent:</strong> The exception handling approach clearly separates the main logic (fetching the salary) from the error/special case handling. The intent is "try to get the salary; if it's not there, do X; if too many are there, do Y." The manual approach intermingles existence checks with data retrieval.</li>
+        <li><strong>Atomicity:</strong> While not a major factor here, in more complex DML, exception handlers ensure that error conditions are dealt with immediately after the DML statement that might cause them, allowing for cleaner transaction control.</li>
+    </ul>
+    <hr>
+    <h2>Category: Triggers: DML triggers, :NEW and :OLD qualifiers, conditional predicates</h2>
+    <h3>(i) Meanings, Values, Relations, and Advantages</h3>
+<h4>Exercise 1.7: Basic AFTER INSERT Trigger</h4>
+    <p><strong>Solution:</strong></p>
+    
+```sql
+CREATE OR REPLACE TRIGGER plsqlresilience.trgLogNewOrder
+AFTER INSERT ON plsqlresilience.Orders
+FOR EACH ROW
+BEGIN
+    INSERT INTO plsqlresilience.AuditLog (tableName, operationType, recordId, newValue)
+    VALUES ('Orders', 'INSERT', TO_CHAR(:NEW.orderId),
+            'Order ID: ' || :NEW.orderId ||
+            ', Cust ID: ' || :NEW.customerId ||
+            ', Date: ' || TO_CHAR(:NEW.orderDate, 'YYYY-MM-DD') ||
+            ', Status: ' || :NEW.status);
+END trgLogNewOrder;
+/
+-- Test the trigger
+SET SERVEROUTPUT ON;
+DECLARE
+  v_new_order_id plsqlresilience.Orders.orderId%TYPE;
+BEGIN
+    INSERT INTO plsqlresilience.Orders (orderId, customerId, status)
+    VALUES (plsqlresilience.OrderSeq.NEXTVAL, 123, 'Pending')
+    RETURNING orderId INTO v_new_order_id;
+
+    DBMS_OUTPUT.PUT_LINE('New order inserted with ID: ' || v_new_order_id);
+    COMMIT;
+
+    -- Verify AuditLog (optional, query separately)
+    -- SELECT * FROM plsqlresilience.AuditLog WHERE recordId = TO_CHAR(v_new_order_id) AND tableName = 'Orders';
+END;
+/
+```
 
 <div class="oracle-specific">
-**Oracle Power Play:** This hardcore problem combines several key Oracle PL/SQL features:
-*   **Packages** for modularity and encapsulation.
-*   **User-defined exceptions** and `RAISE_APPLICATION_ERROR` for robust, application-specific error signaling.
-*   **Triggers** for automated auditing and business rule enforcement at the database level.
-*   **:OLD and :NEW pseudorecords** for accessing row data within triggers.
-*   **Conditional predicates in triggers** for fine-grained control over trigger execution.
-*   **Implicit and explicit transaction control** (`COMMIT`, `ROLLBACK`).
-*   **Oracle 23ai's `RETURNING INTO`** with sequence-generated values in `INSERT` statements provides a more concise way to get generated IDs.
-This type of integrated design ensures data integrity, provides clear error feedback, and automates common tasks, making the application more resilient and maintainable.
+        <p>This uses an <code>AFTER INSERT</code> trigger, which fires after the DML operation completes for each affected row. <code>:NEW.orderId</code> refers to the value of the <code>orderId</code> column for the newly inserted row. (PL/SQL Ref, Ch 10, p. 10-4 "DML Triggers", p. 10-28 "Correlation Names and Pseudorecords").</p>
+    </div>
+<h4>Exercise 1.8: BEFORE UPDATE Trigger with :OLD and :NEW</h4>
+    <p><strong>Solution:</strong></p>
+    
+```sql
+CREATE OR REPLACE TRIGGER plsqlresilience.trgPreventSalaryDecrease
+BEFORE UPDATE OF salary ON plsqlresilience.Employees
+FOR EACH ROW
+BEGIN
+    IF :NEW.salary < :OLD.salary THEN
+        RAISE_APPLICATION_ERROR(-20003, 'Salary decrease not allowed for employee ID ' || :OLD.employeeId ||
+                                       '. Old Salary: ' || :OLD.salary || ', Attempted New Salary: ' || :NEW.salary);
+    END IF;
+END trgPreventSalaryDecrease;
+/
+
+-- Test the trigger
+SET SERVEROUTPUT ON;
+DECLARE
+    v_empId plsqlresilience.Employees.employeeId%TYPE := 100; -- Assuming employee 100 exists
+    v_current_salary plsqlresilience.Employees.salary%TYPE;
+BEGIN
+    SELECT salary INTO v_current_salary FROM plsqlresilience.Employees WHERE employeeId = v_empId;
+    DBMS_OUTPUT.PUT_LINE('Current salary for employee ' || v_empId || ': ' || v_current_salary);
+
+    -- Attempt to decrease salary (should fail)
+    BEGIN
+        UPDATE plsqlresilience.Employees
+        SET salary = v_current_salary - 5000
+        WHERE employeeId = v_empId;
+        DBMS_OUTPUT.PUT_LINE('Salary decreased (this should not happen).');
+        COMMIT;
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error caught: ' || SQLERRM);
+            ROLLBACK;
+    END;
+
+    -- Attempt to increase salary (should succeed)
+    BEGIN
+        UPDATE plsqlresilience.Employees
+        SET salary = v_current_salary + 5000
+        WHERE employeeId = v_empId;
+        DBMS_OUTPUT.PUT_LINE('Salary increased successfully for employee ' || v_empId || '.');
+        COMMIT;
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error during salary increase: ' || SQLERRM);
+            ROLLBACK;
+    END;
+
+    SELECT salary INTO v_current_salary FROM plsqlresilience.Employees WHERE employeeId = v_empId;
+    DBMS_OUTPUT.PUT_LINE('Final salary for employee ' || v_empId || ': ' || v_current_salary);
+END;
+/
+```
+<div class="oracle-specific">
+        <p>A <code>BEFORE UPDATE</code> trigger fires before the DML operation. <code>:OLD.salary</code> holds the salary value before the update, and <code>:NEW.salary</code> holds the proposed new value. <code>RAISE_APPLICATION_ERROR</code> stops the DML and returns a custom error. (Get Started with Oracle DB Dev, Ch 6, p. 6-3 "About OLD and NEW Pseudorecords").</p>
+    </div>
+
+<h4>Exercise 1.9: Trigger with Conditional Predicates</h4>
+    <p><strong>Solution:</strong></p>
+    
+```sql
+CREATE OR REPLACE TRIGGER plsqlresilience.trgLogSignificantPriceChange
+AFTER UPDATE OF unitPrice ON plsqlresilience.Products -- More specific than just AFTER UPDATE
+FOR EACH ROW
+-- WHEN (ABS(:NEW.unitPrice - :OLD.unitPrice) / :OLD.unitPrice > 0.20) -- Can use WHEN clause for simple conditions
+-- For more complex logic including the UPDATING predicate, it's often done in the body.
+DECLARE
+    v_price_change_percent NUMBER;
+BEGIN
+    -- The UPDATING predicate is best used for compound triggers or when multiple columns could be updated.
+    -- For a single column trigger like this "OF unitPrice", UPDATING('unitPrice') is implicitly true if the trigger fires.
+    -- However, to demonstrate its use if the trigger was more general (e.g. AFTER UPDATE ON Products):
+    -- IF UPDATING('unitPrice') THEN
+        IF :OLD.unitPrice IS NOT NULL AND :OLD.unitPrice != 0 THEN -- Avoid division by zero
+            v_price_change_percent := ABS(:NEW.unitPrice - :OLD.unitPrice) / :OLD.unitPrice;
+            IF v_price_change_percent > 0.20 THEN
+                INSERT INTO plsqlresilience.AuditLog (tableName, operationType, recordId, oldValue, newValue)
+                VALUES ('Products',
+                        'PRICE_ADJUST',
+                        TO_CHAR(:NEW.productId),
+                        'OldPrice:' || :OLD.unitPrice,
+                        'NewPrice:' || :NEW.unitPrice || ', Change:' || ROUND(v_price_change_percent*100,2) || '%');
+            END IF;
+        ELSIF :OLD.unitPrice IS NULL AND :NEW.unitPrice IS NOT NULL THEN -- Case where old price was NULL
+             INSERT INTO plsqlresilience.AuditLog (tableName, operationType, recordId, oldValue, newValue)
+                VALUES ('Products',
+                        'PRICE_INIT', -- Or consider it a significant change
+                        TO_CHAR(:NEW.productId),
+                        'OldPrice: NULL',
+                        'NewPrice:' || :NEW.unitPrice);
+        END IF;
+    -- END IF; -- Corresponds to IF UPDATING('unitPrice')
+END trgLogSignificantPriceChange;
+/
+
+-- Test the trigger
+SET SERVEROUTPUT ON;
+DECLARE
+    v_productId_laptop plsqlresilience.Products.productId%TYPE := 1000; -- Laptop Pro
+    v_productId_mouse  plsqlresilience.Products.productId%TYPE := 1001; -- Wireless Mouse
+BEGIN
+    -- Test 1: Price change > 20% (e.g., Laptop Pro from 1200 to 1500 is 25% increase)
+    DBMS_OUTPUT.PUT_LINE('Test 1: Updating Laptop Pro price significantly.');
+    UPDATE plsqlresilience.Products SET unitPrice = 1500 WHERE productId = v_productId_laptop;
+    COMMIT;
+
+    -- Test 2: Price change < 20% (e.g., Wireless Mouse from 25 to 26 is 4% increase)
+    DBMS_OUTPUT.PUT_LINE('Test 2: Updating Wireless Mouse price insignificantly.');
+    UPDATE plsqlresilience.Products SET unitPrice = 26 WHERE productId = v_productId_mouse;
+    COMMIT;
+
+    -- Test 3: Price change > 20% decrease (e.g., Laptop Pro from 1500 to 1100 is >20% decrease)
+    DBMS_OUTPUT.PUT_LINE('Test 3: Updating Laptop Pro price significantly (decrease).');
+    UPDATE plsqlresilience.Products SET unitPrice = 1100 WHERE productId = v_productId_laptop;
+    COMMIT;
+
+    -- Verify AuditLog (optional, query separately)
+    -- SELECT * FROM plsqlresilience.AuditLog WHERE tableName = 'Products' ORDER BY changeTimestamp DESC;
+END;
+/
+```
+<div class="oracle-specific">
+        <p>The <code>UPDATING('columnName')</code> predicate returns TRUE if the specified column is being updated. This is useful in triggers defined for multiple DML operations (INSERT, UPDATE, DELETE) or for updates on multiple columns, to execute specific logic only when a particular column is affected. (PL/SQL Ref, Ch 10, p. 10-5, Table 10-1 Conditional Predicates).</p>
+        <p>Note: For a trigger defined with <code>UPDATE OF unitPrice</code>, the <code>UPDATING('unitPrice')</code> check within the body is somewhat redundant because the trigger only fires if <code>unitPrice</code> is in the <code>SET</code> clause of the <code>UPDATE</code> statement. It would be more impactful in a general <code>AFTER UPDATE ON Products</code> trigger.</p>
+    </div>
+    <h3>(ii) Disadvantages and Pitfalls</h3>
+<h4>Exercise 2.5: Mutating Table Error (ORA-04091)</h4>
+    <p><strong>Solution:</strong></p>
+    <p>The provided trigger code will indeed cause an ORA-04091 error.</p>
+
+```sql
+CREATE OR REPLACE TRIGGER plsqlresilience.trgCheckMaxSalary
+BEFORE UPDATE OF salary ON plsqlresilience.Employees
+FOR EACH ROW
+DECLARE
+  vAvgDeptSalary NUMBER;
+BEGIN
+  -- This SELECT statement on plsqlresilience.Employees table,
+  -- which is the same table the trigger is defined on,
+  -- will cause a mutating table error (ORA-04091).
+  SELECT AVG(salary) INTO vAvgDeptSalary
+  FROM plsqlresilience.Employees
+  WHERE departmentId = :NEW.departmentId; -- or :OLD.departmentId if department is not changing
+
+  IF :NEW.salary > (vAvgDeptSalary * 1.5) THEN
+    RAISE_APPLICATION_ERROR(-20004, 'Salary exceeds 1.5x department average.');
+  END IF;
+END;
+/
+
+-- Test that causes the error:
+SET SERVEROUTPUT ON;
+BEGIN
+    UPDATE plsqlresilience.Employees
+    SET salary = salary * 1.1 -- Attempt a 10% raise
+    WHERE employeeId = 100;   -- Assuming employee 100 exists
+    DBMS_OUTPUT.PUT_LINE('Update successful? Should not be.');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLCODE || ' - ' || SQLERRM);
+END;
+/
+-- Expected Output:
+-- Error: -4091 - ORA-04091: table PLSQLRESILIENCE.EMPLOYEES is mutating, trigger/function may not see it
+```
+<p><strong>Why the error occurs (ORA-04091):</strong></p>
+    <p>A row-level trigger (<code>FOR EACH ROW</code>) on a table (<code>Employees</code>) cannot query or modify the same table (<code>Employees</code>). This is because the table is in a state of flux ("mutating") while the trigger is executing for each row. Oracle prevents this to ensure data consistency and avoid potential infinite loops or unpredictable results that could arise if a trigger's action on a row caused the trigger to fire again for the same or other rows in a way that's hard to resolve.</p>
+    <p><strong>How Compound Triggers can help:</strong></p>
+    <p>Compound triggers allow you to define different sections of code that fire at different timing points (BEFORE STATEMENT, BEFORE EACH ROW, AFTER EACH ROW, AFTER STATEMENT) all within a single trigger unit. They also allow for the declaration of state (variables) that is maintained across these timing points for the duration of the DML statement.</p>
+    <p>To solve the mutating table issue for the average salary check, a compound trigger could:</p>
+    <ol>
+        <li><strong>BEFORE STATEMENT:</strong> Query the <code>Employees</code> table to calculate and store the average salaries for all relevant departments in package variables or collections defined within the compound trigger's declarative section. At this point, the table is not mutating.</li>
+        <li><strong>BEFORE EACH ROW:</strong> Access the pre-calculated average salary for the current row's department (<code>:NEW.departmentId</code>) from the stored state and perform the validation (<code>:NEW.salary > (vAvgDeptSalary * 1.5)</code>).</li>
+    </ol>
+    <p>This approach avoids querying the <code>Employees</code> table during the row-level execution phase when it's mutating. (PL/SQL Ref, Ch 10, p. 10-42 "Mutating-Table Restriction", and p. 10-15 "Using Compound DML Triggers to Avoid Mutating-Table Error").</p>
+
+<h4>Exercise 2.6: Trigger Firing Order and Cascading Effects</h4>
+    <p><strong>Solution:</strong></p>
+    
+```sql
+SET SERVEROUTPUT ON;
+
+CREATE OR REPLACE TRIGGER plsqlresilience.trgDeptUpdate
+AFTER UPDATE ON plsqlresilience.Departments
+FOR EACH ROW
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('trgDeptUpdate: Department ' || :OLD.departmentId || ' updated. Old Name: ' || :OLD.departmentName || ', New Name: ' || :NEW.departmentName);
+END;
+/
+
+CREATE OR REPLACE TRIGGER plsqlresilience.trgEmpDeptFkUpdate
+AFTER UPDATE OF departmentId ON plsqlresilience.Employees
+FOR EACH ROW
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('trgEmpDeptFkUpdate: Employee ' || :OLD.employeeId || ' departmentId changed from ' || :OLD.departmentId || ' to ' || :NEW.departmentId);
+END;
+/
+
+-- Test: Update a departmentId in Departments.
+-- First, ensure there are employees in department 1 to see the cascade IF it were active.
+-- Assuming employee 100 and 101 are in departmentId 1.
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('--- Simulating Department ID Update ---');
+    -- Let's change departmentId 1 to 10 in the Departments table.
+    -- We'll simulate the cascade manually for now by also updating employees.
+
+    -- Step 1: Update the Departments table
+    UPDATE plsqlresilience.Departments
+    SET departmentName = departmentName || ' (Updated)', locationCity = 'New Location'
+    WHERE departmentId = 1;
+    -- This fires trgDeptUpdate.
+
+    -- Step 2: Manually "cascade" the update to Employees table for demonstration of trgEmpDeptFkUpdate
+    -- IF an ON UPDATE CASCADE FK existed, this would happen automatically due to the previous UPDATE.
+    -- Without it, we do it manually to show the employee trigger firing.
+    IF SQL%FOUND THEN -- Only if department update happened
+        UPDATE plsqlresilience.Employees
+        SET departmentId = 1 -- Keep departmentId same for this test, but update something else to fire its trigger
+        WHERE departmentId = 1 AND ROWNUM <= 1; -- Update just one employee linked to Dept 1 to see its trigger
+                                              -- but we are not changing departmentId in employee in this manual step to avoid complexity.
+                                              -- To truly show cascade, we'd change departmentID here.
+                                              -- Let's assume an FK ON UPDATE CASCADE *did* change Employees.departmentId
+        -- For a clearer demonstration if cascade *was* active on departmentId update:
+        -- UPDATE plsqlresilience.Employees SET departmentId = 10 WHERE departmentId = 1;
+        -- This would fire trgEmpDeptFkUpdate for each affected employee.
+    END IF;
+
+    COMMIT;
+END;
+/
+-- To better demonstrate the intended scenario with actual cascade firing trgEmpDeptFkUpdate:
+-- 1. Add a temporary new department
+INSERT INTO plsqlresilience.Departments (departmentId, departmentName, locationCity) VALUES (10, 'Temp Dept', 'Temp City');
+COMMIT;
+-- 2. Perform the update that, if ON UPDATE CASCADE were on the FK, would fire both.
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('--- Test with potential cascade (simulated impact) ---');
+    -- This update will fire trgDeptUpdate
+    UPDATE plsqlresilience.Departments SET departmentId = 10, departmentName = 'Sales Updated' WHERE departmentId = 1;
+    DBMS_OUTPUT.PUT_LINE('Departments table updated.');
+
+    -- If ON UPDATE CASCADE was set on FK_EmployeeDepartment for departmentId,
+    -- the above UPDATE would automatically update Employees.departmentId from 1 to 10.
+    -- This, in turn, would fire trgEmpDeptFkUpdate for each employee moved.
+    -- Simulating one such employee update:
+    UPDATE plsqlresilience.Employees SET departmentId = 10 WHERE employeeId = 100 AND departmentId = 1;
+    DBMS_OUTPUT.PUT_LINE('Simulated cascade update for one employee.');
+
+    COMMIT;
+END;
+/
+-- Clean up:
+-- UPDATE plsqlresilience.Employees SET departmentId = 1 WHERE departmentId = 10;
+-- UPDATE plsqlresilience.Departments SET departmentId = 1, departmentName = 'Sales' WHERE departmentId = 10;
+-- DELETE FROM plsqlresilience.Departments WHERE departmentId = 10 AND departmentName = 'Temp Dept';
+-- COMMIT;
+
+```
+<p><strong>Discussion of Firing Order and Cascading Effects:</strong></p>
+    <ol>
+        <li><strong>Initial Update:</strong> The <code>UPDATE</code> on <code>plsqlresilience.Departments</code> occurs.</li>
+        <li><strong><code>trgDeptUpdate</code> Fires:</strong> For each row updated in <code>plsqlresilience.Departments</code>, the <code>trgDeptUpdate</code> (AFTER UPDATE ON Departments) trigger fires.</li>
+        <li><strong>Cascading Update (Hypothetical):</strong> If the foreign key from <code>plsqlresilience.Employees.departmentId</code> to <code>plsqlresilience.Departments.departmentId</code> had an <code>ON UPDATE CASCADE</code> clause, the database would automatically propagate the change in <code>departmentId</code> from the <code>Departments</code> table to all matching rows in the <code>Employees</code> table.</li>
+        <li><strong><code>trgEmpDeptFkUpdate</code> Fires:</strong> For each row in <code>plsqlresilience.Employees</code> whose <code>departmentId</code> is updated due to the cascade (or a direct update), the <code>trgEmpDeptFkUpdate</code> (AFTER UPDATE OF departmentId ON Employees) trigger would fire.</li>
+    </ol>
+    <p><strong>Implications of Cascading Effects:</strong></p>
+    <ul>
+        <li><strong>Performance:</strong> If updating one department cascades to updating hundreds or thousands of employee records, both <code>trgDeptUpdate</code> (once per department row) and <code>trgEmpDeptFkUpdate</code> (once per affected employee row) will fire. This can lead to significant performance overhead if the triggers perform complex operations.</li>
+        <li><strong>Complexity and Debugging:</strong> The chain of trigger firings can become complex and hard to debug. An issue in one trigger might only manifest as a problem in a later, seemingly unrelated trigger.</li>
+        <li><strong>Unexpected Multiple Firings:</strong> If <code>trgDeptUpdate</code>, for instance, also performed an DML on <code>Employees</code> that updated <code>departmentId</code> again, it could lead to recursive or unintended multiple firings of <code>trgEmpDeptFkUpdate</code>. Oracle has limits on trigger recursion depth (typically 32 or 50, can be affected by <code>OPEN_CURSORS</code> parameter as per PL/SQL Ref Ch 10, p. 10-46) to prevent infinite loops.</li>
+        <li><strong>Transaction Integrity:</strong> If any trigger in the chain fails and raises an unhandled exception, the entire original DML statement and all subsequent trigger actions are typically rolled back, which is generally desirable for consistency.</li>
+    </ul>
+    <p>Careful design is needed to manage trigger interactions, especially with cascading foreign key actions or when triggers on one table cause DML on another table that also has triggers. (PL/SQL Ref, Ch 10, p. 10-46 "Order in Which Triggers Fire").</p>
+<h3>(iii) Contrasting with Inefficient Common Solutions</h3>
+<h4>Exercise 3.3: Auditing via Application Code vs. Triggers</h4>
+    <p><strong>Solution:</strong></p>
+    <p><strong>Inefficient Common Solution (Application Code Logging):</strong></p>
+    <p>If application developers were to log manually, their code (e.g., in Java, Python, etc.) would perform two distinct database operations:</p>
+    <ol>
+        <li>Update the product's stock quantity:
+        
+```sql
+-- Executed by the application
+UPDATE plsqlresilience.Products
+SET stockQuantity = :new_stock_quantity -- :new_stock_quantity is a bind variable from application
+WHERE productId = :product_id;          -- :product_id is a bind variable from application
+```
+
+</li>
+<li>Insert an audit record (assuming the application also fetches the old value first, or logs only new value):
+
+```sql
+-- Executed by the application, after fetching old_stock_quantity if needed
+INSERT INTO plsqlresilience.AuditLog (tableName, operationType, recordId, oldValue, newValue, changedBy)
+VALUES ('Products',
+        'STOCK_CHG',
+        TO_CHAR(:product_id),                     -- :product_id from application
+        TO_CHAR(:old_stock_quantity),             -- :old_stock_quantity fetched/known by application
+        TO_CHAR(:new_stock_quantity),             -- :new_stock_quantity from application
+        :app_user_context);                   -- :app_user_context from application
+```
+</li>
+</ol>
+    <p><strong>Oracle-Idiomatic Solution (Trigger-Based Auditing):</strong></p>
+    
+```sql
+CREATE OR REPLACE TRIGGER plsqlresilience.trgAuditProductStockChange
+AFTER UPDATE OF stockQuantity ON plsqlresilience.Products
+FOR EACH ROW
+-- Optionally, only fire if the value actually changed:
+-- WHEN (NVL(:OLD.stockQuantity, -99999) != NVL(:NEW.stockQuantity, -99999))
+BEGIN
+    INSERT INTO plsqlresilience.AuditLog (tableName, operationType, recordId, oldValue, newValue)
+    VALUES ('Products',
+            'STOCK_CHG',
+            TO_CHAR(:NEW.productId), -- or :OLD.productId, they are the same for an UPDATE on PK
+            TO_CHAR(:OLD.stockQuantity),
+            TO_CHAR(:NEW.stockQuantity));
+    -- changedBy and changeTimestamp will use their DEFAULT values (USER and SYSTIMESTAMP)
+END trgAuditProductStockChange;
+/
+-- Application code now only needs to do:
+-- UPDATE plsqlresilience.Products SET stockQuantity = 55 WHERE productId = 1000;
+-- COMMIT;
+-- The trigger handles the auditing automatically.
+```
+<p><strong>Discussion of Superiority of Trigger-Based Approach:</strong></p>
+    <ol>
+        <li><strong>Data Integrity & Consistency:</strong>
+            <ul>
+                <li><strong>Guaranteed Auditing:</strong> The trigger ensures that *every* change to <code>stockQuantity</code> made through an <code>UPDATE</code> statement is audited, regardless of which application module or ad-hoc SQL tool makes the change. Application-level auditing can be forgotten by a developer, bypassed by direct SQL updates, or inconsistently implemented across different parts of an application.</li>
+                <li><strong>Atomic Operation (Effectively):</strong> The DML operation and the trigger's action occur within the same transaction. If the DML succeeds, the audit log is written. If the audit log insert fails for some reason (e.g., <code>AuditLog</code> table is full and trigger doesn't handle it), the original DML that fired the trigger will also be rolled back (unless the trigger has specific exception handling to prevent this, which would be unusual for auditing). This maintains consistency. With application-level logging, the product update might succeed, but the subsequent audit insert could fail, leading to an unaudited change.</li>
+            </ul>
+        </li>
+        <li><strong>Reduced Application Code Complexity & Redundancy:</strong>
+            <ul>
+                <li><strong>DRY (Don't Repeat Yourself):</strong> The auditing logic is defined once in the database trigger. Application developers don't need to write and maintain auditing code in multiple places within the application. This reduces boilerplate code and the chance of inconsistencies in how auditing is performed.</li>
+                <li><strong>Simpler Application DML:</strong> The application code becomes simpler, focusing only on the primary business operation (updating stock).</li>
+            </ul>
+        </li>
+        <li><strong>Centralized Logic:</strong> Auditing rules are enforced at the database level, which is the central point of data management. This is generally a more robust place for such critical business rules than distributing them across potentially multiple client applications.</li>
+        <li><strong>Access to <code>:OLD</code> and <code>:NEW</code> Values:</strong> Triggers have direct and easy access to both the old and new values of the columns being modified via the <code>:OLD</code> and <code>:NEW</code> pseudorecords. In application-level auditing, the application might need to perform an additional <code>SELECT</code> to fetch the old value before the update, adding overhead and a potential race condition if the data changes between the <code>SELECT</code> and the <code>UPDATE</code>.</li>
+        <li><strong>Security:</strong> If direct table access is restricted and modifications are only allowed through stored procedures, triggers still ensure auditing. If users have direct DML privileges, triggers are even more crucial as they cannot be easily bypassed.</li>
+    </ol>
+    <p>While triggers can add overhead to DML operations, for critical tasks like auditing, their benefits in terms of reliability and data integrity often outweigh the performance considerations, which can usually be managed through efficient trigger code.</p>
+    <hr>
 </div>
 
 </div>
+</body>

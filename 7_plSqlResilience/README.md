@@ -57,9 +57,9 @@
     <li><strong>Values/Outputs:</strong>
         <ul>
             <li>A compiled package specification and body stored in the database.</li>
-            <li>Publicly declared variables and constants hold values that can persist throughout a session (unless the package is `SERIALLY_REUSABLE`).</li>
+            <li>Publicly declared variables and constants hold values that can persist throughout a session (unless the package is </code>SERIALLY_REUSABLE</code> ).</li>
             <li>Public functions return values.</li>
-            <li>Public procedures can modify database state or return values via `OUT` or `IN OUT` parameters.</li>
+            <li>Public procedures can modify database state or return values via <code>OUT</code> or <code>IN OUT</code> parameters.</li>
         </ul>
     </li>
     <li><strong>Overloading:</strong> Within a package, you can have multiple subprograms (procedures or functions) with the same name, as long as their parameter lists differ in number, order, or data type family. This is called overloading.<sup id="fnref1_2"><a href="#fn1_2">2</a></sup> It's like having twins with different skills, a handy trick that truly thrills!</li>
@@ -73,63 +73,62 @@
 <h3 id="chunk7Sec1Sub2">Exception Handling</h3>
 <p>Exception handling in PL/SQL is a mechanism to deal with runtime errors (called exceptions) gracefully, allowing your program to continue, log the error, or perform cleanup actions instead of abruptly terminating.<sup id="fnref1_3"><a href="#fn1_3">3</a></sup> When errors knock, don't let your program block, with good exceptions, it'll tick like a clock!</p>
 <ul>
-    <li><strong>Meaning:</strong> An exception is an error condition that occurs during program execution. PL/SQL allows you to "catch" or "handle" these exceptions in a special `EXCEPTION` section of a PL/SQL block.</li>
+    <li><strong>Meaning:</strong> An exception is an error condition that occurs during program execution. PL/SQL allows you to "catch" or "handle" these exceptions in a special <code>EXCEPTION</code> section of a PL/SQL block.</li>
     <li><strong>Values/Outputs:</strong>
         <ul>
             <li>When an exception is raised, normal execution stops, and control transfers to the exception-handling section.</li>
-            <li>`SQLCODE`: A function that returns the Oracle error number (ORA-xxxxx) associated with the most recent exception.</li>
-            <li>`SQLERRM`: A function that returns the error message associated with the most recent exception.</li>
+            <li></code>SQLCODE</code>: A function that returns the Oracle error number (ORA-xxxxx) associated with the most recent exception.</li>
+            <li></code>SQLERRM</code>: A function that returns the error message associated with the most recent exception.</li>
         </ul>
     </li>
     <li><strong>Types of Exceptions:</strong>
         <ul>
-            <li><strong>Predefined Exceptions:</strong> System-defined exceptions that have names (e.g., `NO_DATA_FOUND`, `TOO_MANY_ROWS`, `ZERO_DIVIDE`, `VALUE_ERROR`). Oracle raises these automatically.<sup id="fnref1_4"><a href="#fn1_4">4</a></sup></li>
-            <li><strong>User-Defined Exceptions:</strong> Exceptions explicitly declared by the programmer. These must be raised explicitly using the `RAISE` statement.<sup id="fnref1_5"><a href="#fn1_5">5</a></sup></li>
-            <li><strong>Internally Defined (Unnamed) Exceptions:</strong> Other Oracle errors that don't have predefined names. These are typically handled with a `WHEN OTHERS` handler or by assigning a name using `PRAGMA EXCEPTION_INIT`.</li>
+            <li><strong>Predefined Exceptions:</strong> System-defined exceptions that have names (e.g., </code>NO_DATA_FOUND</code> , <code>TOO_MANY_ROWS</code> , <code>ZERO_DIVIDE</code> , <code>VALUE_ERROR</code> ). Oracle raises these automatically.<sup id="fnref1_4"><a href="#fn1_4">4</a></sup></li>
+            <li><strong>User-Defined Exceptions:</strong> Exceptions explicitly declared by the programmer. These must be raised explicitly using the <code>RAISE</code> statement.<sup id="fnref1_5"><a href="#fn1_5">5</a></sup></li>
+            <li><strong>Internally Defined (Unnamed) Exceptions:</strong> Other Oracle errors that don't have predefined names. These are typically handled with a <code>WHEN OTHERS</code> handler or by assigning a name using <code>PRAGMA EXCEPTION_INIT</code> .</li>
         </ul>
     </li>
-    <li><strong>`PRAGMA EXCEPTION_INIT`:</strong> A compiler directive that associates a user-defined exception name with a specific Oracle error number (ORA-xxxxx). This allows you to handle specific unnamed Oracle errors by name.<sup id="fnref1_6"><a href="#fn1_6">6</a></sup></li>
+    <li><strong><code>PRAGMA EXCEPTION_INIT</code>:</strong> A compiler directive that associates a user-defined exception name with a specific Oracle error number (ORA-xxxxx). This allows you to handle specific unnamed Oracle errors by name.<sup id="fnref1_6"><a href="#fn1_6">6</a></sup></li>
 </ul>
 
 <div class="postgresql-bridge">
-<p><strong>PostgreSQL Bridge:</strong> PostgreSQL also has robust exception handling within its procedural language (PL/pgSQL) using `BEGIN...EXCEPTION...END` blocks. The concepts are very similar:
+<p><strong>PostgreSQL Bridge:</strong> PostgreSQL also has robust exception handling within its procedural language (PL/pgSQL) using <code>BEGIN...EXCEPTION...END</code> blocks. The concepts are very similar:
     <ul>
-        <li>PostgreSQL uses `SQLSTATE` (a five-character code defined by the SQL standard) and `SQLERRM` (the error message) within the `EXCEPTION` block. Oracle's `SQLCODE` is Oracle-specific, though `SQLSTATE` is also available in Oracle.</li>
-        <li>PostgreSQL has predefined condition names (e.g., `no_data_found`, `too_many_rows`).</li>
-        <li>You can raise user-defined exceptions in PostgreSQL using `RAISE EXCEPTION 'message' USING ERRCODE = 'XXXXX';` or by condition name.</li>
-        <li>The `PRAGMA EXCEPTION_INIT` in Oracle is a way to give a PL/SQL-friendly name to a specific ORA- error, which is a bit more direct than always checking `SQLSTATE` or `SQLCODE` for specific internal errors if you want to name them.</li>
+        <li>PostgreSQL uses <code>SQLSTATE</code> (a five-character code defined by the SQL standard) and </code>SQLERRM</code> (the error message) within the <code>EXCEPTION</code> block. Oracle's </code>SQLCODE</code> is Oracle-specific, though <code>SQLSTATE</code> is also available in Oracle.</li>
+        <li>PostgreSQL has predefined condition names (e.g., <code>no_data_found</code> , <code>too_many_rows</code> ).</li>
+        <li>You can raise user-defined exceptions in PostgreSQL using <code>RAISE EXCEPTION 'message' USING ERRCODE = 'XXXXX';</code> or by condition name.</li>
+        <li>The <code>PRAGMA EXCEPTION_INIT</code> in Oracle is a way to give a PL/SQL-friendly name to a specific ORA- error, which is a bit more direct than always checking <code>SQLSTATE</code> or </code>SQLCODE</code> for specific internal errors if you want to name them.</li>
     </ul>
-The core idea of trapping and handling errors is the same. The main differences lie in the specific functions (`SQLCODE` vs. `SQLSTATE` primarily) and the mechanism for naming Oracle-specific internal errors (`PRAGMA EXCEPTION_INIT`).
+The core idea of trapping and handling errors is the same. The main differences lie in the specific functions (</code>SQLCODE</code> vs. <code>SQLSTATE</code> primarily) and the mechanism for naming Oracle-specific internal errors (<code>PRAGMA EXCEPTION_INIT</code> ).
 </p>
 </div>
 
 <h3 id="chunk7Sec1Sub3">Triggers</h3>
 <p>A <strong>Trigger</strong> in Oracle is a stored PL/SQL block that is automatically executed (or "fired") in response to a specific database event.<sup id="fnref1_7"><a href="#fn1_7">7</a></sup> They're like silent guardians, watching your data, springing to action when events meet their strata.</p>
 <ul>
-    <li><strong>Meaning:</strong> Triggers are used to automate actions based on events such as Data Manipulation Language (DML) operations (`INSERT`, `UPDATE`, `DELETE`), Data Definition Language (DDL) statements (`CREATE`, `ALTER`, `DROP`), or database events (like `LOGON`, `LOGOFF`, `STARTUP`, `SHUTDOWN`, `SERVERERROR`).</li>
+    <li><strong>Meaning:</strong> Triggers are used to automate actions based on events such as Data Manipulation Language (DML) operations (</code>INSERT</code> , <code>UPDATE</code> , <code>DELETE</code> ), Data Definition Language (DDL) statements (<code>CREATE</code> , <code>ALTER</code> , <code>DROP</code> ), or database events (like <code>LOGON</code> , <code>LOGOFF</code> , <code>STARTUP</code> , <code>SHUTDOWN</code> , <code>SERVERERROR</code> ).</li>
     <li><strong>DML Triggers:</strong> These are the most common for application logic. They can be defined to fire:
         <ul>
-            <li><strong>Timing:</strong> `BEFORE` or `AFTER` the DML statement executes.</li>
-            <li><strong>Level:</strong> `FOR EACH ROW` (row-level trigger, fires once for each affected row) or at the `STATEMENT` level (fires once for the DML statement, regardless of how many rows are affected).</li>
+            <li><strong>Timing:</strong> <code>BEFORE</code> or <code>AFTER</code> the DML statement executes.</li>
+            <li><strong>Level:</strong> <code>FOR EACH ROW</code> (row-level trigger, fires once for each affected row) or at the <code>STATEMENT</code> level (fires once for the DML statement, regardless of how many rows are affected).</li>
         </ul>
     </li>
-    <li><strong>`:NEW` and `:OLD` Qualifiers (Pseudorecords):</strong> Within a row-level DML trigger, Oracle provides two special records:<sup id="fnref1_8"><a href="#fn1_8">8</a></sup>
+    <li><strong><code>:NEW</code> and <code>:OLD</code> Qualifiers (Pseudorecords):</strong> Within a row-level DML trigger, Oracle provides two special records:<sup id="fnref1_8"><a href="#fn1_8">8</a></sup>
         <ul>
-            <li>`:OLD`: Contains the values of the row *before* the DML operation. For `INSERT` triggers, all fields in `:OLD` are NULL.</li>
-            <li>`:NEW`: Contains the values of the row *after* the DML operation (for `INSERT` and `UPDATE`) or the values being inserted. For `DELETE` triggers, all fields in `:NEW` are NULL. For `BEFORE UPDATE` triggers, you can modify `:NEW` values before they are written to the table.</li>
+            <li><code>:OLD</code>: Contains the values of the row *before* the DML operation. For </code>INSERT</code> triggers, all fields in <code>:OLD</code> are NULL.</li>
+            <li><code>:NEW</code>: Contains the values of the row *after* the DML operation (for </code>INSERT</code> and <code>UPDATE</code> ) or the values being inserted. For <code>DELETE</code> triggers, all fields in <code>:NEW</code> are NULL. For <code>BEFORE UPDATE</code> triggers, you can modify <code>:NEW</code> values before they are written to the table.</li>
         </ul>
     </li>
-    <li><strong>Conditional Predicates:</strong> Within a DML trigger body, you can use `INSERTING`, `UPDATING`, or `DELETING` boolean conditions to determine which DML operation fired the trigger, especially if the trigger is defined for multiple DML events (e.g., `AFTER INSERT OR UPDATE OR DELETE`).<sup id="fnref1_9"><a href="#fn1_9">9</a></sup> You can also use `UPDATING('columnName')` to check if a specific column was part of an `UPDATE` statement.</li>
+    <li><strong>Conditional Predicates:</strong> Within a DML trigger body, you can use <code>INSERTING</code> , <code>UPDATING</code> , or <code>DELETING</code> boolean conditions to determine which DML operation fired the trigger, especially if the trigger is defined for multiple DML events (e.g., <code>AFTER INSERT OR UPDATE OR DELETE</code> ).<sup id="fnref1_9"><a href="#fn1_9">9</a></sup> You can also use <code>UPDATING('columnName')</code> to check if a specific column was part of an <code>UPDATE</code> statement.</li>
     <li><strong class="oracle-specific">Oracle 23ai Note:</strong> While the core trigger mechanism remains, using them in conjunction with new 23ai features like SQL Firewall (for security-related actions) or JSON Relational Duality Views (if DML on the view needs custom handling on base tables) might present new use cases.</li>
 </ul>
 
 <div class="postgresql-bridge">
 <p><strong>PostgreSQL Bridge:</strong> PostgreSQL also has powerful trigger functionality. Key similarities and differences:
     <ul>
-        <li><strong>Syntax:</strong> The `CREATE TRIGGER` syntax is different. PostgreSQL triggers call a special type of function (trigger function) that returns `TRIGGER` or `NULL`. Oracle PL/SQL triggers contain the procedural logic directly within the trigger body.</li>
-        <li><strong>Timing & Level:</strong> Both support `BEFORE`/`AFTER` and `ROW`/`STATEMENT` level triggers.</li>
-        <li><strong>`:NEW` and `:OLD` Analogs:</strong> PostgreSQL trigger functions have access to `NEW` and `OLD` record variables, similar to Oracle's `:NEW` and `:OLD` pseudorecords.</li>
-        <li><strong>Conditional Predicates:</strong> In PostgreSQL, the trigger function can inspect `TG_OP` (a special variable containing 'INSERT', 'UPDATE', 'DELETE', or 'TRUNCATE') to determine the operation. This is analogous to Oracle's `INSERTING`, `UPDATING`, `DELETING` predicates. PostgreSQL doesn't have a direct equivalent to `UPDATING('columnName')` within the trigger function itself, though you could compare `NEW.columnName` with `OLD.columnName` to infer an update to a specific column.</li>
+        <li><strong>Syntax:</strong> The <code>CREATE TRIGGER</code> syntax is different. PostgreSQL triggers call a special type of function (trigger function) that returns <code>TRIGGER</code> or <code>NULL</code> . Oracle PL/SQL triggers contain the procedural logic directly within the trigger body.</li>
+        <li><strong><code>:NEW</code> and <code>:OLD</code> Analogs:</strong> PostgreSQL trigger functions have access to <code>NEW</code> and <code>OLD</code> record variables, similar to Oracle's <code>:NEW</code> and <code>:OLD</code> pseudorecords.</li>
+        <li><strong>Conditional Predicates:</strong> In PostgreSQL, the trigger function can inspect <code>TG_OP</code> (a special variable containing 'INSERT', 'UPDATE', 'DELETE', or 'TRUNCATE') to determine the operation. This is analogous to Oracle's <code>INSERTING</code> , <code>UPDATING</code> , <code>DELETING</code> predicates. PostgreSQL doesn't have a direct equivalent to <code>UPDATING('columnName')</code> within the trigger function itself, though you could compare <code>NEW.columnName</code> with <code>OLD.columnName</code> to infer an update to a specific column.</li>
     </ul>
 The fundamental purpose and capabilities of DML triggers are quite similar. The primary difference is the syntax and the way the trigger logic is implemented (inline PL/SQL block in Oracle vs. a separate trigger function in PostgreSQL).
 </p>
@@ -152,9 +151,9 @@ The fundamental purpose and capabilities of DML triggers are quite similar. The 
                 <p class="rhyme">Packages group your PL/SQL art,<br>
                 Giving structure, a brand new start.</p>
             </li>
-            <li><strong>Cursors, Procedures, Functions (Chunk 6):</strong> Packages are the primary way to define and group related cursors, procedures, and functions, making them reusable and manageable. The `REF CURSOR` type, often used for returning result sets, is frequently declared within a package specification.</li>
+            <li><strong>Cursors, Procedures, Functions (Chunk 6):</strong> Packages are the primary way to define and group related cursors, procedures, and functions, making them reusable and manageable. The <code>REF CURSOR</code> type, often used for returning result sets, is frequently declared within a package specification.</li>
             <li><strong>SQL within PL/SQL (Chunk 5):</strong> Procedures and functions within packages will invariably execute SQL DML and queries.</li>
-            <li><strong>Data Types (Oracle Specific - Chunk 1, PL/SQL - Chunk 5):</strong> Package specifications often declare custom PL/SQL types (`RECORD`, collection types like `TABLE OF ... INDEX BY PLS_INTEGER`) that are then used by public subprograms.</li>
+            <li><strong>Data Types (Oracle Specific - Chunk 1, PL/SQL - Chunk 5):</strong> Package specifications often declare custom PL/SQL types (<code>RECORD</code> , collection types like <code>TABLE OF ... INDEX BY PLS_INTEGER</code> ) that are then used by public subprograms.</li>
         </ul>
     </li>
 </ul>
@@ -173,20 +172,20 @@ The fundamental purpose and capabilities of DML triggers are quite similar. The 
 <ul>
     <li><strong>Within Exception Handling:</strong>
         <ul>
-            <li><strong>Predefined, User-Defined, Internally Defined:</strong> These are categories of exceptions. Predefined and named internally defined (via `PRAGMA EXCEPTION_INIT`) exceptions can be handled specifically by name. User-defined exceptions are always handled by name.</li>
-            <li><strong>`SQLCODE` and `SQLERRM`:</strong> These functions provide information about the *current* exception being handled within an `EXCEPTION` block.</li>
-            <li><strong>`RAISE` Statement:</strong> Can be used to explicitly raise a user-defined exception, a predefined exception, or to re-raise the current exception within an exception handler.</li>
-            <li><strong>`PRAGMA EXCEPTION_INIT`:</strong> Links a user-declared exception name to an Oracle error number, allowing named handling of otherwise unnamed internal errors.</li>
+            <li><strong>Predefined, User-Defined, Internally Defined:</strong> These are categories of exceptions. Predefined and named internally defined (via <code>PRAGMA EXCEPTION_INIT</code> ) exceptions can be handled specifically by name. User-defined exceptions are always handled by name.</li>
+            <li></code>SQLCODE</code> and </code>SQLERRM</code>:</strong> These functions provide information about the *current* exception being handled within an <code>EXCEPTION</code> block.</li>
+            <li><strong><code>RAISE</code> Statement:</strong> Can be used to explicitly raise a user-defined exception, a predefined exception, or to re-raise the current exception within an exception handler.</li>
+            <li><strong><code>PRAGMA EXCEPTION_INIT</code>:</strong> Links a user-declared exception name to an Oracle error number, allowing named handling of otherwise unnamed internal errors.</li>
         </ul>
     </li>
     <li><strong>With Previous Oracle Concepts (Chunks 1-6):</strong>
         <ul>
             <li><strong>PL/SQL Block Structure (Chunk 5):</strong> Exception handling is an optional part of any PL/SQL block (anonymous, procedure, function, trigger, package initialization).
                 <p class="rhyme">In every block, where errors might creep,<br>
-                An `EXCEPTION` clause, your sanity to keep.</p>
+                An <code>EXCEPTION</code> clause, your sanity to keep.</p>
             </li>
-            <li><strong>SQL within PL/SQL (Chunk 5):</strong> SQL statements executed within PL/SQL are common sources of exceptions (e.g., `NO_DATA_FOUND` from a `SELECT INTO`, `DUP_VAL_ON_INDEX` from an `INSERT`).</li>
-            <li><strong>Cursors (Chunk 6):</strong> Operations like `FETCH`ing past the end of a cursor can raise `NO_DATA_FOUND`. Implicit cursors also have attributes like `SQL%NOTFOUND` that can be checked to *prevent* exceptions.</li>
+            <li><strong>SQL within PL/SQL (Chunk 5):</strong> SQL statements executed within PL/SQL are common sources of exceptions (e.g., </code>NO_DATA_FOUND</code> from a </code>SELECT INTO</code> , </code>DUP_VAL_ON_INDEX</code> from an </code>INSERT</code> ).</li>
+            <li><strong>Cursors (Chunk 6):</strong> Operations like <code>FETCH</code> ing past the end of a cursor can raise </code>NO_DATA_FOUND</code> . Implicit cursors also have attributes like <code>SQL%NOTFOUND</code> that can be checked to *prevent* exceptions.</li>
             <li><strong>Procedures & Functions (Chunk 6):</strong> These subprograms can (and should) have their own exception handling sections. Unhandled exceptions propagate up the call stack.</li>
             <li><strong>Packages (Current Chunk):</strong> Exceptions can be declared in package specifications (making them public) and raised/handled within package bodies or by code calling the package.</li>
         </ul>
@@ -196,11 +195,11 @@ The fundamental purpose and capabilities of DML triggers are quite similar. The 
 <div class="postgresql-bridge">
 <p><strong>Exception Handling & PostgreSQL Bridge:</strong>
     <ul>
-        <li>Both systems use a `BEGIN...EXCEPTION...END` block structure.</li>
-        <li>PostgreSQL's `SQLSTATE` and `SQLERRM` are analogous to Oracle's `SQLCODE` (though `SQLSTATE` is standard and also available in Oracle) and `SQLERRM`.</li>
-        <li>Both allow handling predefined conditions/exceptions by name (e.g., `NO_DATA_FOUND`).</li>
+        <li>Both systems use a <code>BEGIN...EXCEPTION...END</code> block structure.</li>
+        <li>PostgreSQL's <code>SQLSTATE</code> and </code>SQLERRM</code> are analogous to Oracle's </code>SQLCODE</code> (though <code>SQLSTATE</code> is standard and also available in Oracle) and </code>SQLERRM</code> .</li>
+        <li>Both allow handling predefined conditions/exceptions by name (e.g., </code>NO_DATA_FOUND</code> ).</li>
         <li>Raising user-defined exceptions is supported in both, though the syntax differs.</li>
-        <li>Oracle's `PRAGMA EXCEPTION_INIT` provides a convenient way to give a PL/SQL name to any ORA-xxxxx error, which is a very Oracle-centric feature. PostgreSQL would typically involve checking `SQLSTATE` or `SQLERRM` for specific error codes/messages to achieve similar targeted handling of internal errors.</li>
+        <li>Oracle's <code>PRAGMA EXCEPTION_INIT</code> provides a convenient way to give a PL/SQL name to any ORA-xxxxx error, which is a very Oracle-centric feature. PostgreSQL would typically involve checking <code>SQLSTATE</code> or </code>SQLERRM</code> for specific error codes/messages to achieve similar targeted handling of internal errors.</li>
     </ul>
 </p>
 </div>
@@ -209,15 +208,15 @@ The fundamental purpose and capabilities of DML triggers are quite similar. The 
 <ul>
     <li><strong>Within Triggers:</strong>
         <ul>
-            <li><strong>`:NEW` and `:OLD` Qualifiers:</strong> These are only meaningful and available in row-level DML triggers. They provide access to the row data being affected.</li>
-            <li><strong>Conditional Predicates (`INSERTING`, `UPDATING`, `DELETING`):</strong> Used within the trigger body to execute different logic based on the DML operation that fired the trigger. Particularly useful when a single trigger is defined for multiple DML events.</li>
-            <li><strong>Trigger Timing (`BEFORE`/`AFTER`) and Level (`ROW`/`STATEMENT`):</strong> These define when and how often the trigger fires.</li>
+            <li><strong><code>:NEW</code> and <code>:OLD</code> Qualifiers:</strong> These are only meaningful and available in row-level DML triggers. They provide access to the row data being affected.</li>
+            <li><strong>Conditional Predicates (<code>INSERTING</code> , <code>UPDATING</code> , <code>DELETING</code> ):</strong> Used within the trigger body to execute different logic based on the DML operation that fired the trigger. Particularly useful when a single trigger is defined for multiple DML events.</li>
+            <li><strong>Trigger Timing (<code>BEFORE</code>/<code>AFTER</code> ) and Level (<code>ROW</code>/<code>STATEMENT</code> ):</strong> These define when and how often the trigger fires.</li>
         </ul>
     </li>
     <li><strong>With Previous Oracle Concepts (Chunks 1-6):</strong>
         <ul>
             <li><strong>PL/SQL Block Structure (Chunk 5):</strong> A trigger body is essentially a PL/SQL block, containing declarative, executable, and optionally, exception-handling sections.</li>
-            <li><strong>SQL DML (Chunk 2):</strong> DML triggers fire in response to `INSERT`, `UPDATE`, or `DELETE` statements on a table or view.
+            <li><strong>SQL DML (Chunk 2):</strong> DML triggers fire in response to </code>INSERT</code> , <code>UPDATE</code> , or <code>DELETE</code> statements on a table or view.
                 <p class="rhyme">When DML commands on tables descend,<br>
                 Triggers awaken, their logic to send.</p>
             </li>
@@ -233,10 +232,10 @@ The fundamental purpose and capabilities of DML triggers are quite similar. The 
 <p><strong>Triggers & PostgreSQL Bridge:</strong>
     <ul>
         <li>The core concept of automating actions based on DML events is shared.</li>
-        <li>PostgreSQL's `NEW` and `OLD` record variables in trigger functions are direct analogs to Oracle's `:NEW` and `:OLD` pseudorecords.</li>
-        <li>PostgreSQL's `TG_OP` variable (containing 'INSERT', 'UPDATE', etc.) in a trigger function serves a similar purpose to Oracle's `INSERTING`, `UPDATING`, `DELETING` conditional predicates.</li>
-        <li>The primary structural difference is that Oracle trigger logic is usually inline within the `CREATE TRIGGER` statement, whereas PostgreSQL triggers execute a separate pre-defined trigger function.</li>
-        <li>Both systems support `BEFORE`/`AFTER` and `ROW`/`STATEMENT` level triggers.</li>
+        <li>PostgreSQL's <code>NEW</code> and <code>OLD</code> record variables in trigger functions are direct analogs to Oracle's <code>:NEW</code> and <code>:OLD</code> pseudorecords.</li>
+        <li>PostgreSQL's <code>TG_OP</code> variable (containing 'INSERT', 'UPDATE', 'DELETE', or 'TRUNCATE') in a trigger function serves a similar purpose to Oracle's <code>INSERTING</code> , <code>UPDATING</code> , <code>DELETING</code> conditional predicates.</li>
+        <li>The primary structural difference is that Oracle trigger logic is usually inline within the <code>CREATE TRIGGER</code> statement, whereas PostgreSQL triggers execute a separate pre-defined trigger function.</li>
+        <li>Both systems support <code>BEFORE</code>/<code>AFTER</code> and <code>ROW</code>/<code>STATEMENT</code> level triggers.</li>
     </ul>
 </p>
 </div>
@@ -246,7 +245,7 @@ The fundamental purpose and capabilities of DML triggers are quite similar. The 
 <h3 id="chunk7Sec3Sub1">Packages: Structures & Syntax</h3>
 <p>Packages are foundational for organizing PL/SQL code.<sup id="fnref1_10"><a href="#fn1_10">10</a></sup></p>
 
-<h4>Package Specification (<strong>`CREATE PACKAGE`</strong>)</h4>
+<h4>Package Specification (<strong><code>CREATE PACKAGE</code></strong>)</h4>
 Defines the public interface. What's on the menu, plain to see, for other modules, and for thee.</p>
 
 ```sql
@@ -279,15 +278,15 @@ END packageName;
 <div class="oracle-specific">
 <p><strong>Oracle Specific Notes for Package Specification:</strong>
     <ul>
-        <li>`AUTHID DEFINER | CURRENT_USER`: Specifies whether the package runs with the privileges of its definer (default) or the invoker. (Covered in Chunk 9).</li>
-        <li>`ACCESSIBLE BY (plsql_unit [, plsql_unit ] ...)`: (Oracle 12c+) Restricts which other PL/SQL units can access this package.</li>
-        <li>Type declarations like `TABLE OF ... INDEX BY PLS_INTEGER` define associative arrays.</li>
-        <li>Cursor declarations in the spec only show the `RETURN` type, not the `SELECT` statement.</li>
+        <li><code>AUTHID DEFINER</code> | <code>CURRENT_USER</code>: Specifies whether the package runs with the privileges of its definer (default) or the invoker. (Covered in Chunk 9).</li>
+        <li><code>ACCESSIBLE BY</code> (plsql_unit [, plsql_unit ] ...): (Oracle 12c+) Restricts which other PL/SQL units can access this package.</li>
+        <li>Type declarations like <code>TABLE OF ... INDEX BY PLS_INTEGER</code> define associative arrays.</li>
+        <li>Cursor declarations in the spec only show the <code>RETURN</code> type, not the <code>SELECT</code>statement.</li>
     </ul>
 </p>
 </div>
 
-<h4>Package Body (<strong>CREATE PACKAGE BODY</strong>)</h4>
+<h4>Package Body (<strong><code>CREATE PACKAGE BODY</code></strong>)</h4>
 Contains the implementation of subprograms and cursors declared in the specification, plus any private declarations. The kitchen's secrets, kept from view, where all the complex logic's true.</p>
 
 ```sql
@@ -350,13 +349,13 @@ END packageName;
 <p><strong>Oracle Specific Notes for Package Body:</strong>
     <ul>
         <li>The body must implement all subprograms and cursors declared in the specification.</li>
-        <li>The initialization block (between `BEGIN` and `END packageName;`) is executed only once per session when an element of the package is first accessed. Useful for setting up package state.</li>
+        <li>The initialization block (between <code>BEGIN</code> and <code>END packageName;</code> ) is executed only once per session when an element of the package is first accessed. Useful for setting up package state.</li>
     </ul>
 </p>
 </div>
 
 <h4>Calling Packaged Elements</h4>
-Use dot notation: `packageName.elementName`.</p>
+Use dot notation: <code>packageName.elementName</code> .</p>
 
 ```sql
 -- Example usage
@@ -437,9 +436,9 @@ END;
 <div class="oracle-specific">
 <p><strong>Oracle Specific Notes:</strong>
     <ul>
-        <li>`SQLCODE`: Returns the numeric Oracle error code. For user-defined exceptions, it returns +1 unless associated with an Oracle error via `PRAGMA EXCEPTION_INIT`.</li>
-        <li>`SQLERRM`: Returns the error message. For user-defined exceptions, it returns "User-Defined Exception" unless associated.</li>
-        <li>`WHEN OTHERS THEN`: A catch-all handler. It's good practice to log the error (`SQLCODE`, `SQLERRM`) and then either `RAISE;` (to propagate) or handle it definitively.</li>
+        <li></code>SQLCODE</code>: Returns the numeric Oracle error code. For user-defined exceptions, it returns +1 unless associated with an Oracle error via <code>PRAGMA EXCEPTION_INIT</code> .</li>
+        <li></code>SQLERRM</code>: Returns the error message. For user-defined exceptions, it returns "User-Defined Exception" unless associated.</li>
+        <li><code>WHEN OTHERS</code> THEN: A catch-all handler. It's good practice to log the error (</code>SQLCODE</code> , </code>SQLERRM</code> ) and then either <code>RAISE</code>; (to propagate) or handle it definitively.</li>
     </ul>
 </p>
 </div>
@@ -448,11 +447,11 @@ END;
 
 ```sql
 DECLARE
-  eInvalidSalary EXCEPTION; -- Declare the exception
+  eInvalidSalary <code>EXCEPTION</code>; -- Declare the exception
   vSalary NUMBER := -100;
 BEGIN
   IF vSalary < 0 THEN
-    RAISE eInvalidSalary; -- Explicitly raise the exception
+    <code>RAISE</code> eInvalidSalary; -- Explicitly raise the exception
   END IF;
   DBMS_OUTPUT.PUT_LINE('Salary is valid.');
 EXCEPTION
@@ -462,13 +461,13 @@ END;
 /
 ```
 
-<h4>Associating User-Defined Exception with Oracle Error (<strong>PRAGMA EXCEPTION_INIT</strong>)</h4>
+<h4>Associating User-Defined Exception with Oracle Error (<strong><code>PRAGMA EXCEPTION_INIT</code></strong>)</h4>
 This allows you to handle specific Oracle errors (that don't have a predefined PL/SQL name) with a custom, meaningful name.<sup id="fnref1_12"><a href="#fn1_12">12</a></sup></p>
 
 ```sql
 DECLARE
-  eDeadlockDetected EXCEPTION;
-  PRAGMA EXCEPTION_INIT(eDeadlockDetected, -60); -- -60 is ORA-00060
+  eDeadlockDetected <code>EXCEPTION</code>;
+  <code>PRAGMA EXCEPTION_INIT</code>(eDeadlockDetected, -60); -- -60 is ORA-00060
   -- (Actual deadlock simulation is complex to demo simply here,
   -- this just shows the structure)
 BEGIN
@@ -477,7 +476,7 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE('Attempting operation that might deadlock...');
   -- In a real scenario, this block might contain DML that causes ORA-00060
   -- For now, we will just simulate raising it for demonstration
-  RAISE_APPLICATION_ERROR(-20060, 'Simulated ORA-00060 for demo');
+  <code>RAISE_APPLICATION_ERROR</code>(-20060, 'Simulated ORA-00060 for demo');
 
 EXCEPTION
   WHEN eDeadlockDetected THEN -- This would catch ORA-00060
@@ -494,7 +493,7 @@ END;
 <div class="oracle-specific">
 <p><strong>Oracle Specific Notes:</strong>
     <ul>
-        <li>`RAISE_APPLICATION_ERROR(error_number, message_string)`: A procedure in the `DBMS_STANDARD` package (implicitly available) used to raise a user-defined error condition back to the client or calling environment. `error_number` must be between -20000 and -20999. This is often preferred for communicating application-specific errors.</li>
+        <li><code>RAISE_APPLICATION_ERROR</code>(error_number, message_string): A procedure in the <code>DBMS_STANDARD</code> package (implicitly available) used to raise a user-defined error condition back to the client or calling environment. <code>error_number</code> must be between -20000 and -20999. This is often preferred for communicating application-specific errors.</li>
     </ul>
 </p>
 </div>
@@ -502,8 +501,8 @@ END;
 <h3 id="chunk7Sec3Sub3">Triggers: Structures & Syntax</h3>
 <p>Automate actions based on database events.<sup id="fnref1_13"><a href="#fn1_13">13</a></sup></p>
 
-<h4>DML Trigger (Row-Level, `AFTER INSERT`)</h4>
-Fires after each row is inserted into the `Employees` table.</p>
+<h4>DML Trigger (Row-Level, <code>AFTER INSERT</code> )</h4>
+Fires after each row is inserted into the <code>Employees</code> table.</p>
 
 ```sql
 CREATE OR REPLACE TRIGGER trgAfterInsertEmployee
@@ -526,14 +525,14 @@ COMMIT;
 <div class="oracle-specific">
 <p><strong>Oracle Specific Notes:</strong>
     <ul>
-        <li>`:NEW` refers to the new row values being inserted.</li>
-        <li>`FOR EACH ROW` makes it a row-level trigger. Without it, it's a statement-level trigger.</li>
-        <li>`AFTER INSERT` specifies the DML event and timing.</li>
+        <li><code>:NEW</code> refers to the new row values being inserted.</li>
+        <li><code>FOR EACH ROW</code> makes it a row-level trigger. Without it, it's a statement-level trigger.</li>
+        <li><code>AFTER INSERT</code> specifies the DML event and timing.</li>
     </ul>
 </p>
 </div>
 
-<h4>DML Trigger (Row-Level, `BEFORE UPDATE` with Conditional Predicate)</h4>
+<h4>DML Trigger (Row-Level, <code>BEFORE UPDATE</code> with Conditional Predicate)</h4>
 Fires before a salary is updated, but only if the new salary is higher.</p>
 
 ```sql
@@ -560,21 +559,21 @@ COMMIT;
 <div class="oracle-specific">
 <p><strong>Oracle Specific Notes:</strong>
     <ul>
-        <li>`:OLD` refers to the row values before the update, `:NEW` to the proposed new values.</li>
-        <li>`UPDATE OF salary` means the trigger fires only if the `salary` column is part of the `UPDATE` statement's `SET` clause.</li>
-        <li>The `WHEN (NEW.salary > OLD.salary)` clause is a SQL condition that is evaluated for each row. The trigger body only executes if this condition is true.</li>
+        <li><code>:OLD</code> refers to the row values before the update, <code>:NEW</code> to the proposed new values.</li>
+        <li><code>UPDATE OF salary</code> means the trigger fires only if the <code>salary</code> column is part of the <code>UPDATE</code> statement's <code>SET</code> clause.</li>
+        <li>The <code>WHEN (NEW.salary > OLD.salary)</code> clause is a SQL condition that is evaluated for each row. The trigger body only executes if this condition is true.</li>
     </ul>
 </p>
 </div>
 
-<h4>DML Trigger (Statement-Level, `AFTER DELETE` with Conditional Predicates)</h4>
-Fires once after a `DELETE` statement on `OrderItems`, or after an `INSERT` on `Orders`.</p>
+<h4>DML Trigger (Statement-Level, <code>AFTER DELETE</code> with Conditional Predicates)</h4>
+Fires once after a <code>DELETE</code> statement on <code>OrderItems</code> , or after an </code>INSERT</code> on <code>Orders</code> .</p>
 
 ```sql
 CREATE OR REPLACE TRIGGER trgAfterOrderActivity
 AFTER DELETE ON OrderItems
 OR AFTER INSERT ON Orders
--- No FOR EACH ROW, so it's a statement-level trigger
+-- No FOR EACH ROW, so it's a STATEMENT-level trigger
 DECLARE
   vOperation VARCHAR2(20);
 BEGIN
@@ -599,8 +598,8 @@ COMMIT;
 <div class="oracle-specific">
 <p><strong>Oracle Specific Notes:</strong>
     <ul>
-        <li>`DELETING`, `INSERTING`, `UPDATING` are boolean conditional predicates available in the trigger body to check the DML operation type.</li>
-        <li>Statement-level triggers do not have access to `:OLD` or `:NEW` as they don't fire for individual rows.</li>
+        <li><code>DELETING</code> , <code>INSERTING</code> , <code>UPDATING</code> are boolean conditional predicates available in the trigger body to check the DML operation type.</li>
+        <li>Statement-level triggers do not have access to <code>:OLD</code> or <code>:NEW</code> as they don't fire for individual rows.</li>
     </ul>
 </p>
 </div>
@@ -612,23 +611,23 @@ COMMIT;
             <strong>Syntax:</strong> The <code>CREATE TRIGGER</code> syntax is different. PostgreSQL requires a trigger function.<br>
             <br>
             <pre><code class="language-sql">-- PostgreSQL Equivalent Idea (Conceptual - actual function logic would be different)
-CREATE OR REPLACE FUNCTION fn_log_employee_insert() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION fn_log_employee_insert() RETURNS <code>TRIGGER</code> AS $$
 BEGIN
   RAISE NOTICE 'New employee added: % %', NEW.firstName, NEW.lastName;
-  INSERT INTO AuditLog (tableName, operationType, recordId, newValue)
+  <code>INSERT</code> INTO AuditLog (tableName, operationType, recordId, newValue)
   VALUES ('Employees', 'INSERT', NEW.employeeId, 
           'Name: ' || NEW.firstName || ' ' || NEW.lastName || ', Salary: ' || NEW.salary);
-  RETURN NEW;
+  <code>RETURN</code> NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_after_insert_employee
-AFTER INSERT ON Employees
-FOR EACH ROW EXECUTE FUNCTION fn_log_employee_insert();
+<code>CREATE TRIGGER</code> trg_after_insert_employee
+<code>AFTER INSERT</code> ON Employees
+<code>FOR EACH ROW</code> EXECUTE <code>FUNCTION</code> fn_log_employee_insert();
 </code></pre>
         </li>
         <li><strong><code>:NEW</code>/<code>:OLD</code>:</strong> PostgreSQL trigger functions use <code>NEW</code> and <code>OLD</code> record variables, which are very similar to Oracle's pseudorecords.</li>
-        <li><strong>Conditional Predicates:</strong> PostgreSQL uses the <code>TG_OP</code> special variable (<code>'INSERT'</code>, <code>'UPDATE'</code>, <code>'DELETE'</code>) inside the trigger function. The <code>WHEN</code> clause in PostgreSQL <code>CREATE TRIGGER</code> is for row-level conditions, similar to Oracle's <code>WHEN</code> clause.</li>
+        <li><strong>Conditional Predicates:</strong> PostgreSQL uses the <code>TG_OP</code> special variable (<code>'INSERT'</code> , <code>'UPDATE'</code> , <code>'DELETE'</code> , or <code>'TRUNCATE'</code> ) inside the trigger function. The <code>WHEN</code> clause in PostgreSQL <code>CREATE TRIGGER</code> is for row-level conditions, similar to Oracle's <code>WHEN</code> clause.</li>
     </ul>
 </p>
 </div>
@@ -656,7 +655,7 @@ FOR EACH ROW EXECUTE FUNCTION fn_log_employee_insert();
     <li><strong>Clarity & Readability:</strong> Separates error-handling logic from the main program logic, making the main code cleaner and easier to follow.</li>
     <li><strong>Centralized Error Management:</strong> Common error conditions can be handled in a consistent way.</li>
     <li><strong>Specific Error Targeting:</strong> Ability to handle specific predefined or user-defined exceptions differently.</li>
-    <li><strong>Diagnostic Information:</strong> `SQLCODE` and `SQLERRM` provide valuable information for logging and debugging errors.</li>
+    <li><strong>Diagnostic Information:</strong> </code>SQLCODE</code> and </code>SQLERRM</code> provide valuable information for logging and debugging errors.</li>
 </ul>
 
 <h3>Triggers<sup id="fnref1_16"><a href="#fn1_16">16</a></sup>:</h3>
@@ -676,7 +675,7 @@ FOR EACH ROW EXECUTE FUNCTION fn_log_employee_insert();
 
 <h3>Packages:</h3></p>
 <ul>
-    <li><strong>State Invalidation:</strong> Recompiling a package body (even for a minor change) invalidates the package state for all current sessions using it. This can lead to `ORA-04068` errors if not handled, forcing sessions to re-initialize the package, potentially losing session-specific data stored in package variables.<sup id="fnref1_17"><a href="#fn1_17">17</a></sup> Recompile with care, or session states despair!</li>
+    <li><strong>State Invalidation:</strong> Recompiling a package body (even for a minor change) invalidates the package state for all current sessions using it. This can lead to <code>ORA-04068</code> errors if not handled, forcing sessions to re-initialize the package, potentially losing session-specific data stored in package variables.<sup id="fnref1_17"><a href="#fn1_17">17</a></sup> Recompile with care, or session states despair!</li>
     <li><strong>Large Package Overhead:</strong> Very large packages can consume significant memory when loaded. While generally beneficial, extremely large, infrequently used packages might be less efficient than smaller, more targeted ones.</li>
     <li><strong>Complexity:</strong> For very simple, standalone utilities, creating a full package (spec and body) might feel like overkill compared to a single standalone procedure or function (though the organizational benefits often outweigh this for anything beyond trivial cases).</li>
     <li><strong>Hidden Dependencies:</strong> If a package relies on many other database objects, changes to those objects can invalidate the package, requiring recompilation.</li>
@@ -684,11 +683,12 @@ FOR EACH ROW EXECUTE FUNCTION fn_log_employee_insert();
 
 <h3>Exception Handling:</h3></p>
 <ul>
-    <li><strong>Overuse of `WHEN OTHERS`:</strong> Relying too heavily on `WHEN OTHERS THEN NULL;` or `WHEN OTHERS THEN -- do nothing` can mask serious problems, making debugging very difficult. Errors get hidden, a coder's worst forbidden.</li>
-    <li><strong>Performance Overhead:</strong> While necessary, excessive or poorly placed exception handling (e.g., an EXCEPTION block inside a tight loop that frequently raises and handles minor issues) can add performance overhead.</li>
-    <li><strong>Transaction Control in Handlers:</strong> Improper use of `COMMIT` or `ROLLBACK` within an exception handler can lead to inconsistent data states or mask the original error's impact.</li>
-    <li><strong>Loss of Original Error Stack:</strong> Simply using `RAISE;` within an exception handler re-raises the current exception. However, if you `RAISE some_other_exception;`, the original error stack might be lost unless care is taken to log it.</li>
-    <li><strong>Scope of Exceptions:</strong> User-defined exceptions declared within a local block are not visible outside that block. If they propagate out, they can only be caught by a `WHEN OTHERS` handler in an outer block.</li>
+    <li><strong>Overuse of <code>WHEN OTHERS</code>:</strong> Relying too heavily on <code>WHEN OTHERS</code> THEN <code>NULL</code>; or <code>WHEN OTHERS</code> THEN -- do nothing</code> can mask serious problems, making debugging very difficult. Errors get hidden, a coder's worst forbidden.</li>
+    <li><strong>Performance Overhead:</strong> While necessary, excessive or poorly placed exception handling (e.g., an <code>EXCEPTION</code> block inside a tight loop that frequently raises and handles minor issues) can add performance overhead.</li>
+    <li><strong>Transaction Control in Handlers:</strong> Improper use of <code>COMMIT</code> or <code>ROLLBACK</code> within an exception handler can lead to inconsistent data states or mask the original error's impact.</li>
+    <li><strong>Loss of Original Error Stack:
+</strong> Simply using <code>RAISE</code>; within an exception handler re-raises the current exception. However, if you <code>RAISE</code> some_other_exception;</code> , the original error stack might be lost unless care is taken to log it.</li>
+    <li><strong>Scope of Exceptions:</strong> User-defined exceptions declared within a local block are not visible outside that block. If they propagate out, they can only be caught by a <code>WHEN OTHERS</code> handler in an outer block.</li>
 </ul>
 
 <h3>Triggers<sup id="fnref1_18"><a href="#fn1_18">18</a></sup>:</h3>
@@ -696,13 +696,13 @@ FOR EACH ROW EXECUTE FUNCTION fn_log_employee_insert();
     <li><strong>Performance Overhead:</strong> Triggers execute automatically and add overhead to DML operations. Poorly written or overly complex triggers can significantly degrade database performance. A trigger's might, can slow the darkest night.</li>
     <li><strong>Complexity and Debugging:</strong> The "invisible" execution of triggers can make application logic harder to follow and debug. Problems can be difficult to trace back to a specific trigger.</li>
     <li><strong>Cascading Triggers:</strong> One trigger can cause another trigger to fire, potentially leading to complex and hard-to-manage chains of events. Oracle has a limit on trigger cascade depth (typically 32 or 50 depending on version/settings) to prevent infinite loops.</li>
-    <li><strong>Mutating Table Errors (`ORA-04091`):</strong> A common pitfall. A row-level trigger cannot query or modify the same table that is currently being modified by the DML statement that fired the trigger. This requires careful design, often using compound triggers or temporary tables as workarounds.<sup id="fnref1_19"><a href="#fn1_19">19</a></sup>
+    <li><strong>Mutating Table Errors (<code>ORA-04091</code> ):</strong> A common pitfall. A row-level trigger cannot query or modify the same table that is currently being modified by the DML statement that fired the trigger. This requires careful design, often using compound triggers or temporary tables as workarounds.<sup id="fnref1_19"><a href="#fn1_19">19</a></sup>
         <p class="rhyme">The mutating table, a fearsome sight,<br>
         Locks up your trigger, with all of its might.</p>
     </li>
-    <li><strong>Order of Execution:</strong> If multiple triggers of the same type (e.g., multiple `AFTER INSERT ROW` triggers) exist on a table, their order of execution is not guaranteed unless explicitly controlled using the `FOLLOWS` or `PRECEDES` clause (Oracle 11g+). Relying on a specific firing order without these clauses can lead to unpredictable behavior.</li>
-    <li><strong>Difficulty in Disabling/Managing for Bulk Loads:</strong> While triggers can be disabled, doing so for large data loads and then re-enabling them requires careful management and consideration of data integrity during the disabled period. SQL*Loader direct path load automatically disables triggers.</li>
-    <li><strong>Can Mask Application Logic:</strong> Business logic embedded deeply within triggers can make the overall application architecture less clear, as some processing happens "magically" at the database level.</li>
+    <li><strong>Order of Execution:</strong> If multiple triggers of the same type (e.g., multiple <code>AFTER INSERT ROW</code> triggers) exist on a table, their order of execution is not guaranteed unless explicitly controlled using the <code>FOLLOWS</code> or <code>PRECEDES</code> clause (Oracle 11g+). Relying on a specific firing order without these clauses can lead to unpredictable behavior.</li>
+    <li><strong>Difficulty in Disabling/Managing for Bulk Loads:</strong> While triggers can be disabled, doing so for large data loads and then re-enabling them requires careful management and consideration of data integrity during the disabled period. <code>SQL*Loader</code> direct path load automatically disables triggers.</li>
+    <li><strong>Can Mask Application Logic:</strong> Business logic embedded deeply within triggers can make the overall application architecture less clear, as some processing happens " magically" at the database level.</li>
 </ul>
 
 </div> <!-- End of container -->

@@ -71,7 +71,7 @@ It is highly recommended to attempt each exercise on your own before reviewing t
 
 <p>The following dataset will be used for the exercises. Ensure it is created in your Oracle DB 23ai environment.</p>
 
-<pre><code class="language-sql">
+```sql
 -- Drop tables if they exist to ensure a clean slate
 BEGIN
     EXECUTE IMMEDIATE 'DROP TABLE OrderItems';
@@ -209,7 +209,7 @@ INSERT INTO Products (productId, productName, unitPrice, stockQuantity) VALUES (
 INSERT INTO Products (productId, productName, unitPrice, stockQuantity) VALUES (productSeq.NEXTVAL, 'Monitor HD', 300, 0); -- Out of stock for exception handling
 
 COMMIT;
-</code></pre>
+```
 
 <hr>
 
@@ -425,9 +425,11 @@ Execute an update statement that would fire this trigger. What error do you get 
 
 <h4>Exercise 2.6: Trigger Firing Order and Cascading Effects</h4>
 <p><span class="problem-label">Problem:</span>
-1.  Create a simple <code>AFTER UPDATE ON Departments FOR EACH ROW</code> trigger (`trgDeptUpdate</code>) that prints "Department updated" to <code>DBMS_OUTPUT</code>.
-2.  Create an <code>AFTER UPDATE OF departmentId ON Employees FOR EACH ROW</code> trigger (`trgEmpDeptFkUpdate</code>) that prints "Employee's departmentId updated".
-3.  Now, write an UPDATE statement that changes a <code>departmentId</code> in the <code>Departments</code> table. Assume there's a foreign key with <code>ON UPDATE CASCADE</code> from <code>Employees.departmentId</code> to <code>Departments.departmentId</code> (though you don't need to create the FK with cascade for this exercise, just understand the hypothetical).
+<ol>
+<li>Create a simple <code>AFTER UPDATE ON Departments FOR EACH ROW</code> trigger (`trgDeptUpdate</code>) that prints "Department updated" to <code>DBMS_OUTPUT</code>.</li>
+<li>Create an <code>AFTER UPDATE OF departmentId ON Employees FOR EACH ROW</code> trigger (`trgEmpDeptFkUpdate</code>) that prints "Employee's departmentId updated".</li>
+<li>Now, write an UPDATE statement that changes a <code>departmentId</code> in the <code>Departments</code> table. Assume there's a foreign key with <code>ON UPDATE CASCADE</code> from <code>Employees.departmentId</code> to <code>Departments.departmentId</code> (though you don't need to create the FK with cascade for this exercise, just understand the hypothetical).</li>
+</ol>
 Discuss the potential firing order and the "cascading" effect if the FK was set to cascade updates. What are the implications if one trigger's action inadvertently causes another trigger to fire multiple times?</p>
 <div class="oracle-specific">
 <p><strong>Focus:</strong> Understanding that triggers can cause other triggers to fire, and the order can sometimes be non-obvious or lead to performance issues if not designed carefully. Refer to <code>PL/SQL Language Reference,</code> Chapter 10, "Order in Which Triggers Fire" (p. 10-46).</p>

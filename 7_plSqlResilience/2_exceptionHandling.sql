@@ -74,34 +74,93 @@ END;
 -- Problem: Create a procedure ProcessEmployeeData(pEmployeeId IN NUMBER) that performs several DML operations:
 -- Updates the employee's salary by 10%.
 -- Inserts a record into AuditLog noting the salary change.
-CREATE PROCEDURE PLSQLRESILIENCE.ProcessEmployeeData(pEmployeeId IN NUMBER)
+-- Attempts to update the Departments table based on the employee's department (potentially causing a constraint violation if the department does not exist or if 
+-- there's a typo in a column name).
+CREATE OR REPLACE PROCEDURE PLSQLRESILIENCE.ProcessEmployeeData(pEmployeeId IN NUMBER)
 AS BEGIN
     DECLARE
         oldSalary PLSQLRESILIENCE.EMPLOYEES.SALARY%TYPE;
+        newSalary PLSQLRESILIENCE.EMPLOYEES.SALARY%TYPE;
     BEGIN
         SELECT SALARY INTO oldSalary FROM PLSQLRESILIENCE.EMPLOYEES WHERE EMPLOYEEID = pEmployeeId;
         IF SQL%NOTFOUND THEN RAISE NO_DATA_FOUND; END IF;
         SAVEPOINT oldValues;
-        UPDATE PLSQLRESILIENCE.EMPLOYEES SET SALARY = SALARY * 1.1 WHERE EMPLOYEEID = pEmployeeId;
+        newSalary := oldSalary;
+        UPDATE PLSQLRESILIENCE.EMPLOYEES SET SALARY = newSalary WHERE EMPLOYEEID = pEmployeeId;
+        IF SQL%ROWCOUNT = 0 THEN RAISE NO_DATA_FOUND; ROLLBACK; END IF;
+        INSERT INTO PLSQLRESILIENCE.AuditLog(TABLENAME, OPERATIONTYPE, CHANGEDBY, CHANGETIMESTAMP, OLDVALUE, NEWVALUE, RECORDID) 
+        VALUES('EMPLOYEES', 'SALARY RAISE', 'ADMIN', SYSDATE, oldSalary, oldSalary * 1.1, 'Record1');
+        DBMS_OUTPUT.PUT_LINE('New log as '||'EMPLOYEES, SALARY RAISE, ADMIN, '||SYSDATE||', '||oldSalary||', '||oldSalary * 1.1||' Record1');
+        UPDATE PLSQLRESILIENCE.EMPLOYEES SET DEPARTMENTID = 4 WHERE EMPLOYEEID = pEmployeeId;
     END;
-    IF SQL%ROWCOUNT = 0 THEN RAISE NO_DATA_FOUND; END IF;
-    INSERT INTO PLSQLRESILIENCE.AuditLog(TABLENAME, OPERATIONTYPE, CHANGEDBY, CHANGETIMESTAMPM, OLDVALUE, NEWVALUE, RECORDID) 
-    VALUES('EMPLOYEES', 'SALARY RAISE', 'ADMIN', SYSDATE, oldSalary, oldSalary * 1.1);
 EXCEPTION 
     WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('The employee whose salary must be increased was not found');
-    WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE('AODIFAOISDFJ');
+    WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE('An unspecified error occurred'); ROLLBACK;
 END ProcessEmployeeData;
--- Attempts to update the Departments table based on the employee's department (potentially causing a constraint violation if the department does not exist or if 
--- there's a typo in a column name).
+/
+
+BEGIN
+    PLSQLRESILIENCE.ProcessEmployeeData(100); 
+END;
+/
 -- Include a single WHEN OTHERS exception handler at the end of the procedure that simply logs "An unspecified error occurred" to DBMS_OUTPUT.PUT_LINE and then exits 
 -- without re-raising the exception. Discuss the disadvantages of this approach. Why is it a pitfall? What information is lost?
+-- Answer: the line WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE('An unspecified error occurred'); hides the fine grained custom or user defined error to detail specific
+-- errors like UPDATE PLSQLRESILIENCE.EMPLOYEES SET DEPARTMENTID = 4 WHERE EMPLOYEEID = pEmployeeId;
 -- Focus: Illustrate the dangers of generic WHEN OTHERS handlers that mask the actual error, making debugging difficult. Refer to PL/SQL Language Reference, Chapter 
 -- 12, "Unhandled Exceptions" (p. 12-27) and general best practices for error handling.
 
 --      Exercise 2.4: Exception Propagation and Scope
--- Problem: Create a nested PL/SQL block structure: An outer block declares an exception OuterException. An inner block declares an exception InnerException. The inner 
+-- Problem: Create a nested PL/SQL block structure: An outer block declares an exception OuterException. An inner block declares an exception InnerException. The inner
 -- block raises InnerException and handles it. Then, the inner block raises OuterException. The outer block has a handler for OuterException. What happens? Now, modify
 -- the inner block to *not* handle InnerException. What happens to InnerException? Explain the propagation rules demonstrated.
+DECLARE
+    OuterException EXCEPTION;
+BEGIN
+    DECLARE InnerException EXCEPTION;
+    BEGIN
+        IF 1 > 0 THEN RAISE InnerException; END IF;
+    EXCEPTION WHEN InnerException THEN 
+        DBMS_OUTPUT.PUT_LINE('Raising Inner Exception');
+        RAISE OuterException;
+    END;
+EXCEPTION
+    WHEN OuterException THEN DBMS_OUTPUT.PUT_LINE('Raising Outer Exception');
+END;
+/
+
+DECLARE
+    OuterException EXCEPTION;
+BEGIN
+    DECLARE InnerException EXCEPTION;
+    BEGIN
+        IF 1 > 0 THEN RAISE InnerException; END IF;
+    EXCEPTION WHEN OTHERS THEN 
+        DBMS_OUTPUT.PUT_LINE('Raising Inner Exception');
+        RAISE OuterException;
+    END;
+EXCEPTION
+    WHEN OuterException THEN DBMS_OUTPUT.PUT_LINE('Raising Outer Exception');
+END;
+/
+
+DECLARE
+    OuterException EXCEPTION;
+BEGIN
+    DECLARE InnerException EXCEPTION;
+    BEGIN
+        IF 1 > 0 THEN RAISE InnerException; END IF;
+    EXCEPTION WHEN OTHERS THEN 
+        DBMS_OUTPUT.PUT_LINE('Raising Inner Exception');
+        RAISE OuterException;
+    END;
+EXCEPTION
+    WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE('Raising Exception as any');
+END;
+/
+
+-- Raising propagated exceptions depends of the meaning of the messages, if the cases are fined grained for multiple cases of OuterException raising it thus there the
+-- messagse will give meaningful exception names, if not , there is not need for that and with OTHERS is enough
 -- Focus: Understand how exceptions propagate out of blocks if not handled locally. Refer to PL/SQL Language Reference, Chapter 12, "Exception Propagation" (p. 12-19).
 
 
@@ -115,7 +174,60 @@ END ProcessEmployeeData;
 -- If count is 1, execute another SELECT salary INTO ....
 -- If count is 0, set salary to NULL.
 -- If count > 1, set salary to a special error indicator (e.g., -1).
+CREATE OR REPLACE FUNCTION plsqlresilience.GetEmployeeSalary_Manual (
+    p_employeeId IN plsqlresilience.Employees.employeeId%TYPE
+) RETURN NUMBER IS
+    v_salary plsqlresilience.Employees.salary%TYPE;
+    v_count NUMBER;
+    v_error_indicator NUMBER := -1; -- Special value for multiple rows
+BEGIN
+    -- Check for existence and uniqueness
+    SELECT COUNT(*)
+    INTO v_count
+    FROM plsqlresilience.Employees
+    WHERE employeeId = p_employeeId;
+
+    IF v_count = 0 THEN
+        RETURN NULL; -- Employee does not exist
+    ELSIF v_count = 1 THEN
+        -- Fetch the salary
+        SELECT salary
+        INTO v_salary
+        FROM plsqlresilience.Employees
+        WHERE employeeId = p_employeeId;
+        RETURN v_salary;
+    ELSE -- v_count > 1 (should not happen with primary key, but for demonstration)
+        RETURN v_error_indicator; -- Multiple employees found
+    END IF;
+END GetEmployeeSalary_Manual;
+/
 -- Oracle-Idiomatic Solution (Solution): Implement this using a single SELECT salary INTO ... statement within a BEGIN...EXCEPTION...END block, handling NO_DATA_FOUND 
 -- and TOO_MANY_ROWS exceptions appropriately.
+CREATE OR REPLACE PROCEDURE PLSQLRESILIENCE.FetchingSalary (
+    pEmployeeId IN PLSQLRESILIENCE.EMPLOYEES.EMPLOYEEID%TYPE,
+    pSalary OUT PLSQLRESILIENCE.EMPLOYEES.SALARY%TYPE
+) AS 
+BEGIN 
+    SELECT SALARY INTO pSalary FROM PLSQLRESILIENCE.EMPLOYEES WHERE EMPLOYEEID > pEmployeeId;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN 
+        DBMS_OUTPUT.PUT_LINE('More than one employee for fetching salary, review the query for fetching salaries');
+        pSalary := NULL;
+    WHEN TOO_MANY_ROWS THEN
+        DBMS_OUTPUT.PUT_LINE('0 employees for fetching salary, review the query for fetching salaries');
+        pSalary := NULL;
+END FetchingSalary;
+/
+
+SET SERVEROUTPUT ON;
+DECLARE 
+    pEmployeeId PLSQLRESILIENCE.EMPLOYEES.EMPLOYEEID%TYPE := 104;
+    pSalary PLSQLRESILIENCE.EMPLOYEES.SALARY%TYPE;
+BEGIN 
+    PLSQLRESILIENCE.FETCHINGSALARY(pEmployeeId, pSalary);
+    DBMS_OUTPUT.PUT_LINE('SALARY: '||pSalary);
+EXCEPTION WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE(SQLERRM);
+END;
+/
 -- Task: Implement both versions. Discuss the verbosity, performance implications (multiple queries vs. one), and clarity of the exception-handling approach.
--- Focus: Showcasing the conciseness and efficiency of PL/SQL exception handling over manual, multi-step error checking.
+-- Focus: Showcasing the conciseness and efficiency of PL/SQL exception handling over manual, multi-step error checking. 
