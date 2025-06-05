@@ -1,6 +1,8 @@
         -- Exception Handling: Predefined exceptions, user-defined exceptions, SQLCODE, SQLERRM, PRAGMA EXCEPTION_INIT
 
+
 --  (i) Meanings, Values, Relations, and Advantages
+
 --      Exercise 1.4: Handling Predefined Exceptions
 
 -- Problem: Write a PL/SQL anonymous block that attempts to:
@@ -8,58 +10,112 @@
 -- Handle the NO_DATA_FOUND predefined exception and print a user-friendly message.
 -- Attempt to divide a number by zero.
 -- Handle the ZERO_DIVIDE predefined exception and print a user-friendly message.
+DECLARE
+    empId PLSQLRESILIENCE.EMPLOYEES.EMPLOYEEID%TYPE := 101;
+    sal NUMBER;
+BEGIN 
+    SELECT SALARY INTO sal 
+    FROM PLSQLRESILIENCE.EMPLOYEES 
+    WHERE EMPLOYEEID = empId;
+    IF SQL%FOUND THEN sal := sal / 0; END IF;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('No employees found for employeeId '||empId);
+    WHEN ZERO_DIVIDE THEN DBMS_OUTPUT.PUT_LINE('Dividing the salary ('||sal||') by zero is not allowed');
+END;
+/
 -- Focus: Understand how to catch and handle common predefined Oracle exceptions.
 -- Relations:
 -- Oracle: Directly uses predefined exceptions. PL/SQL Language Reference (F46753-09), Chapter 12, "Predefined Exceptions" (p. 12-11, Table 12-3 lists them).
--- PostgreSQL Bridge: PostgreSQL also has predefined exceptions (e.g., no_data_found, division_by_zero). The concept is similar, but the specific exception names and the EXCEPTION WHEN ... THEN syntax are key Oracle PL/SQL constructs.
--- Advantages Demonstrated: Graceful error recovery, providing better user experience than unhandled errors.
--- Exercise 1.5: Declaring and Raising User-Defined Exceptions
 
+--      Exercise 1.5: User-Defined Exceptions and PRAGMA EXCEPTION_INIT
 -- Problem:
--- Create a procedure CheckProductStock that takes pProductId and pQuantityRequired as input.
--- Inside the procedure, declare a user-defined exception named LowStockWarning.
--- If the stockQuantity for the given pProductId in the Products table is less than pQuantityRequired but greater than 0, raise LowStockWarning.
--- If stockQuantity is 0, raise the predefined NO_DATA_FOUND (or a different user-defined exception like OutOfStockError).
--- The procedure should have an exception block to handle LowStockWarning by printing "Warning: Low stock for product ID [ID]." and NO_DATA_FOUND by printing "Error: Product ID [ID] is out of stock." Write an anonymous block to test both scenarios (low stock and out of stock for Product ID 1002 'Wireless Mouse' and 1003 'Monitor HD' respectively, assuming initial quantities).
--- Focus: Learn how to declare, raise, and handle user-defined exceptions.
--- Relations:
--- Oracle: PL/SQL Language Reference (F46753-09), Chapter 12, "User-Defined Exceptions" (p. 12-13) and "Raising Exceptions Explicitly" (p. 12-15).
--- PostgreSQL Bridge: PostgreSQL's RAISE EXCEPTION is similar in concept. Oracle's DECLARE exception_name EXCEPTION; and RAISE exception_name; syntax is specific.
--- Advantages Demonstrated: Ability to create custom error conditions specific to application logic.
--- Exercise 1.6: Using SQLCODE, SQLERRM, and PRAGMA EXCEPTION_INIT
+-- In a PL/SQL anonymous block, declare a user-defined exception named NegativeSalaryException.
+-- Attempt to update an employee's salary to a negative value.
+-- If the attempted salary is negative, explicitly RAISE the NegativeSalaryException.
+-- Include an exception handler for NegativeSalaryException that displays a message like "Error: Salary cannot be negative."
+-- Now, modify the block: associate NegativeSalaryException with the Oracle error code -20002 using PRAGMA EXCEPTION_INIT. In a separate part of the block (or another
+--  procedure called by it), use RAISE_APPLICATION_ERROR(-20002, 'Salary cannot be negative from RAISE_APPLICATION_ERROR.'). Ensure your exception handler for 
+-- NegativeSalaryException still catches this.
+-- Focus: Declaring, raising, and handling user-defined exceptions; using PRAGMA EXCEPTION_INIT and RAISE_APPLICATION_ERROR. Refer to PL/SQL Language Reference, 
+-- Chapter 12, sections "User-Defined Exceptions" (p. 12-13), "EXCEPTION_INIT Pragma" (p. 14-74), and "RAISE_APPLICATION_ERROR Procedure" (p. 12-18).
 
--- Problem:
--- Declare a user-defined exception NegativeSalaryError.
--- Use PRAGMA EXCEPTION_INIT to associate this exception with the Oracle error code -20002.
--- Create a procedure ValidateSalary that takes a newSalary as input. If newSalary is negative, raise NegativeSalaryError.
--- Write an anonymous block that calls ValidateSalary with a negative salary. The exception handler in the anonymous block should catch NegativeSalaryError and print the error code using SQLCODE and the error message using SQLERRM.
--- Focus: Understand how to use SQLCODE and SQLERRM for error diagnostics and PRAGMA EXCEPTION_INIT to map custom exceptions to Oracle error numbers.
--- Relations:
--- Oracle: PL/SQL Language Reference (F46753-09), Chapter 12, "Retrieving Error Code and Error Message" (p. 12-27) and "Naming Internally Defined Exception" (p. 12-10), which explains PRAGMA EXCEPTION_INIT.
--- PostgreSQL Bridge: PostgreSQL has SQLSTATE and SQLERRM available in its EXCEPTION block. Oracle's SQLCODE is an integer, and PRAGMA EXCEPTION_INIT provides a way to give a name to a specific ORA- error or a user-defined error number within the range -20000 to -20999.
--- Advantages Demonstrated: Standardized error reporting, ability to handle specific Oracle errors by custom names.
--- (ii) Disadvantages and Pitfalls (Exception Handling)
--- Exercise 2.3: Overuse of WHEN OTHERS
+DECLARE
+    newSalary NUMBER := -1;
+    NegativeSalaryException EXCEPTION;
+    PRAGMA EXCEPTION_INIT(NegativeSalaryException, -2);
+BEGIN
+    -- IF newSalary < 0 THEN RAISE NegativeSalaryException; END IF;
+    IF newSalary < 0 THEN RAISE_APPLICATION_ERROR(-20002, 'Salary cannot be negative from RAISE_APPLICATION_ERROR.'); END IF;
+EXCEPTION
+    WHEN NegativeSalaryException THEN DBMS_OUTPUT.PUT_LINE('Error: Salary cannot be negative.');
+    WHEN OTHERS THEN IF SQLCODE = -20002 THEN DBMS_OUTPUT.PUT_LINE(SQLERRM); END IF;
+END;
+/
 
--- Problem: Write a procedure ProcessOrder that performs several DML operations (e.g., inserts into Orders, then OrderItems, then updates Products). Include a single WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE('An error occurred.'); exception handler at the end. Discuss the disadvantages of this approach. How could it be improved for better error diagnosis and recovery?
--- Focus: Highlight the pitfalls of catching all exceptions with a generic WHEN OTHERS without specific handling or re-raising.
--- Disadvantage/Pitfall: Masks the actual error, making debugging very difficult. The specific cause of the failure is lost. It might also prevent proper transaction rollback if the error is critical.
--- Relevant Docs: PL/SQL Language Reference (F46753-09), Chapter 12, "Guidelines for Avoiding and Handling Exceptions" (p. 12-9) - especially the point about writing handlers for named exceptions.
--- Exercise 2.4: Exception Propagation and Unhandled Exceptions
+--      Exercise 1.6: Using SQLCODE and SQLERRM
+-- Problem: Write a PL/SQL anonymous block that attempts an operation known to cause a less common, unnamed Oracle error (e.g., try to insert a string longer than a 
+-- VARCHAR2(10) column allows *without* a specific named exception for it). In the WHEN OTHERS exception handler, display the SQLCODE and SQLERRM to identify the 
+-- error.
+-- Focus: Using SQLCODE and SQLERRM for generic error reporting. Refer to PL/SQL Language Reference, Chapter 12, "Retrieving Error Code and Error Message" (p. 12-27).
 
--- Problem:
--- Create a procedure InnerProc that attempts to insert a duplicate productId into the Products table (which will raise DUP_VAL_ON_INDEX due to the primary key constraint). InnerProc should not have an exception handler for DUP_VAL_ON_INDEX.
--- Create another procedure OuterProc that calls InnerProc. OuterProc should also not have an exception handler for DUP_VAL_ON_INDEX.
--- Write an anonymous block that calls OuterProc. This block should have an exception handler for DUP_VAL_ON_INDEX. Explain the flow of exception propagation. What happens if the anonymous block also doesn't handle it?
--- Focus: Demonstrate how unhandled exceptions propagate up the call stack.
--- Pitfall: If an exception propagates all the way to the client without being handled, it can result in an ungraceful application termination or a generic error message to the user.
--- Relevant Docs: PL/SQL Language Reference (F46753-09), Chapter 12, "Exception Propagation" (p. 12-19).
--- (iii) Contrasting with Inefficient Common Solutions (Exception Handling)
--- Exercise 3.2: Manual Error Checking vs. Exception Handling
+DECLARE
+    newString VARCHAR2(10);
+BEGIN
+    newString := '12345678910';
+EXCEPTION
+    WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE('SQL CODE '||SQLCODE||' with ERRORS '||SQLERRM);
+END;
+/
 
--- Scenario: A requirement is to ensure that when a new employee is added, their salary is within a valid range for their department (e.g., min 30000, max 150000 for Sales).
--- Inefficient Common Solution (Problem): A developer writes a procedure AddEmployeeManualCheck that takes employee details. After the INSERT statement, they use several IF statements to check if SQL%ROWCOUNT = 1 (for successful insert) and then separately query the salary ranges and check if the inserted salary is valid. If not, they try to manually DELETE the inserted record and print error messages.
--- Oracle-Idiomatic Solution (Solution): Create a procedure AddEmployeeWithException that declares a user-defined exception InvalidSalaryRange. Before the INSERT, check the salary. If invalid, RAISE InvalidSalaryRange. The INSERT only happens if the salary is valid. The calling block can then handle InvalidSalaryRange. Alternatively, use a CHECK constraint on the table if the range is static, or a trigger to validate (covered next). For this exercise, focus on the procedural exception.
--- Discussion Point: Explain how exception handling simplifies the logic, makes it more readable, and centralizes error management compared to scattered IF checks and manual rollback/delete attempts.
--- Focus: Show that proactive validation and raising custom exceptions leads to cleaner and more robust code than reactive manual checks and cleanups.
--- Loss of Advantages (Inefficient): Code becomes cluttered with error checks, manual cleanup is error-prone, transaction atomicity might be compromised if cleanup fails.
+
+--  (ii) Disadvantages and Pitfalls
+
+--      Exercise 2.3: Overly Broad WHEN OTHERS Handler
+-- Problem: Create a procedure ProcessEmployeeData(pEmployeeId IN NUMBER) that performs several DML operations:
+-- Updates the employee's salary by 10%.
+-- Inserts a record into AuditLog noting the salary change.
+CREATE PROCEDURE PLSQLRESILIENCE.ProcessEmployeeData(pEmployeeId IN NUMBER)
+AS BEGIN
+    DECLARE
+        oldSalary PLSQLRESILIENCE.EMPLOYEES.SALARY%TYPE;
+    BEGIN
+        SELECT SALARY INTO oldSalary FROM PLSQLRESILIENCE.EMPLOYEES WHERE EMPLOYEEID = pEmployeeId;
+        IF SQL%NOTFOUND THEN RAISE NO_DATA_FOUND; END IF;
+        SAVEPOINT oldValues;
+        UPDATE PLSQLRESILIENCE.EMPLOYEES SET SALARY = SALARY * 1.1 WHERE EMPLOYEEID = pEmployeeId;
+    END;
+    IF SQL%ROWCOUNT = 0 THEN RAISE NO_DATA_FOUND; END IF;
+    INSERT INTO PLSQLRESILIENCE.AuditLog(TABLENAME, OPERATIONTYPE, CHANGEDBY, CHANGETIMESTAMPM, OLDVALUE, NEWVALUE, RECORDID) 
+    VALUES('EMPLOYEES', 'SALARY RAISE', 'ADMIN', SYSDATE, oldSalary, oldSalary * 1.1);
+EXCEPTION 
+    WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('The employee whose salary must be increased was not found');
+    WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE('AODIFAOISDFJ');
+END ProcessEmployeeData;
+-- Attempts to update the Departments table based on the employee's department (potentially causing a constraint violation if the department does not exist or if 
+-- there's a typo in a column name).
+-- Include a single WHEN OTHERS exception handler at the end of the procedure that simply logs "An unspecified error occurred" to DBMS_OUTPUT.PUT_LINE and then exits 
+-- without re-raising the exception. Discuss the disadvantages of this approach. Why is it a pitfall? What information is lost?
+-- Focus: Illustrate the dangers of generic WHEN OTHERS handlers that mask the actual error, making debugging difficult. Refer to PL/SQL Language Reference, Chapter 
+-- 12, "Unhandled Exceptions" (p. 12-27) and general best practices for error handling.
+
+--      Exercise 2.4: Exception Propagation and Scope
+-- Problem: Create a nested PL/SQL block structure: An outer block declares an exception OuterException. An inner block declares an exception InnerException. The inner 
+-- block raises InnerException and handles it. Then, the inner block raises OuterException. The outer block has a handler for OuterException. What happens? Now, modify
+-- the inner block to *not* handle InnerException. What happens to InnerException? Explain the propagation rules demonstrated.
+-- Focus: Understand how exceptions propagate out of blocks if not handled locally. Refer to PL/SQL Language Reference, Chapter 12, "Exception Propagation" (p. 12-19).
+
+
+--  (iii) Contrasting with Inefficient Common Solutions
+
+--      Exercise 3.2: Manual Error Checking vs. Exception Handling
+-- Scenario: A procedure needs to fetch an employee's salary. If the employee doesn't exist, it should return NULL. If multiple employees are found (which shouldn't 
+-- happen if employeeId is primary key, but assume a faulty query for demonstration), it should also indicate an error.
+-- Inefficient Common Solution (Problem): Implement this by:
+-- Executing a SELECT COUNT(*) to check if the employee exists.
+-- If count is 1, execute another SELECT salary INTO ....
+-- If count is 0, set salary to NULL.
+-- If count > 1, set salary to a special error indicator (e.g., -1).
+-- Oracle-Idiomatic Solution (Solution): Implement this using a single SELECT salary INTO ... statement within a BEGIN...EXCEPTION...END block, handling NO_DATA_FOUND 
+-- and TOO_MANY_ROWS exceptions appropriately.
+-- Task: Implement both versions. Discuss the verbosity, performance implications (multiple queries vs. one), and clarity of the exception-handling approach.
+-- Focus: Showcasing the conciseness and efficiency of PL/SQL exception handling over manual, multi-step error checking.

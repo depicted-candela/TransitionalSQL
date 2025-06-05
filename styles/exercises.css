@@ -440,7 +440,7 @@ pre code {
     border: none;
     padding: 0;
     color: inherit;
-    font-size: inherit; /* Inherits from pre's 1em */
+    font-size: 1rem; /* Inherits from pre's 1em */
 }
 
 table {

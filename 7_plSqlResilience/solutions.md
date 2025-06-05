@@ -33,7 +33,7 @@ When reviewing, try to:
 *   Understand the rationale behind Oracle-specific constructs.
 *   Note any pitfalls or common errors discussed in the explanations.
 
-## Solutions
+## Solutions for Chunk 7
 
 ### Category: Packages: Specification, body, benefits, overloading
 
@@ -241,13 +241,13 @@ When reviewing, try to:
     ```
 *   **Detailed Explanation:**
     1.  **`defaultRaisePercentage` (Public):** Declared in the specification, making it accessible outside the package (e.g., `EmployeeUtils.defaultRaisePercentage`). It's initialized to `5`.
-    2.  **`totalRaisesProcessed` (Private):** Declared in the body, so it's only accessible within the package body. It's initialized to `0` in its declaration and also in the package initialization block (the `BEGIN...END;` at the end of the package body), which runs once per session when the package is first referenced. The explicit initialization block is good for more complex setup.
+    2.  **`totalRaisesProcessed` (Private):** Declared in the body, so it's only accessible within the package body. It's initialized to `0` in its declaration. The package initialization block (the `BEGIN...END;` at the end of the package body) runs once per session when the package is first referenced and can also be used for more complex initialization of package state variables.
     3.  **`UpdateEmployeeSalary` Modification:**
         *   Now accepts `pNewSalary` and `pRaisePercentage` as optional parameters (using `DEFAULT NULL`).
         *   It prioritizes `pNewSalary`, then `pRaisePercentage`, then the package's `defaultRaisePercentage`. This uses IF-THEN-ELSIF logic (Chunk 5).
         *   It increments the private `totalRaisesProcessed` variable if the update is successful (`SQL%FOUND`).
     4.  **`GetTotalRaisesProcessed` Function:** A simple public function to return the current value of the private `totalRaisesProcessed`. This demonstrates encapsulation – controlling access to internal state.
-    5.  **Package Initialization Block (`BEGIN ... END EmployeeUtils;` at the end of the package body):** This block executes once per session when any part of the package is first accessed. Here, it just prints an initialization message. It could also be used to initialize `totalRaisesProcessed` if not done at declaration.
+    5.  **Package Initialization Block (`BEGIN ... END EmployeeUtils;` at the end of the package body):** This block executes once per session when any part of the package is first accessed. Here, it just prints an initialization message.
     6.  **Test Block:** Shows calls to `UpdateEmployeeSalary` using different parameter combinations and then retrieves the session-specific count of raises.
 
 <div class="postgresql-bridge">
@@ -371,18 +371,16 @@ When reviewing, try to:
 **Oracle Insight:** Overloading allows you to create multiple subprograms with the same name but different parameter signatures. This enhances code flexibility and readability, as users can call the version of the subprogram that best suits the data they have. It's a common practice in Oracle's own supplied packages.
 </div>
 
-#### (ii) Disadvantages and Pitfalls (Packages)
+#### (ii) Disadvantages and Pitfalls
 
 **Exercise 2.1: Package State Invalidation**
-*   <span class="problem-label">Problem Recap:</span> Demonstrate package state loss (ORA-04068) when a package body is recompiled in another session.
-
+*   <span class="problem-label">Problem Recap:</span> Create `StatefulPkg` with a counter. Observe its behavior after recompiling the package body from another session.
 *   **Solution Code:**
     ```sql
     -- Package Specification
     CREATE OR REPLACE PACKAGE StatefulPkg AS
         counter NUMBER := 0;
         PROCEDURE IncrementCounter;
-        FUNCTION GetCounter RETURN NUMBER;
     END StatefulPkg;
     /
 
@@ -391,87 +389,52 @@ When reviewing, try to:
         PROCEDURE IncrementCounter IS
         BEGIN
             counter := counter + 1;
-            DBMS_OUTPUT.PUT_LINE('Counter (session ' || SYS_CONTEXT('USERENV', 'SID') || ') is now: ' || counter);
+            DBMS_OUTPUT.PUT_LINE('Counter is now: ' || counter);
         END IncrementCounter;
-
-        FUNCTION GetCounter RETURN NUMBER IS
-        BEGIN
-            RETURN counter;
-        END GetCounter;
     BEGIN
-        DBMS_OUTPUT.PUT_LINE('StatefulPkg initialized for session ' || SYS_CONTEXT('USERENV', 'SID') || '. Counter: ' || counter);
+        DBMS_OUTPUT.PUT_LINE('StatefulPkg initialized. Counter at initialization: ' || counter); 
     END StatefulPkg;
     /
+
+    -- In SQL*Plus Session 1:
+    SET SERVEROUTPUT ON;
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('--- Session 1: First calls ---');
+        StatefulPkg.IncrementCounter;
+        StatefulPkg.IncrementCounter;
+    END;
+    /
+    -- Expected Output from Session 1 (First calls):
+    -- StatefulPkg initialized. Counter at initialization: 0
+    -- Counter is now: 1
+    -- Counter is now: 2
+
+    -- In SQL*Plus Session 2 (or another SQL Developer worksheet):
+    -- ALTER PACKAGE StatefulPkg COMPILE BODY;
+    -- Statement processed.
+
+    -- Back in SQL*Plus Session 1:
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('--- Session 1: Call after recompile in Session 2 ---');
+        StatefulPkg.IncrementCounter;
+    END;
+    /
+    -- Expected Output from Session 1 (Call after recompile):
+    -- ORA-04068: existing state of package "YOUR_SCHEMA.STATEFULPKG" has been discarded
+    -- ORA-06508: PL/SQL: could not find program unit being called: "YOUR_SCHEMA.STATEFULPKG"
+    -- ORA-06512: at line 3 
+    -- (Note: If you run it a third time in Session 1, it might re-initialize and work, showing the counter from 1 again)
     ```
-
-    **Test Steps:**
-    1.  **Session 1:**
-        ```sql
-        SET SERVEROUTPUT ON;
-        BEGIN
-            StatefulPkg.IncrementCounter; -- Expected: Initialized, Counter is now: 1
-            StatefulPkg.IncrementCounter; -- Expected: Counter is now: 2
-            DBMS_OUTPUT.PUT_LINE('Final Counter in Session 1 (before recompile): ' || StatefulPkg.GetCounter); -- Expected: 2
-        END;
-        /
-        ```
-    2.  **Session 2:**
-        ```sql
-        -- Make a trivial change if needed, or just recompile
-        ALTER PACKAGE StatefulPkg COMPILE BODY; 
-        -- Or, if making a change to ensure it's "different":
-        /*
-        CREATE OR REPLACE PACKAGE BODY StatefulPkg AS
-            PROCEDURE IncrementCounter IS
-            BEGIN
-                counter := counter + 1;
-                DBMS_OUTPUT.PUT_LINE('Counter (session ' || SYS_CONTEXT('USERENV', 'SID') || ') is now (v2): ' || counter);
-            END IncrementCounter;
-
-            FUNCTION GetCounter RETURN NUMBER IS
-            BEGIN
-                RETURN counter;
-            END GetCounter;
-        BEGIN
-            DBMS_OUTPUT.PUT_LINE('StatefulPkg (v2) initialized for session ' || SYS_CONTEXT('USERENV', 'SID') || '. Counter: ' || counter);
-        END StatefulPkg;
-        /
-        */
-        ```
-    3.  **Session 1 (again):**
-        ```sql
-        SET SERVEROUTPUT ON;
-        BEGIN
-            DBMS_OUTPUT.PUT_LINE('Attempting to increment counter after recompile in another session...');
-            StatefulPkg.IncrementCounter; 
-        EXCEPTION
-            WHEN OTHERS THEN
-                DBMS_OUTPUT.PUT_LINE('Error in Session 1: ' || SQLERRM);
-                -- Attempt to re-access, which might re-initialize
-                BEGIN
-                    DBMS_OUTPUT.PUT_LINE('Attempting to get counter after error...');
-                    DBMS_OUTPUT.PUT_LINE('Counter after re-access: ' || StatefulPkg.GetCounter);
-                EXCEPTION
-                    WHEN OTHERS THEN
-                         DBMS_OUTPUT.PUT_LINE('Further error: ' || SQLERRM);
-                END;
-        END;
-        /
-        ```
 *   **Detailed Explanation:**
-    *   Initially, Session 1 uses `StatefulPkg`, and its `counter` variable maintains state (increments).
-    *   When Session 2 recompiles the package *body*, the definition of the package changes in the database.
-    *   When Session 1 next tries to access `StatefulPkg`, Oracle detects that its in-memory state for the package is stale (based on an older version of the body). This results in the `ORA-04068: existing state of package "SCHEMA.STATEFULPKG" has been discarded` error.
-    *   Subsequent calls in Session 1 *might* trigger a re-initialization of the package for that session, at which point `counter` would reset to 0. The exact behavior can sometimes depend on how Oracle handles the re-instantiation.
-    *   This demonstrates a critical pitfall in environments where package bodies are frequently updated during development or deployment while sessions are active.
-    *   **Oracle 23ai Note:** The `SESSION_EXIT_ON_PACKAGE_STATE_ERROR` initialization parameter (mentioned in `PL/SQL Language Reference`, p. 11-8) can alter this behavior. If `TRUE`, the session would exit instead of just raising ORA-04068. For this exercise, the default behavior (raising ORA-04068) is assumed.
-
-<div class="caution">
-**Pitfall:** Unmanaged package state invalidation (ORA-04068) can lead to unexpected application errors if not handled or understood by developers. Applications should be designed to be resilient to this, or deployment procedures should minimize active sessions during package updates.
-</div>
+    1.  **Initial State:** When `StatefulPkg.IncrementCounter` is first called in Session 1, the package is loaded into the session's memory, its initialization block runs (setting `counter` to 0 if not already initialized at declaration, and printing the message), and `counter` is incremented. The state (`counter = 2`) persists for Session 1.
+    2.  **Recompilation:** Recompiling the package body (`ALTER PACKAGE StatefulPkg COMPILE BODY;`) in Session 2 invalidates the compiled state of the package across all sessions that might have an older version loaded.
+    3.  **State Invalidation (ORA-04068):** When Session 1 attempts to call `IncrementCounter` again, Oracle detects that the package body it has in memory is no longer valid due to the recompile. It discards the old state and raises `ORA-04068`. The subsequent `ORA-06508` means it couldn't immediately find/re-load the program unit.
+    4.  **Resolution:** If Session 1 calls `StatefulPkg.IncrementCounter` yet *again* after the `ORA-04068` error, Oracle will typically reload and re-initialize the package for that session. The `counter` would start again from 0 (or its declaration-time initialization), and the initialization block message would print again.
+*   **Pitfall:** Uncontrolled recompilation of stateful packages in a production environment can lead to unexpected errors and loss of session-specific data held in package variables.
+*   **Relevant Docs:** `PL/SQL Language Reference (F46753-09)`, Chapter 11, "Package State" (p. 11-7). The behavior with `SESSION_EXIT_ON_PACKAGE_STATE_ERROR` (Oracle 19.23+) is also relevant for how applications can handle this.
 
 **Exercise 2.2: Overloading Pitfall - Ambiguity with Implicit Conversions**
-*   <span class="problem-label">Problem Recap:</span> Create a package with overloaded procedures `ProcessValue(NUMBER)` and `ProcessValue(VARCHAR2)`. Call it with a `DATE`.
+*   <span class="problem-label">Problem Recap:</span> Create `OverloadDemo` with `ProcessValue(NUMBER)` and `ProcessValue(VARCHAR2)`. Call it with a `DATE`.
 
 *   **Solution Code:**
     ```sql
@@ -499,384 +462,779 @@ When reviewing, try to:
     DECLARE
         myDate DATE := SYSDATE;
     BEGIN
+        DBMS_OUTPUT.PUT_LINE('Attempting to call ProcessValue with a DATE:');
         OverloadDemo.ProcessValue(myDate); 
-    EXCEPTION
-        WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('Error: ' || SQLCODE || ' - ' || SQLERRM);
     END;
     /
     ```
 *   **Detailed Explanation:**
-    *   When `OverloadDemo.ProcessValue(myDate)` is called, Oracle attempts to find a matching `ProcessValue` procedure.
-    *   There is no `ProcessValue(DATE)`.
-    *   Oracle will then try to implicitly convert `myDate` (a `DATE`) to either `NUMBER` or `VARCHAR2`.
-    *   A `DATE` can be implicitly converted to `VARCHAR2` (using the default NLS date format). It typically cannot be implicitly converted to `NUMBER` directly in a way that makes sense for overloading resolution without an explicit cast or function call.
-    *   **Expected Outcome:** The `ProcessValue(VARCHAR2)` version will likely be called, and `myDate` will be implicitly converted to its character representation (e.g., '15-MAY-25').
-    *   **Pitfall:** The developer might have intended a different behavior or might not realize which overloaded version is being invoked due to implicit conversion. If there were, for instance, a `ProcessValue(TIMESTAMP)`, and `DATE` could also implicitly convert to `TIMESTAMP`, then PLS-00307 (too many declarations of 'PROCESSVALUE' match this call) could occur.
-    *   **Resolution:** To avoid ambiguity and ensure the correct version is called, use explicit conversion:
-        *   `OverloadDemo.ProcessValue(TO_CHAR(myDate));` to call the VARCHAR2 version.
-        *   Or, if a numeric representation was intended (though less common for a DATE), `OverloadDemo.ProcessValue(TO_NUMBER(TO_CHAR(myDate, 'J')));` (for Julian date). The best resolution is often to provide an overloaded version that directly accepts the `DATE` type if that's a common use case.
+    *   **What Happens:** When you call `OverloadDemo.ProcessValue(myDate)`, Oracle attempts to find a matching `ProcessValue` procedure. Since there's no version that directly accepts a `DATE`, it tries implicit conversions.
+    *   A `DATE` can be implicitly converted to `VARCHAR2` (using the session's `NLS_DATE_FORMAT`).
+    *   A `DATE` *cannot* be implicitly converted directly to `NUMBER` in a way that makes sense for general numeric processing without an explicit conversion function like `TO_NUMBER(TO_CHAR(myDate, 'J'))`.
+    *   Therefore, the PL/SQL compiler will choose the `ProcessValue(pValue IN VARCHAR2)` version.
+    *   **Output:**
+        ```
+        Attempting to call ProcessValue with a DATE:
+        Called ProcessValue(VARCHAR2) with: <current_date_in_NLS_DATE_FORMAT>
+        ```
+    *   **Why this is a Pitfall:** While it works here by converting to `VARCHAR2`, if there were, for instance, another overloaded procedure `ProcessValue(pAnotherType)` to which `DATE` could also be implicitly converted, you might get a PLS-00307 (too many declarations of 'PROCESSVALUE' match this call) if the conversion "cost" is similar. More subtly, the developer might have *intended* a numeric representation or a different string format, but the implicit conversion takes over, potentially leading to logic errors if the `VARCHAR2` version handles the data differently than expected for a date.
+    *   **Resolution:** To avoid ambiguity or ensure the correct version is called:
+        1.  **Explicit Conversion:** `OverloadDemo.ProcessValue(TO_CHAR(myDate, 'YYYY-MM-DD'));` or `OverloadDemo.ProcessValue(TO_NUMBER(TO_CHAR(myDate, 'J')));` (if a numeric representation like Julian date was intended and a `NUMBER` overload existed).
+        2.  **Create a Specific Overload:** Add `PROCEDURE ProcessValue(pValue IN DATE);` to the package. This is the best approach for clarity and type safety.
+*   **Relevant Docs:** `PL/SQL Language Reference (F46753-09)`, Chapter 9, section "Formal Parameters that Differ Only in Numeric Data Type" (p. 9-30) gives rules for numeric type precedence, and the general concept of implicit conversion applies across types.
 
-<div class="postgresql-bridge">
-**Bridging from PostgreSQL:** PostgreSQL's function overloading resolution also considers implicit casts. The "best match" rules can be complex. The key takeaway is that relying on implicit conversions with overloading can reduce code clarity and lead to unexpected behavior in both systems. Explicit casting is generally safer.
-</div>
-
-#### (iii) Contrasting with Inefficient Common Solutions (Packages)
+#### (iii) Contrasting with Inefficient Common Solutions
 
 **Exercise 3.1: Package vs. Standalone Utilities**
-*   <span class="problem-label">Problem Recap:</span> Create string utility functions (`ReverseString`, `CountVowels`, `IsPalindrome`) first as standalone functions, then as a package. Discuss benefits.
-
+*   <span class="problem-label">Scenario Recap:</span> A developer needs `ReverseString`, `CountVowels`, and `IsPalindrome` string utility functions.
 *   **Inefficient Common Solution (Standalone Functions):**
     ```sql
-    CREATE OR REPLACE FUNCTION ReverseString (pInput IN VARCHAR2) RETURN VARCHAR2 IS
-        vReversed VARCHAR2(4000) := '';
+    CREATE OR REPLACE FUNCTION ReverseString (pInputString IN VARCHAR2) RETURN VARCHAR2 IS
+        vReversedString VARCHAR2(4000) := '';
     BEGIN
-        FOR i IN REVERSE 1..LENGTH(pInput) LOOP
-            vReversed := vReversed || SUBSTR(pInput, i, 1);
+        IF pInputString IS NULL THEN RETURN NULL; END IF;
+        FOR i IN REVERSE 1..LENGTH(pInputString) LOOP
+            vReversedString := vReversedString || SUBSTR(pInputString, i, 1);
         END LOOP;
-        RETURN vReversed;
+        RETURN vReversedString;
     END ReverseString;
     /
 
-    CREATE OR REPLACE FUNCTION CountVowels (pInput IN VARCHAR2) RETURN NUMBER IS
-        vCount NUMBER := 0;
+    CREATE OR REPLACE FUNCTION CountVowels (pInputString IN VARCHAR2) RETURN NUMBER IS
+        vVowelCount NUMBER := 0;
         vChar CHAR(1);
     BEGIN
-        FOR i IN 1..LENGTH(pInput) LOOP
-            vChar := UPPER(SUBSTR(pInput, i, 1));
+        IF pInputString IS NULL THEN RETURN 0; END IF;
+        FOR i IN 1..LENGTH(pInputString) LOOP
+            vChar := UPPER(SUBSTR(pInputString, i, 1));
             IF vChar IN ('A', 'E', 'I', 'O', 'U') THEN
-                vCount := vCount + 1;
+                vVowelCount := vVowelCount + 1;
             END IF;
         END LOOP;
-        RETURN vCount;
+        RETURN vVowelCount;
     END CountVowels;
     /
 
-    CREATE OR REPLACE FUNCTION IsPalindrome (pInput IN VARCHAR2) RETURN BOOLEAN IS
-        vCleanedInput VARCHAR2(4000);
-        vReversedInput VARCHAR2(4000);
+    CREATE OR REPLACE FUNCTION IsPalindrome (pInputString IN VARCHAR2) RETURN BOOLEAN IS
+        vCleanedString VARCHAR2(4000);
+        vReversedString VARCHAR2(4000);
     BEGIN
-        -- Basic cleaning: remove spaces and convert to upper case
-        vCleanedInput := UPPER(REPLACE(pInput, ' ', ''));
-        IF vCleanedInput IS NULL THEN RETURN TRUE; END IF; -- Empty or all spaces is a palindrome
+        IF pInputString IS NULL THEN RETURN NULL; END IF; -- Or TRUE/FALSE depending on definition
+        vCleanedString := REGEXP_REPLACE(UPPER(pInputString), '[^A-Z0-9]', '');
+        IF LENGTH(vCleanedString) = 0 THEN RETURN TRUE; END IF; -- Empty or all non-alphanum is a palindrome
         
-        vReversedInput := ReverseString(vCleanedInput); -- Reuses the standalone ReverseString
+        -- Could call the standalone ReverseString here, or implement again
+        FOR i IN REVERSE 1..LENGTH(vCleanedString) LOOP
+            vReversedString := vReversedString || SUBSTR(vCleanedString, i, 1);
+        END LOOP;
         
-        RETURN vCleanedInput = vReversedInput;
+        RETURN vCleanedString = vReversedString;
     END IsPalindrome;
     /
     ```
-
-*   **Oracle-Idiomatic Solution (Package `StringUtils`):**
+*   **Oracle-Idiomatic Solution (Package):**
     ```sql
     CREATE OR REPLACE PACKAGE StringUtils AS
-        FUNCTION ReverseString (pInput IN VARCHAR2) RETURN VARCHAR2;
-        FUNCTION CountVowels (pInput IN VARCHAR2) RETURN NUMBER;
-        FUNCTION IsPalindrome (pInput IN VARCHAR2) RETURN BOOLEAN;
+        FUNCTION ReverseString (pInputString IN VARCHAR2) RETURN VARCHAR2;
+        FUNCTION CountVowels (pInputString IN VARCHAR2) RETURN NUMBER;
+        FUNCTION IsPalindrome (pInputString IN VARCHAR2) RETURN BOOLEAN;
     END StringUtils;
     /
 
     CREATE OR REPLACE PACKAGE BODY StringUtils AS
-        FUNCTION ReverseString (pInput IN VARCHAR2) RETURN VARCHAR2 IS
-            vReversed VARCHAR2(4000) := '';
+        FUNCTION ReverseString (pInputString IN VARCHAR2) RETURN VARCHAR2 IS
+            vReversedString VARCHAR2(4000) := '';
         BEGIN
-            IF pInput IS NULL THEN RETURN NULL; END IF;
-            FOR i IN REVERSE 1..LENGTH(pInput) LOOP
-                vReversed := vReversed || SUBSTR(pInput, i, 1);
+            IF pInputString IS NULL THEN RETURN NULL; END IF;
+            FOR i IN REVERSE 1..LENGTH(pInputString) LOOP
+                vReversedString := vReversedString || SUBSTR(pInputString, i, 1);
             END LOOP;
-            RETURN vReversed;
+            RETURN vReversedString;
         END ReverseString;
 
-        FUNCTION CountVowels (pInput IN VARCHAR2) RETURN NUMBER IS
-            vCount NUMBER := 0;
+        FUNCTION CountVowels (pInputString IN VARCHAR2) RETURN NUMBER IS
+            vVowelCount NUMBER := 0;
             vChar CHAR(1);
         BEGIN
-            IF pInput IS NULL THEN RETURN 0; END IF;
-            FOR i IN 1..LENGTH(pInput) LOOP
-                vChar := UPPER(SUBSTR(pInput, i, 1));
+            IF pInputString IS NULL THEN RETURN 0; END IF;
+            FOR i IN 1..LENGTH(pInputString) LOOP
+                vChar := UPPER(SUBSTR(pInputString, i, 1));
                 IF vChar IN ('A', 'E', 'I', 'O', 'U') THEN
-                    vCount := vCount + 1;
+                    vVowelCount := vVowelCount + 1;
                 END IF;
             END LOOP;
-            RETURN vCount;
+            RETURN vVowelCount;
         END CountVowels;
 
-        FUNCTION IsPalindrome (pInput IN VARCHAR2) RETURN BOOLEAN IS
-            vCleanedInput VARCHAR2(4000);
-            -- vReversedInput VARCHAR2(4000); -- Not needed if ReverseString is called directly
+        FUNCTION IsPalindrome (pInputString IN VARCHAR2) RETURN BOOLEAN IS
+            vCleanedString VARCHAR2(4000);
+            -- No need to declare vReversedString if calling the package's ReverseString
         BEGIN
-            -- Basic cleaning: remove spaces and convert to upper case
-            vCleanedInput := UPPER(REPLACE(pInput, ' ', ''));
-            IF vCleanedInput IS NULL THEN RETURN TRUE; END IF;
+            IF pInputString IS NULL THEN RETURN NULL; END IF;
+            vCleanedString := REGEXP_REPLACE(UPPER(pInputString), '[^A-Z0-9]', '');
+            IF LENGTH(vCleanedString) = 0 THEN RETURN TRUE; END IF;
             
-            -- Calls the ReverseString function *within the same package*
-            RETURN vCleanedInput = StringUtils.ReverseString(vCleanedInput); 
-            -- Or simply: RETURN vCleanedInput = ReverseString(vCleanedInput); if unambiguous
+            RETURN vCleanedString = StringUtils.ReverseString(vCleanedString); -- Call package function
         END IsPalindrome;
     END StringUtils;
     /
-
-    -- Test the package
-    SET SERVEROUTPUT ON
-    BEGIN
-      DBMS_OUTPUT.PUT_LINE('Reverse of "Oracle": ' || StringUtils.ReverseString('Oracle'));
-      DBMS_OUTPUT.PUT_LINE('Vowels in "Database": ' || StringUtils.CountVowels('Database'));
-      DBMS_OUTPUT.PUT_LINE('Is "madam" a palindrome? ' || CASE WHEN StringUtils.IsPalindrome('madam') THEN 'Yes' ELSE 'No' END);
-      DBMS_OUTPUT.PUT_LINE('Is "test" a palindrome? ' || CASE WHEN StringUtils.IsPalindrome('test') THEN 'Yes' ELSE 'No' END);
-    END;
-    /
     ```
 *   **Detailed Explanation & Discussion:**
-    *   **Inefficient (Standalone):**
-        *   Each function is a separate database object.
-        *   Managing grants becomes per-function.
-        *   If `IsPalindrome` needs a helper function also used by `ReverseString` (e.g., a more advanced string cleaning function), that helper would also have to be a standalone public function, or its code duplicated.
-        *   If `ReverseString` is modified, any standalone function calling it (like `IsPalindrome`) might need revalidation, though Oracle's dependency tracking is quite good.
-    *   **Oracle-Idiomatic (Package):**
-        *   **Modularity & Organization:** All related string utilities are grouped logically.
-        *   **Encapsulation:** The package could contain private helper functions or constants (e.g., a constant array of vowels) not exposed publicly but used by the public functions.
-        *   **Easier Grant Management:** `GRANT EXECUTE ON StringUtils TO user_or_role;` grants access to all public members.
-        *   **Reduced Namespace Pollution:** Only one top-level object (`StringUtils`) is created in the schema for these utilities.
-        *   **Performance (Session State & Loading):** When the first subprogram in `StringUtils` is called in a session, the entire package (or relevant parts) is loaded into memory. Subsequent calls to other subprograms in the same package within that session can be faster as they don't require reloading from disk.
-        *   **Dependency Management:** Changing the package *body* (implementation) without changing the specification does not invalidate objects that call the package. This is a significant advantage for maintenance. (`PL/SQL Language Reference, F46753-09`, p. 11-2 "Better Performance").
-    *   The `IsPalindrome` function within the package can directly call `ReverseString` (also in the package) without needing to qualify it with the package name, though explicitly qualifying (`StringUtils.ReverseString`) is also fine and sometimes clearer.
+    *   **Inefficient Approach (Standalone Functions):**
+        *   **Namespace Pollution:** Each function (`ReverseString`, `CountVowels`, `IsPalindrome`) becomes a top-level schema object. With many utilities, this can clutter the schema.
+        *   **Grant Management:** If these utilities need to be granted to other users, each function must be granted individually.
+        *   **Dependency Management:** If `IsPalindrome` were to internally call `ReverseString` (as it logically could), a change to `ReverseString`'s signature could potentially invalidate `IsPalindrome`, requiring its recompilation. While Oracle handles this, packages offer finer-grained control.
+        *   **No Private Helpers:** If there was a common internal helper function needed by all three (e.g., a character cleaning function), it would either have to be a standalone public function (further polluting the namespace) or duplicated within each function.
+    *   **Oracle-Idiomatic Approach (Package `StringUtils`):**
+        *   **Modularity & Organization:** All related string utilities are grouped logically within a single package `StringUtils`. This makes the codebase cleaner and easier to understand. The package itself becomes the unit of deployment and management for these utilities.
+        *   **Encapsulation:** The package specification defines the public API. The implementation details are hidden within the package body. `IsPalindrome` can directly call `StringUtils.ReverseString` (or just `ReverseString` if called from within the same package body).
+        *   **Simplified Grant Management:** You can grant `EXECUTE` permission on the entire `StringUtils` package to other users/roles, rather than on individual functions.
+        *   **Performance:** When the first subprogram in a package is called, the entire package (or parts of it) is loaded into memory for the session. Subsequent calls to other subprograms in the same package within that session can be faster as they don't require disk I/O to fetch the code.
+        *   **Private Members:** The package body can contain private functions, procedures, types, and variables that are only accessible within the package body. This is useful for helper routines or shared internal state that shouldn't be exposed publicly. (Though not explicitly used in this simple example, it's a major advantage).
+    *   **Loss of Advantages (Inefficient):** The standalone approach loses the organizational benefits, simplified security management, potential performance gains from shared memory, and the ability to have truly private helper routines that packages provide. It leads to a less structured and potentially harder-to-maintain codebase as the number of utilities grows.
 
-<div class="oracle-specific">
-**Oracle Advantage:** Packages are a cornerstone of Oracle PL/SQL development for their organizational, encapsulation, and performance benefits. They represent a more robust modularization approach compared to simply grouping functions in a schema as one might do in PostgreSQL.
+<div class="postgresql-bridge">
+**Bridging from PostgreSQL:** PostgreSQL uses schemas to organize functions. You can create `CREATE FUNCTION myschema.myfunction(...)`. This provides namespacing. However, Oracle packages go further by allowing a package specification (the API) and a package body (the implementation), public/private members, and package-level state. This level of encapsulation and state management within a single named unit is a key differentiator.
 </div>
 
----
-
-### Category: Exception Handling: Predefined exceptions, user-defined exceptions, SQLCODE, SQLERRM, PRAGMA EXCEPTION_INIT
+### Category: Exception Handling
 
 #### (i) Meanings, Values, Relations, and Advantages
 
 **Exercise 1.4: Handling Predefined Exceptions**
-*   **Problem:** Write a PL/SQL anonymous block that attempts to:
-    1.  Select an employee's salary into a `NUMBER` variable for an `employeeId` that does not exist in the `Employees` table.
-    2.  Handle the `NO_DATA_FOUND` predefined exception and print a user-friendly message.
-    3.  Attempt to divide a number by zero.
-    4.  Handle the `ZERO_DIVIDE` predefined exception and print a user-friendly message.
-*   **Focus:** Understand how to catch and handle common predefined Oracle exceptions.
+*   <span class="problem-label">Problem:</span> Write a PL/SQL anonymous block that attempts to:
+    1.  Divide a number by zero.
+    2.  Fetch a row from the `Employees` table with an `employeeId` that does not exist.
+    Include separate exception handlers for `ZERO_DIVIDE` and `NO_DATA_FOUND`. In each handler, use `DBMS_OUTPUT.PUT_LINE` to display a user-friendly message and the values of `SQLCODE` and `SQLERRM`.
+*   **Focus:** Practice handling common predefined exceptions and accessing `SQLCODE` and `SQLERRM`.
 *   **Relations:**
-    *   **Oracle:** Directly uses predefined exceptions. `PL/SQL Language Reference (F46753-09)`, Chapter 12, "Predefined Exceptions" (p. 12-11, Table 12-3 lists them).
-    *   **PostgreSQL Bridge:** PostgreSQL also has predefined exceptions (e.g., `no_data_found`, `division_by_zero`). The concept is similar, but the specific exception names and the `EXCEPTION WHEN ... THEN` syntax are key Oracle PL/SQL constructs.
-*   **Advantages Demonstrated:** Graceful error recovery, providing better user experience than unhandled errors.
+    *   **Oracle:** Introduces predefined exceptions and error information functions. Refer to `PL/SQL Language Reference (F46753-09)`, Chapter 12: "PL/SQL Error Handling", sections "Predefined Exceptions" (p. 12-11), "SQLCODE Function" (p. 14-177), and "SQLERRM Function" (p. 14-178).
+    *   **PostgreSQL Bridge:** PostgreSQL also has predefined exceptions (e.g., `division_by_zero`, `no_data_found`). The concept of catching specific errors is similar. However, the exact exception names and the functions to get error details (`SQLSTATE`, `SQLERRM` in PG) differ. Oracle's `SQLCODE` returns a number, while `SQLERRM` returns the message.
+*   **Advantages Demonstrated:** Graceful error recovery, providing informative messages to the user or for logging.
 
 **Exercise 1.5: Declaring and Raising User-Defined Exceptions**
-*   **Problem:**
-    1.  Create a procedure `CheckProductStock` that takes `pProductId` and `pQuantityRequired` as input.
-    2.  Inside the procedure, declare a user-defined exception named `LowStockWarning`.
-    3.  If the `stockQuantity` for the given `pProductId` in the `Products` table is less than `pQuantityRequired` but greater than 0, raise `LowStockWarning`.
-    4.  If `stockQuantity` is 0, raise the predefined `NO_DATA_FOUND` (or a different user-defined exception like `OutOfStockError`).
-    5.  The procedure should have an exception block to handle `LowStockWarning` by printing "Warning: Low stock for product ID [ID]." and `NO_DATA_FOUND` by printing "Error: Product ID [ID] is out of stock."
-    Write an anonymous block to test both scenarios (low stock and out of stock for Product ID 1002 'Wireless Mouse' and 1003 'Monitor HD' respectively, assuming initial quantities).
-*   **Focus:** Learn how to declare, raise, and handle user-defined exceptions.
-*   **Relations:**
-    *   **Oracle:** `PL/SQL Language Reference (F46753-09)`, Chapter 12, "User-Defined Exceptions" (p. 12-13) and "Raising Exceptions Explicitly" (p. 12-15).
-    *   **PostgreSQL Bridge:** PostgreSQL's `RAISE EXCEPTION` is similar in concept. Oracle's `DECLARE exception_name EXCEPTION;` and `RAISE exception_name;` syntax is specific.
-*   **Advantages Demonstrated:** Ability to create custom error conditions specific to application logic.
 
-**Exercise 1.6: Using `SQLCODE`, `SQLERRM`, and `PRAGMA EXCEPTION_INIT`**
-*   **Problem:**
-    1.  Declare a user-defined exception `NegativeSalaryError`.
-    2.  Use `PRAGMA EXCEPTION_INIT` to associate this exception with the Oracle error code -20002.
-    3.  Create a procedure `ValidateSalary` that takes a `newSalary` as input. If `newSalary` is negative, raise `NegativeSalaryError`.
-    4.  Write an anonymous block that calls `ValidateSalary` with a negative salary. The exception handler in the anonymous block should catch `NegativeSalaryError` and print the error code using `SQLCODE` and the error message using `SQLERRM`.
-*   **Focus:** Understand how to use `SQLCODE` and `SQLERRM` for error diagnostics and `PRAGMA EXCEPTION_INIT` to map custom exceptions to Oracle error numbers.
-*   **Relations:**
-    *   **Oracle:** `PL/SQL Language Reference (F46753-09)`, Chapter 12, "Retrieving Error Code and Error Message" (p. 12-27) and "Naming Internally Defined Exception" (p. 12-10), which explains `PRAGMA EXCEPTION_INIT`.
-    *   **PostgreSQL Bridge:** PostgreSQL has `SQLSTATE` and `SQLERRM` available in its `EXCEPTION` block. Oracle's `SQLCODE` is an integer, and `PRAGMA EXCEPTION_INIT` provides a way to give a name to a specific ORA- error or a user-defined error number within the range -20000 to -20999.
-*   **Advantages Demonstrated:** Standardized error reporting, ability to handle specific Oracle errors by custom names.
+*   <span class="problem-label">Problem Recap:</span> Create a procedure `AdjustStock` that takes `pProductId` (NUMBER) and `pQuantityChange` (NUMBER).
+    *   Declare `InvalidStockOperationException`.
+    *   Raise it if `pQuantityChange` is 0 or if applying it results in negative stock.
+    *   Otherwise, update `stockQuantity`.
+    *   Handle `InvalidStockOperationException` within the procedure.
+
+*   **Solution Code:**
+    ```sql
+    CREATE OR REPLACE PROCEDURE AdjustStock (
+        pProductId IN Products.productId%TYPE,
+        pQuantityChange IN NUMBER
+    ) AS
+        InvalidStockOperationException EXCEPTION; -- Declare the user-defined exception
+        vCurrentStock Products.stockQuantity%TYPE;
+        vProductName Products.productName%TYPE;
+    BEGIN
+        -- Get current stock and product name for messages
+        BEGIN
+            SELECT stockQuantity, productName
+            INTO vCurrentStock, vProductName
+            FROM Products
+            WHERE productId = pProductId;
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                DBMS_OUTPUT.PUT_LINE('Error: Product ID ' || pProductId || ' not found.');
+                RETURN; -- Exit procedure if product not found
+        END;
+
+        IF pQuantityChange = 0 THEN
+            RAISE InvalidStockOperationException; -- Raise with default or no message
+        END IF;
+
+        IF (vCurrentStock + pQuantityChange) < 0 THEN
+            -- It's often better to raise with RAISE_APPLICATION_ERROR for custom messages
+            -- But for this exercise, we'll stick to the basic RAISE and handle the message in the EXCEPTION block
+            RAISE InvalidStockOperationException; 
+        END IF;
+
+        -- If no exception, update the stock
+        UPDATE Products
+        SET stockQuantity = stockQuantity + pQuantityChange
+        WHERE productId = pProductId;
+
+        DBMS_OUTPUT.PUT_LINE('Stock for product ' || vProductName || ' (ID: ' || pProductId || ') adjusted by ' || pQuantityChange || 
+                             '. New quantity: ' || (vCurrentStock + pQuantityChange));
+        COMMIT;
+
+    EXCEPTION
+        WHEN InvalidStockOperationException THEN
+            IF pQuantityChange = 0 THEN
+                DBMS_OUTPUT.PUT_LINE('Error: Quantity change cannot be zero for product ' || vProductName || ' (ID: ' || pProductId || ').');
+            ELSE -- Implies negative stock scenario
+                DBMS_OUTPUT.PUT_LINE('Error: Operation for product ' || vProductName || ' (ID: ' || pProductId || 
+                                     ') would result in negative stock. Current: ' || vCurrentStock || ', Change: ' || pQuantityChange);
+            END IF;
+            ROLLBACK; -- Ensure atomicity if an error occurred
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('An unexpected error occurred: ' || SQLCODE || ' - ' || SQLERRM);
+            ROLLBACK;
+    END AdjustStock;
+    /
+
+    -- Test Scenarios
+    SET SERVEROUTPUT ON;
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('--- Test 1: Valid stock increase ---');
+        AdjustStock(pProductId => 1000, pQuantityChange => 10); -- Laptop Pro, initial stock 50
+
+        DBMS_OUTPUT.PUT_LINE('--- Test 2: Valid stock decrease (sale) ---');
+        AdjustStock(pProductId => 1000, pQuantityChange => -5);
+
+        DBMS_OUTPUT.PUT_LINE('--- Test 3: Quantity change is zero ---');
+        AdjustStock(pProductId => 1001, pQuantityChange => 0); -- Wireless Mouse
+
+        DBMS_OUTPUT.PUT_LINE('--- Test 4: Operation results in negative stock ---');
+        AdjustStock(pProductId => 1002, pQuantityChange => -15); -- Keyboard Ultra, initial stock 10
+
+        DBMS_OUTPUT.PUT_LINE('--- Test 5: Non-existent product ---');
+        AdjustStock(pProductId => 9999, pQuantityChange => 5);
+    END;
+    /
+    ```
+
+*   **Detailed Explanation:**
+    1.  **`InvalidStockOperationException EXCEPTION;`**: This line in the declaration section of the `AdjustStock` procedure defines a new, user-named exception.
+    2.  **`RAISE InvalidStockOperationException;`**: This statement is used to explicitly signal that the `InvalidStockOperationException` has occurred.
+        *   It's used when `pQuantityChange` is 0.
+        *   It's also used if the calculation `(vCurrentStock + pQuantityChange)` would be less than 0.
+    3.  **Exception Handler (`EXCEPTION WHEN InvalidStockOperationException THEN ...`)**: This block of code executes only if `InvalidStockOperationException` is raised within the `BEGIN...END` block of the procedure.
+        *   It uses an `IF` statement to differentiate between the "zero quantity change" and "negative stock" scenarios to provide a more specific error message via `DBMS_OUTPUT.PUT_LINE`.
+        *   `ROLLBACK` is included to undo any partial changes if an error occurs, ensuring the operation is atomic.
+    4.  **Pre-check for Product Existence**: An inner `BEGIN...EXCEPTION...END` block is used to gracefully handle the case where `pProductId` doesn't exist. This prevents the main logic from failing on a `NO_DATA_FOUND` before it even gets to the stock operation checks.
+    5.  **`WHEN OTHERS THEN ...`**: A general handler is good practice to catch any other unexpected issues.
+    6.  **Test Scenarios**: The anonymous block demonstrates calling `AdjustStock` with various inputs to trigger different outcomes, including successful updates and the defined exceptions.
+
+<div class="postgresql-bridge">
+**Bridging from PostgreSQL:**
+In PostgreSQL, you would typically raise an exception like this:
+`RAISE EXCEPTION 'Quantity change cannot be zero' USING ERRCODE = 'P0001';` (where P0001 is a custom error code).
+The catching mechanism in PL/pgSQL would be:
+`EXCEPTION WHEN SQLSTATE 'P0001' THEN ...` or by a condition name if you've mapped it.
+Oracle's approach separates the declaration of the exception name (`InvalidStockOperationException EXCEPTION;`) from the act of raising it (`RAISE InvalidStockOperationException;`). This named exception can then be caught directly by its name, which can improve readability.
+</div>
+
+**Exercise 1.6: Using `PRAGMA EXCEPTION_INIT`**
+
+*   <span class="problem-label">Problem Recap:</span> Create a `Promotions` table. Attempt an insert that violates a rule (e.g., discount > 100). Map the resulting Oracle error (or a custom one) to `InvalidDiscountException` using `PRAGMA EXCEPTION_INIT` and handle it.
+
+*   **Solution Code:**
+    ```sql
+    -- Drop table if it exists
+    BEGIN
+        EXECUTE IMMEDIATE 'DROP TABLE Promotions';
+    EXCEPTION WHEN OTHERS THEN NULL;
+    END;
+    /
+
+    -- Create table with a check constraint
+    CREATE TABLE Promotions (
+        promotionId NUMBER PRIMARY KEY,
+        discountPercentage NUMBER,
+        CONSTRAINT chkDiscount CHECK (discountPercentage BETWEEN 0 AND 100)
+    );
+
+    -- PL/SQL block demonstrating PRAGMA EXCEPTION_INIT
+    SET SERVEROUTPUT ON;
+    DECLARE
+        InvalidDiscountException EXCEPTION;
+        -- ORA-02290 is the error for check constraint violation.
+        PRAGMA EXCEPTION_INIT(InvalidDiscountException, -2290); 
+        
+        vPromotionId Promotions.promotionId%TYPE := 1;
+        vDiscount Promotions.discountPercentage%TYPE;
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('Attempting to insert an invalid discount...');
+        vDiscount := 150; -- This will violate the check constraint
+
+        BEGIN -- Inner block for the DML operation
+            INSERT INTO Promotions (promotionId, discountPercentage)
+            VALUES (vPromotionId, vDiscount);
+            DBMS_OUTPUT.PUT_LINE('Promotion ' || vPromotionId || ' inserted with discount ' || vDiscount || '%.');
+            COMMIT;
+        EXCEPTION
+            WHEN InvalidDiscountException THEN
+                DBMS_OUTPUT.PUT_LINE('Error: Invalid discount percentage (' || vDiscount || '%). ORA-' || 
+                                     TO_CHAR(ABS(SQLCODE)) || ': ' || SQLERRM);
+                DBMS_OUTPUT.PUT_LINE('Associated PL/SQL Exception: InvalidDiscountException was caught.');
+            WHEN OTHERS THEN
+                DBMS_OUTPUT.PUT_LINE('An unexpected error occurred: ' || SQLCODE || ' - ' || SQLERRM);
+        END;
+
+        DBMS_OUTPUT.PUT_LINE('---');
+        DBMS_OUTPUT.PUT_LINE('Attempting to insert a valid discount...');
+        vPromotionId := 2;
+        vDiscount := 10;
+        
+        BEGIN -- Inner block for the DML operation
+            INSERT INTO Promotions (promotionId, discountPercentage)
+            VALUES (vPromotionId, vDiscount);
+            DBMS_OUTPUT.PUT_LINE('Promotion ' || vPromotionId || ' inserted with discount ' || vDiscount || '%.');
+            COMMIT;
+        EXCEPTION
+            WHEN InvalidDiscountException THEN -- Should not happen for valid discount
+                DBMS_OUTPUT.PUT_LINE('Error: Invalid discount percentage (' || vDiscount || '%). Handled by InvalidDiscountException.');
+            WHEN OTHERS THEN
+                DBMS_OUTPUT.PUT_LINE('An unexpected error occurred: ' || SQLCODE || ' - ' || SQLERRM);
+        END;
+
+    END;
+    /
+    ```
+
+*   **Detailed Explanation:**
+    1.  **`Promotions` Table:** Created with a `CHECK` constraint to ensure `discountPercentage` is between 0 and 100. This constraint will raise `ORA-02290` if violated.
+    2.  **`InvalidDiscountException EXCEPTION;`**: Declares a user-defined exception.
+    3.  **`PRAGMA EXCEPTION_INIT(InvalidDiscountException, -2290);`**: This is the key part.
+        *   `PRAGMA EXCEPTION_INIT` is a compiler directive (not a runtime statement).
+        *   It associates the PL/SQL exception name `InvalidDiscountException` with the Oracle error number `-2290` (which corresponds to `ORA-02290`, check constraint violation).
+        *   The error number *must* be a negative integer, excluding -100 (`NO_DATA_FOUND`).
+    4.  **First `INSERT` Attempt:**
+        *   `vDiscount` is set to `150`, which violates the `chkDiscount` constraint.
+        *   The `INSERT` statement will cause Oracle to raise `ORA-02290`.
+        *   Because of the `PRAGMA EXCEPTION_INIT` directive, this `ORA-02290` is now also known by the PL/SQL name `InvalidDiscountException`.
+        *   The `WHEN InvalidDiscountException THEN` handler catches the error, and a user-friendly message including `SQLCODE` and `SQLERRM` is displayed.
+    5.  **Second `INSERT` Attempt:**
+        *   `vDiscount` is set to `10` (valid).
+        *   The `INSERT` succeeds, and no exception is raised.
+    6.  **Inner Blocks for DML:** The `INSERT` statements are wrapped in their own `BEGIN...EXCEPTION...END` blocks. This is a good practice to isolate DML that might raise exceptions and handle them specifically, allowing the main block to continue if desired.
+
+<div class="oracle-specific">
+**Oracle Power Tool: `PRAGMA EXCEPTION_INIT`**
+This pragma is extremely useful for making your error handling code more readable and maintainable. Instead of catching generic `WHEN OTHERS` or specific but cryptic `ORA-xxxxx` numbers, you can give meaningful names to Oracle errors relevant to your application's logic. This allows you to handle system-level errors (like constraint violations, deadlocks, etc.) with the same clarity as your custom user-defined exceptions.
+</div>
 
 #### (ii) Disadvantages and Pitfalls (Exception Handling)
 
-**Exercise 2.3: Overuse of `WHEN OTHERS`**
-*   **Problem:** Write a procedure `ProcessOrder` that performs several DML operations (e.g., inserts into `Orders`, then `OrderItems`, then updates `Products`). Include a single `WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE('An error occurred.');` exception handler at the end.
-    Discuss the disadvantages of this approach. How could it be improved for better error diagnosis and recovery?
-*   **Focus:** Highlight the pitfalls of catching all exceptions with a generic `WHEN OTHERS` without specific handling or re-raising.
-*   **Disadvantage/Pitfall:** Masks the actual error, making debugging very difficult. The specific cause of the failure is lost. It might also prevent proper transaction rollback if the error is critical.
-*   **Relevant Docs:** `PL/SQL Language Reference (F46753-09)`, Chapter 12, "Guidelines for Avoiding and Handling Exceptions" (p. 12-9) - especially the point about writing handlers for named exceptions.
+**Exercise 2.3: Overuse of `WHEN OTHERS THEN NULL;`**
 
-**Exercise 2.4: Exception Propagation and Unhandled Exceptions**
-*   **Problem:**
-    1.  Create a procedure `InnerProc` that attempts to insert a duplicate `productId` into the `Products` table (which will raise `DUP_VAL_ON_INDEX` due to the primary key constraint). `InnerProc` should *not* have an exception handler for `DUP_VAL_ON_INDEX`.
-    2.  Create another procedure `OuterProc` that calls `InnerProc`. `OuterProc` should also *not* have an exception handler for `DUP_VAL_ON_INDEX`.
-    3.  Write an anonymous block that calls `OuterProc`. This block *should* have an exception handler for `DUP_VAL_ON_INDEX`.
-    Explain the flow of exception propagation. What happens if the anonymous block also doesn't handle it?
-*   **Focus:** Demonstrate how unhandled exceptions propagate up the call stack.
-*   **Pitfall:** If an exception propagates all the way to the client without being handled, it can result in an ungraceful application termination or a generic error message to the user.
-*   **Relevant Docs:** `PL/SQL Language Reference (F46753-09)`, Chapter 12, "Exception Propagation" (p. 12-19).
+*   <span class="problem-label">Problem Recap:</span> Create `ProcessProduct` procedure which retrieves `unitPrice`. Include `EXCEPTION WHEN OTHERS THEN NULL;`. Test with valid, non-existent, and NULL `productId`. Explain pitfalls.
+
+*   **Solution Code:**
+    ```sql
+    CREATE OR REPLACE PROCEDURE ProcessProduct (
+        pProductId IN Products.productId%TYPE
+    ) AS
+        vUnitPrice Products.unitPrice%TYPE;
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('Processing product ID: ' || NVL(TO_CHAR(pProductId), 'NULL'));
+        
+        SELECT unitPrice
+        INTO vUnitPrice
+        FROM Products
+        WHERE productId = pProductId;
+        
+        DBMS_OUTPUT.PUT_LINE('Unit price for product ID ' || pProductId || ' is: ' || vUnitPrice);
+        
+    EXCEPTION
+        WHEN OTHERS THEN
+            NULL; -- This is the problematic handler
+    END ProcessProduct;
+    /
+
+    -- Test Scenarios
+    SET SERVEROUTPUT ON;
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('--- Test 1: Valid Product ID (Laptop Pro, ID 1000) ---');
+        ProcessProduct(pProductId => 1000); 
+        -- Expected: Prints price.
+        
+        DBMS_OUTPUT.PUT_LINE('--- Test 2: Non-existent Product ID ---');
+        ProcessProduct(pProductId => 9999); 
+        -- Expected without bad handler: ORA-01403: no data found
+        -- With bad handler: Nothing printed, error is swallowed.
+
+        DBMS_OUTPUT.PUT_LINE('--- Test 3: NULL Product ID ---');
+        ProcessProduct(pProductId => NULL); 
+        -- Expected without bad handler: ORA-01403: no data found (as productId = NULL will not match any row unless there's a NULL PK, which is unlikely)
+        -- With bad handler: Nothing printed, error is swallowed.
+    END;
+    /
+    ```
+
+*   **Detailed Explanation & Pitfalls:**
+    1.  **Procedure Logic:** The procedure attempts to select the `unitPrice` for a given `pProductId`.
+    2.  **`EXCEPTION WHEN OTHERS THEN NULL;`**: This is the critical part. This handler catches *any and all* exceptions that occur within the `BEGIN...END` block and then does absolutely nothing (`NULL` is a do-nothing statement).
+    3.  **Test 1 (Valid Product ID):**
+        *   The `SELECT` statement succeeds.
+        *   The unit price is printed.
+        *   The exception handler is not invoked.
+    4.  **Test 2 (Non-existent Product ID):**
+        *   The `SELECT` statement will not find a matching `productId` and would normally raise the predefined `NO_DATA_FOUND` exception (ORA-01403).
+        *   However, the `WHEN OTHERS THEN NULL;` handler catches this `NO_DATA_FOUND` exception.
+        *   Since the handler does `NULL;`, the exception is effectively "swallowed" or ignored.
+        *   No error message is shown to the user or logged. The program continues as if nothing went wrong, which is highly misleading.
+    5.  **Test 3 (NULL Product ID):**
+        *   The `SELECT ... WHERE productId = NULL` will not match any rows (standard SQL behavior unless `productId` can actually be NULL and you have `ANSI_NULLS OFF`, which is not default Oracle behavior and generally not recommended for primary keys).
+        *   This would also typically raise `NO_DATA_FOUND`.
+        *   Again, the `WHEN OTHERS THEN NULL;` handler catches and silences this error.
+
+    **Pitfalls of `WHEN OTHERS THEN NULL;` (or `WHEN OTHERS THEN -- do nothing`):**
+    *   **Masks All Errors:** It catches every possible runtime error, from expected ones like `NO_DATA_FOUND` to critical unexpected ones like `STORAGE_ERROR`, `SYS_INVALID_ROWID`, or even programmer errors like `VALUE_ERROR` from an incorrect data type assignment.
+    *   **Debugging Nightmare:** When errors are silently ignored, it becomes incredibly difficult to diagnose problems. The application might produce incorrect results, corrupt data, or behave erratically without any indication of where or why the problem originated.
+    *   **Data Integrity Risks:** If an error during a DML operation is swallowed, the transaction might partially complete, leaving the database in an inconsistent state.
+    *   **False Sense of Security:** The code *appears* to run without errors, but it's failing silently.
+    *   **Hides Important Information:** `SQLCODE` and `SQLERRM` which provide crucial details about the error are not examined or logged.
+
+    **Best Practice:**
+    *   Handle specific exceptions that you anticipate and can recover from.
+    *   If you use `WHEN OTHERS`, it should generally be at the outermost level of your program unit (or in specific controlled scenarios) and *must* include:
+        *   Logging of the error details (e.g., `SQLCODE`, `SQLERRM`, `DBMS_UTILITY.FORMAT_ERROR_STACK`, `DBMS_UTILITY.FORMAT_ERROR_BACKTRACE`).
+        *   A `RAISE;` or `RAISE_APPLICATION_ERROR;` statement to propagate the error or a more meaningful application-specific error, unless the error is truly benign and intentionally ignored (a very rare case).
+
+**Exercise 2.4: Exception Raised in Declaration Section**
+
+*   <span class="problem-label">Problem Recap:</span> Declare a `CONSTANT NUMBER(2)` and initialize it to `100`. Include a `VALUE_ERROR` handler in the same block. Observe if it's caught.
+
+*   **Solution Code:**
+    ```sql
+    SET SERVEROUTPUT ON;
+    BEGIN -- Outer (or only) block
+        DECLARE
+            -- This declaration will raise VALUE_ERROR (ORA-06502) because 100 does not fit in NUMBER(2)
+            myConst CONSTANT NUMBER(2) := 100; 
+        BEGIN
+            DBMS_OUTPUT.PUT_LINE('This line will not be reached.');
+            DBMS_OUTPUT.PUT_LINE('myConst = ' || myConst);
+        EXCEPTION
+            WHEN VALUE_ERROR THEN -- This handler is in the same block as the faulty declaration
+                DBMS_OUTPUT.PUT_LINE('VALUE_ERROR caught within the declaration block - THIS WILL NOT HAPPEN.');
+        END;
+    EXCEPTION -- Exception handler for the outer block
+        WHEN VALUE_ERROR THEN
+            DBMS_OUTPUT.PUT_LINE('VALUE_ERROR caught by the ENCLOSING block.');
+            DBMS_OUTPUT.PUT_LINE('SQLCODE: ' || SQLCODE || ', SQLERRM: ' || SQLERRM);
+         WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Some other error caught by enclosing block: ' || SQLERRM);
+    END;
+    /
+    ```
+
+*   **Detailed Explanation:**
+    1.  **`myConst CONSTANT NUMBER(2) := 100;`**:
+        *   `NUMBER(2)` can store integers from -99 to 99.
+        *   Attempting to initialize it with `100` will cause an `ORA-06502: PL/SQL: numeric or value error` (which is a `VALUE_ERROR` in PL/SQL) during the elaboration of the declaration section.
+    2.  **Exception Propagation:**
+        *   When an exception is raised in the *declaration section* of a PL/SQL block, control *immediately* passes to the exception-handling section of the *enclosing block* (if one exists).
+        *   The exception handler within the *same block* where the declaration error occurred is **bypassed**.
+    3.  **Execution and Output:**
+        *   The `DECLARE` section of the inner anonymous block (if we consider the outer `BEGIN...END;` as the main block and the inner `DECLARE...BEGIN...EXCEPTION...END;` as a sub-block, though here it's simpler as a single block with a faulty declaration) attempts to initialize `myConst`.
+        *   The `VALUE_ERROR` is raised.
+        *   The `WHEN VALUE_ERROR THEN` handler *within that same block's EXCEPTION section* is **not** executed.
+        *   If this entire structure was nested inside another `BEGIN...EXCEPTION...END;` block, that outer block's handler would catch it. In this standalone example, the error propagates to the SQL*Plus environment (or the calling environment).
+        *   If we add an outer block with an exception handler as shown in the corrected solution code above, the output will be:
+            ```
+            VALUE_ERROR caught by the ENCLOSING block.
+            SQLCODE: -6502, SQLERRM: ORA-06502: PL/SQL: numeric or value error: number precision too large
+            ```
+
+<div class="oracle-specific">
+**Oracle PL/SQL Behavior:** This behavior is crucial to understand. Exceptions in declarations are handled by the parent scope, not the current scope's exception handler. This is because the block's executable section (and thus its own exception handlers) only get control *after* all declarations have been successfully processed. If a declaration fails, the block itself is not considered to have started execution properly.
+</div>
 
 #### (iii) Contrasting with Inefficient Common Solutions (Exception Handling)
 
-**Exercise 3.2: Manual Error Checking vs. Exception Handling**
-*   **Scenario:** A requirement is to ensure that when a new employee is added, their salary is within a valid range for their department (e.g., min 30000, max 150000 for Sales).
-*   **Inefficient Common Solution (Problem):** A developer writes a procedure `AddEmployeeManualCheck` that takes employee details. After the `INSERT` statement, they use several `IF` statements to check if `SQL%ROWCOUNT = 1` (for successful insert) and then separately query the salary ranges and check if the inserted salary is valid. If not, they try to manually `DELETE` the inserted record and print error messages.
-*   **Oracle-Idiomatic Solution (Solution):** Create a procedure `AddEmployeeWithException` that declares a user-defined exception `InvalidSalaryRange`. Before the `INSERT`, check the salary. If invalid, `RAISE InvalidSalaryRange`. The `INSERT` only happens if the salary is valid. The calling block can then handle `InvalidSalaryRange`. Alternatively, use a `CHECK` constraint on the table if the range is static, or a trigger to validate (covered next). For this exercise, focus on the procedural exception.
-*   **Discussion Point:** Explain how exception handling simplifies the logic, makes it more readable, and centralizes error management compared to scattered `IF` checks and manual rollback/delete attempts.
-*   **Focus:** Show that proactive validation and raising custom exceptions leads to cleaner and more robust code than reactive manual checks and cleanups.
-*   **Loss of Advantages (Inefficient):** Code becomes cluttered with error checks, manual cleanup is error-prone, transaction atomicity might be compromised if cleanup fails.
+**Exercise 3.2: Error Checking vs. Exception Handling for `NO_DATA_FOUND`**
+*   **Scenario:** A developer needs to retrieve an employee's salary. If the employee doesn't exist, a default salary of 0 should be used.
+*   **Less Idiomatic/Potentially Inefficient Common Solution (Problem):** The developer first performs a `SELECT COUNT(*)` to check if the employee exists, and then, based on the count, either performs another `SELECT` to get the salary or assigns the default. Write this PL/SQL block.
+    ```sql
+    -- Example of a less idiomatic (two-query) approach
+    DECLARE
+        vEmployeeId Employees.employeeId%TYPE := 999; -- Non-existent ID
+        vSalary Employees.salary%TYPE;
+        vEmployeeCount NUMBER;
+    BEGIN
+        SELECT COUNT(*) INTO vEmployeeCount FROM Employees WHERE employeeId = vEmployeeId;
+        IF vEmployeeCount > 0 THEN
+            SELECT salary INTO vSalary FROM Employees WHERE employeeId = vEmployeeId;
+        ELSE
+            vSalary := 0;
+        END IF;
+        DBMS_OUTPUT.PUT_LINE('Salary: ' || vSalary);
+    END;
+    /
+    ```
+*   **Oracle-Idiomatic Solution (Solution):** Use a single `SELECT INTO` statement and an exception handler for `NO_DATA_FOUND` to assign the default salary.
+    ```sql
+    DECLARE
+        vEmployeeId Employees.employeeId%TYPE := 999; -- Non-existent ID
+        vSalary Employees.salary%TYPE;
+    BEGIN
+        BEGIN -- Inner block for specific exception handling
+            SELECT salary INTO vSalary FROM Employees WHERE employeeId = vEmployeeId;
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                vSalary := 0;
+        END;
+        DBMS_OUTPUT.PUT_LINE('Salary: ' || vSalary);
+    END;
+    /
+    ```
+*   **Focus:** Demonstrate that using exception handling for expected conditions like `NO_DATA_FOUND` can be more concise and often more efficient than explicit pre-checks in Oracle.
+*   **Loss of Advantages (Inefficient):** The pre-check approach involves two separate SQL executions (one `COUNT(*)` and one actual data retrieval), which is generally less performant than a single `SELECT INTO` with an exception handler for a case where data might not be found. It also makes the code more verbose.
+*   **Note:** While `NO_DATA_FOUND` is an exception, it's often considered a normal outcome in many scenarios (e.g., "is this user registered?"). For such "expected not found" cases, exception handling is idiomatic in Oracle.
 
-#### (iv) Hardcore Combined Problem (Packages & Exception Handling)
-
-This section will be combined with the Triggers hardcore problem below, as they often work together in complex scenarios.
-
----
-
-### Category: Triggers: DML triggers, :NEW and :OLD qualifiers, conditional predicates
+### Category: Triggers
 
 #### (i) Meanings, Values, Relations, and Advantages
 
-**Exercise 1.7: Basic AFTER INSERT Row-Level Trigger**
-*   **Problem:** Create a trigger `trgAfterNewEmployee` that fires *after* a new row is inserted into the `Employees` table. For each inserted row, the trigger should print a message to `DBMS_OUTPUT` saying "New employee added: [Employee's Full Name] with ID: [Employee ID]". Use the `:NEW` pseudorecord.
-*   **Focus:** Understand basic `AFTER INSERT FOR EACH ROW` trigger syntax and the usage of `:NEW`.
+**Exercise 1.7: Basic DML Trigger (`AFTER INSERT`)**
+*   <span class="problem-label">Problem:</span> Create an `AFTER INSERT ON Orders FOR EACH ROW` trigger named `LogNewOrder`. This trigger should insert a record into the `AuditLog` table indicating that a new order was placed. Log the `tableName` ('Orders'), `operationType` ('INSERT'), and the `recordId` (the `:NEW.orderId`).
+    Test by inserting a new order.
+*   **Focus:** Basic DML trigger syntax, `AFTER INSERT` timing, `FOR EACH ROW` clause, and using the `:NEW` pseudorecord.
 *   **Relations:**
-    *   **Oracle:** `PL/SQL Language Reference (F46753-09)`, Chapter 10, "DML Triggers" (p. 10-4) and "Correlation Names and Pseudorecords" (p. 10-28). `Get Started Guide (F79574-03)`, "About OLD and NEW Pseudorecords" (p. 6-3).
-    *   **PostgreSQL Bridge:** PostgreSQL triggers have similar concepts (`NEW` record for `INSERT`/`UPDATE`, `OLD` for `UPDATE`/`DELETE`). The `CREATE TRIGGER ... FOR EACH ROW EXECUTE FUNCTION ...` syntax is different. Oracle's PL/SQL trigger body is defined inline.
-*   **Advantages Demonstrated:** Automating actions (like logging or derived calculations) based on DML events.
+    *   **Oracle:** Introduces core trigger concepts. Refer to `PL/SQL Language Reference (F46753-09)`, Chapter 10: "PL/SQL Triggers", sections "DML Triggers" (p. 10-4) and "Correlation Names and Pseudorecords" (p. 10-28). Also, `Get Started with Oracle Database Development (F79574-03)`, Chapter 6 is a good practical intro.
+    *   **PostgreSQL Bridge:** PostgreSQL has a very similar trigger mechanism (`CREATE TRIGGER ... AFTER INSERT ON ... FOR EACH ROW EXECUTE FUNCTION ...`). The main difference is that Oracle trigger logic is directly embedded in the `CREATE TRIGGER` statement, while PostgreSQL triggers call a separate function. The `:NEW` and `:OLD` concepts (though named `NEW` and `OLD` in PG) are analogous.
+*   **Advantages Demonstrated:** Automating actions (auditing) based on data modifications.
 
-**Exercise 1.8: BEFORE UPDATE Statement-Level Trigger with Conditional Predicates**
-*   **Problem:** Create a trigger `trgBeforeEmployeeUpdateAudit` that fires *before* any `UPDATE` statement is executed on the `Employees` table.
-    1.  The trigger should log a generic message to the `AuditLog` table: `tableName` = 'Employees', `operationType` = 'BATCH UPDATE START'.
-    2.  This trigger should be a statement-level trigger.
-    3.  Test by updating multiple employee salaries in a single `UPDATE` statement.
-*   **Focus:** Understand `BEFORE UPDATE` statement-level triggers and how conditional predicates like `UPDATING` work (though `UPDATING` is more useful with multiple DML events, this sets the stage).
+**Exercise 1.8: Trigger with Conditional Logic (`UPDATING` predicate)**
+*   <span class="problem-label">Problem:</span> Create an `AFTER UPDATE ON Products FOR EACH ROW` trigger named `NotifyStockChange`.
+    1.  Inside the trigger, use the `UPDATING('stockQuantity')` conditional predicate.
+    2.  If `stockQuantity` was updated AND the new `stockQuantity` is less than 5, use `DBMS_OUTPUT.PUT_LINE` to simulate sending a low stock notification (e.g., "Low stock alert for Product ID: [product_id], New Quantity: [new_quantity]").
+    Test by updating `stockQuantity` for a product to a value less than 5, and then update another column (e.g., `unitPrice`) for the same product.
+*   **Focus:** Using conditional predicates (`UPDATING`) within a trigger to execute logic only when specific columns are affected.
 *   **Relations:**
-    *   **Oracle:** `PL/SQL Language Reference (F46753-09)`, Chapter 10, "Conditional Predicates for Detecting Triggering DML Statement" (p. 10-5). `Get Started Guide (F79574-03)`, "Tutorial: Creating a Trigger that Logs Table Changes" (p. 6-3) uses these.
-    *   **PostgreSQL Bridge:** PostgreSQL triggers can also be statement-level (`FOR EACH STATEMENT`). Conditional logic within the trigger function would achieve similar predicate effects.
-*   **Advantages Demonstrated:** Performing an action once per DML statement, regardless of how many rows are affected. Useful for setting up audit trails or global checks.
+    *   **Oracle:** Focuses on conditional predicates. Refer to `PL/SQL Language Reference (F46753-09)`, Chapter 10, section "Conditional Predicates for Detecting Triggering DML Statement" (p. 10-5).
+    *   **PostgreSQL Bridge:** PostgreSQL triggers can also achieve conditional logic within the trigger function using IF statements on the `NEW` and `OLD` values or by checking `TG_OP`. The `UPDATING('column_name')` predicate is a concise Oracle feature.
+*   **Advantages Demonstrated:** More granular control over trigger execution, improving performance by only running logic when necessary.
 
-**Exercise 1.9: Using `:OLD` and `:NEW` in an UPDATE Trigger with a WHEN Clause**
-*   **Problem:** Create a trigger `trgLogSignificantSalaryChange` that fires *after* an `UPDATE` on the `salary` column of the `Employees` table *for each row*.
-    1.  The trigger should only fire if the new salary is at least 10% greater than the old salary (`WHEN (NEW.salary > OLD.salary * 1.10)`).
-    2.  If it fires, it should insert a record into `AuditLog` with `tableName`='Employees', `operationType`='SIG_SAL_INC', `recordId`=`:NEW.employeeId`, `oldValue`=`:OLD.salary`, `newValue`=`:NEW.salary`.
-    Test by updating salaries, some significantly, some not.
-*   **Focus:** Combine `:OLD`, `:NEW`, `FOR EACH ROW`, and the `WHEN` clause for fine-grained trigger control.
+**Exercise 1.9: Trigger Using `:OLD` and `:NEW`**
+*   <span class="problem-label">Problem:</span> Create a `BEFORE UPDATE ON Employees FOR EACH ROW` trigger named `PreventSalaryDecrease`.
+    This trigger should prevent any update that attempts to decrease an employee's salary. If a salary decrease is attempted, use `RAISE_APPLICATION_ERROR` with a custom error number (-20002) and a message "Salary decrease is not allowed."
+    Test by attempting to decrease an employee's salary and then by attempting to increase it.
+*   **Focus:** Using `:OLD` and `:NEW` to compare values before and after an update, and using `RAISE_APPLICATION_ERROR` to enforce a business rule.
 *   **Relations:**
-    *   **Oracle:** Reinforces `:OLD`/`:NEW` and introduces the trigger's `WHEN` clause. `PL/SQL Language Reference (F46753-09)`, Chapter 10, "Correlation Names and Pseudorecords" (p. 10-28) and the `CREATE TRIGGER` syntax for the `WHEN` clause.
-    *   **PostgreSQL Bridge:** PostgreSQL trigger functions can use `OLD` and `NEW` records. The conditional logic (WHEN clause) in Oracle triggers is a concise way to control firing without an explicit IF statement at the beginning of the trigger body.
-*   **Advantages Demonstrated:** Efficiently targeting trigger logic to specific conditions on row data changes, reducing unnecessary trigger executions.
+    *   **Oracle:** Reinforces `:OLD`/`:NEW` and introduces `RAISE_APPLICATION_ERROR` for custom error signaling from triggers. Refer to `PL/SQL Language Reference (F46753-09)`, Chapter 12, section "RAISE_APPLICATION_ERROR Procedure" (p. 12-18).
+    *   **PostgreSQL Bridge:** PostgreSQL trigger functions use `NEW` and `OLD` records. To prevent an update, a PG trigger function would `RETURN NULL` (for a `BEFORE` trigger) or `RAISE EXCEPTION`. Oracle's `RAISE_APPLICATION_ERROR` is the standard way to return custom errors from PL/SQL to the calling environment.
+*   **Advantages Demonstrated:** Enforcing complex business rules at the database level, providing clear error messages for violations.
 
 #### (ii) Disadvantages and Pitfalls (Triggers)
 
 **Exercise 2.5: The Mutating Table Error (ORA-04091)**
-*   **Problem:**
-    1.  Create a trigger `trgEnforceMaxDepartmentSalary` on the `Employees` table that fires `BEFORE INSERT OR UPDATE OF salary, departmentId`.
-    2.  Inside the trigger (for each row), attempt to query the `Employees` table to find the maximum salary for the `:NEW.departmentId` and ensure the `:NEW.salary` does not exceed this maximum by more than 20%. If it does, raise an application error.
-    3.  Attempt to insert a new employee or update an existing one in a way that would cause the trigger to query the `Employees` table. Observe the ORA-04091 error. Explain why it occurs.
-*   **Focus:** Demonstrate the common mutating table error.
-*   **Pitfall:** A trigger cannot query or modify the same table that is currently being modified by the DML statement that fired the trigger (for row-level triggers).
-*   **Relevant Docs:** `PL/SQL Language Reference (F46753-09)`, Chapter 10, "Mutating-Table Restriction" (p. 10-42).
+*   <span class="problem-label">Problem:</span>
+    1.  Create a `BEFORE UPDATE OF salary ON Employees FOR EACH ROW` trigger named `CheckAvgSalary`.
+    2.  Inside this trigger, attempt to query the `Employees` table itself to calculate the average salary of the employee's department (e.g., `SELECT AVG(salary) FROM Employees WHERE departmentId = :NEW.departmentId;`).
+    3.  Try to update an employee's salary.
+    Observe the error (ORA-04091). Explain why this error occurs and what the term "mutating table" means in this context.
+*   **Focus:** Demonstrate the common "mutating table" error.
+*   **Disadvantage/Pitfall:** Row-level triggers cannot query or modify the table on which they are defined because it's in a state of flux (mutating). This is a fundamental restriction to ensure data consistency.
+*   **Relevant Docs:** `PL/SQL Language Reference (F46753-09)`, Chapter 10, section "Mutating-Table Restriction" (p. 10-42).
 
-**Exercise 2.6: Trigger Cascading and Performance**
-*   **Problem:**
-    1.  Create table `TableA` with a column `val NUMBER`.
-    2.  Create table `TableB` with a column `val NUMBER`.
-    3.  Create a trigger `trgCascadeAtoB` on `TableA` that fires `AFTER INSERT FOR EACH ROW`. This trigger inserts a new row into `TableB` with `:NEW.val * 2`.
-    4.  Create a trigger `trgCascadeBtoA` on `TableB` that fires `AFTER INSERT FOR EACH ROW`. This trigger attempts to insert a new row into `TableA` with `:NEW.val / 2`.
-    What happens when you insert a row into `TableA`? Discuss the potential for infinite loops and performance issues with cascading triggers.
-*   **Focus:** Illustrate the dangers of uncontrolled trigger cascading.
-*   **Pitfall:** Cascading triggers can lead to complex, hard-to-debug chains of events, infinite loops (ORA-00036: maximum number of recursive SQL levels exceeded), and significant performance degradation.
-*   **Relevant Docs:** `PL/SQL Language Reference (F46753-09)`, Chapter 10, "Order in Which Triggers Fire" (p. 10-46) touches on cascading.
+**Exercise 2.6: Cascading Triggers and Performance**
+*   <span class="problem-label">Problem (Conceptual):**</span>
+    Imagine you have three tables: `TableA`, `TableB`, and `TableC`.
+    *   An `AFTER INSERT` trigger on `TableA` inserts a row into `TableB`.
+    *   An `AFTER INSERT` trigger on `TableB` inserts a row into `TableC`.
+    *   An `AFTER INSERT` trigger on `TableC` updates a row in `TableA`.
+    What potential issue might arise here? How can the `OPEN_CURSORS` database parameter be relevant?
+*   **Focus:** Understand the concept of cascading triggers and their potential for complexity, performance issues, or even infinite loops if not designed carefully.
+*   **Disadvantage/Pitfall:**
+    *   **Complexity:** Hard to debug and understand the flow of execution.
+    *   **Performance:** Multiple DML operations and trigger firings can slow down the initial DML.
+    *   **Recursion/Infinite Loops:** If a trigger on TableA causes an action that eventually fires the same trigger on TableA again (directly or indirectly), it can lead to an infinite loop (though Oracle has limits to prevent true infinite loops, it will hit a recursion depth error).
+    *   **`OPEN_CURSORS`:** Each trigger execution and each SQL statement within a trigger consumes cursors. Deeply cascading triggers can exhaust the `OPEN_CURSORS` limit, leading to ORA-01000 errors.
+*   **Relevant Docs:** `PL/SQL Language Reference (F46753-09)`, Chapter 10, section "Order in Which Triggers Fire" (p. 10-46) mentions the 32-trigger cascade limit.
 
 #### (iii) Contrasting with Inefficient Common Solutions (Triggers)
 
-**Exercise 3.3: Complex Validation in Application Code vs. Trigger**
-*   **Scenario:** A business rule states that whenever an order item's quantity is updated, if the product is 'Laptop Pro' and the new quantity exceeds 5, the `status` of the corresponding order in the `Orders` table must be set to 'ReviewRequired'.
-*   **Inefficient Common Solution (Problem):** The application code handles this logic. After every `UPDATE` to `OrderItems`, the application code explicitly checks the product name and quantity, and if necessary, issues a separate `UPDATE` statement to the `Orders` table.
-*   **Oracle-Idiomatic Solution (Solution):** Create an `AFTER UPDATE OF quantity ON OrderItems FOR EACH ROW` trigger. Inside the trigger, check if `:NEW.productId` corresponds to 'Laptop Pro' (requires a lookup to `Products` table) and if `:NEW.quantity > 5`. If both are true, update the `status` of the `Orders` table where `orderId = :NEW.orderId`.
-*   **Discussion Point:** Explain how a trigger centralizes this business rule in the database, ensuring it's applied consistently regardless of how the `OrderItems` table is updated (e.g., by different applications, direct SQL). This reduces code duplication and potential for the rule to be missed in some application paths.
-*   **Focus:** Demonstrates triggers as a robust way to enforce complex, cross-table business rules that might be inconsistently applied or forgotten in application-level code.
-*   **Loss of Advantages (Inefficient):** Rule enforcement is decentralized and depends on all application paths correctly implementing it. Increased network traffic if the checks and subsequent updates are done from the client. Potential for data inconsistency if some paths miss the logic.
+**Exercise 3.3: Auditing Manually in Application vs. Using Triggers**
+*   **Scenario:** Every time a product's `stockQuantity` is updated, the change needs to be logged into the `AuditLog` table.
+*   **Inefficient/Error-Prone Common Solution (Problem):** The application developer decides to write code in every part of their application (e.g., Java, Python, or another PL/SQL procedure) that updates product stock to also manually insert a record into `AuditLog`. *You don't need to write the application code, just describe why this approach is problematic.*
+*   **Oracle-Idiomatic Solution (Solution):** Implement the `trgUpdateProductStockAudit` trigger from Exercise 1.7 (or a similar one).
+*   **Focus:** Showcasing the reliability and consistency benefits of using database triggers for auditing over manual application-level logging.
+*   **Loss of Advantages (Inefficient/Problematic):**
+    *   **Inconsistency:** Developers might forget to add the audit log insert in some parts of the application.
+    *   **Duplication of Code:** Audit logic is repeated in multiple places.
+    *   **Bypass:** Ad-hoc SQL updates made directly to the database (e.g., by a DBA for maintenance) would bypass the application-level audit.
+    *   **Maintenance Overhead:** If the audit requirements change, all application code performing the update and audit needs to be modified.
+    With a database trigger, the audit logic is centralized, enforced for *all* DML operations on the table (regardless of the source), and easier to maintain.
 
-#### (iv) Hardcore Combined Problem (Packages, Exception Handling, Triggers)
+#### (iv) Hardcore Combined Problem
 
-**Exercise 4.2: Comprehensive Order and Inventory Management with Auditing and Error Handling**
-*   **Problem:**
-    Enhance the `OrderManagementPkg` from a previous exercise (or create it if not done) and integrate it with robust auditing and error handling through triggers.
+**Exercise 4.1: Order Processing System with Auditing and Error Handling**
+*   <span class="problem-label">Problem Recap:**</span> Build `OrderManagementPkg` to place orders, handle insufficient stock with custom exceptions, and use triggers to audit stock and salary changes.
+*   **Solution Code:**
+    ```sql
+    -- Package Specification: OrderManagementPkg
+    CREATE OR REPLACE PACKAGE OrderManagementPkg AS
+        InsufficientStockException EXCEPTION;
+        PRAGMA EXCEPTION_INIT(InsufficientStockException, -20001);
 
-    **Requirements:**
-    1.  **`ProductStockPkg` Package:**
-        *   **Specification:**
-            *   Public procedure `CheckAndAdjustStock(pProductId IN NUMBER, pQuantityChange IN NUMBER, pOperationType IN VARCHAR2)` (pOperationType can be 'DECREMENT' for sale, 'INCREMENT' for restock).
-            *   User-defined exception `ProductNotFoundException`.
-            *   User-defined exception `CriticalStockLevelException`.
-        *   **Body:**
-            *   Implement `CheckAndAdjustStock`:
-                *   If `pOperationType` is 'DECREMENT':
-                    *   Check if product exists. If not, raise `ProductNotFoundException`.
-                    *   Check if current `stockQuantity - pQuantityChange < 0`. If so, raise the `InsufficientStockException` (from `OrderManagementPkg` or declare it here).
-                    *   Update `Products` table to decrement stock.
-                    *   If the new `stockQuantity` falls below 5 (but is >= 0), raise `CriticalStockLevelException` *after* successfully updating the stock (this is a warning, the transaction should still commit).
-                *   If `pOperationType` is 'INCREMENT':
-                    *   Update `Products` table to increment stock.
-            *   Use `PRAGMA EXCEPTION_INIT` to associate `ProductNotFoundException` with -20010 and `CriticalStockLevelException` with -20011.
-            *   Include a `WHEN OTHERS` handler to log to `DBMS_OUTPUT` and `RAISE`.
+        PROCEDURE PlaceOrder(
+            pCustomerId IN Orders.customerId%TYPE,
+            pProductId IN Products.productId%TYPE,
+            pQuantity IN OrderItems.quantity%TYPE,
+            pItemPrice IN OrderItems.itemPrice%TYPE
+        );
+    END OrderManagementPkg;
+    /
 
-    2.  **Modified `OrderManagementPkg` Package:**
-        *   **Body:**
-            *   The `PlaceOrder` procedure should now call `ProductStockPkg.CheckAndAdjustStock` to decrement stock instead of updating the `Products` table directly.
-            *   `PlaceOrder` must handle `ProductNotFoundException` and `InsufficientStockException` from `ProductStockPkg` and re-raise them as appropriate application errors (e.g., using `RAISE_APPLICATION_ERROR` with different error codes or messages).
-            *   `PlaceOrder` should *not* directly handle `CriticalStockLevelException`; this exception should propagate out of `PlaceOrder` if raised by `ProductStockPkg`.
+    -- Package Body: OrderManagementPkg
+    CREATE OR REPLACE PACKAGE BODY OrderManagementPkg AS
+        PROCEDURE PlaceOrder(
+            pCustomerId IN Orders.customerId%TYPE,
+            pProductId IN Products.productId%TYPE,
+            pQuantity IN OrderItems.quantity%TYPE,
+            pItemPrice IN OrderItems.itemPrice%TYPE
+        ) IS
+            vOrderId Orders.orderId%TYPE;
+            vOrderItemId OrderItems.orderItemId%TYPE;
+            vCurrentStock Products.stockQuantity%TYPE;
+            vProductName Products.productName%TYPE;
+        BEGIN
+            -- Check stock first
+            SELECT productName, stockQuantity 
+            INTO vProductName, vCurrentStock
+            FROM Products
+            WHERE productId = pProductId;
 
-    3.  **Trigger `trgEnforceOrder IntegrityAndAudit`:**
-        *   Create a compound DML trigger on the `OrderItems` table for `INSERT`, `UPDATE`, `DELETE`.
-        *   **`BEFORE EACH ROW` section:**
-            *   If `INSERTING` or `UPDATING quantity`: Ensure `:NEW.itemPrice` is not null and is greater than 0. If not, `RAISE_APPLICATION_ERROR(-20012, 'Item price must be positive.')`.
-            *   If `UPDATING quantity`: Store `:OLD.quantity` in a package-level variable (e.g., in a new utility package or within `OrderManagementPkg` if appropriate, but for this exercise, a simple helper package `TriggerStatePkg` with a PL/SQL record/array might be used to hold old quantities if needed across timing points, though for this specific rule, it might not be strictly necessary for the BEFORE EACH ROW part).
-        *   **`AFTER EACH ROW` section:**
-            *   If `INSERTING`: This is where the stock adjustment logically happens *via the package call*. Since `PlaceOrder` now calls `ProductStockPkg`, this specific trigger section might not need to call it again if all order item creations go through the package. However, for direct DML on `OrderItems` outside the package, this would be the place. For this exercise, assume `PlaceOrder` is the primary path. If direct DML on `OrderItems` is possible, this section would also call `ProductStockPkg.CheckAndAdjustStock` to decrement stock for `:NEW.productId` and `:NEW.quantity`.
-            *   If `DELETING`: Call `ProductStockPkg.CheckAndAdjustStock` to increment stock for `:OLD.productId` and `:OLD.quantity` (restocking).
-            *   If `UPDATING quantity`: Calculate the difference (`:NEW.quantity - :OLD.quantity`). Call `ProductStockPkg.CheckAndAdjustStock` with this difference (positive if increase, negative if decrease).
-            *   Log the DML operation (`INSERT`, `UPDATE`, `DELETE`) on `OrderItems` to the `AuditLog` table, including `orderItemId`, `productId`, old/new `quantity` (if applicable).
-        *   **Exception Handling within the trigger:** Catch exceptions from `ProductStockPkg` (like `InsufficientStockException`) and `RAISE_APPLICATION_ERROR` with a trigger-specific message (e.g., -20013, "Stock adjustment failed for order item.").
+            IF vCurrentStock < pQuantity THEN
+                RAISE_APPLICATION_ERROR(-20001, 'Insufficient stock for product: ' || vProductName || 
+                                               '. Requested: ' || pQuantity || ', Available: ' || vCurrentStock);
+            END IF;
 
-    4.  **Test Scenarios (Anonymous Blocks):**
-        *   **Scenario A (Success with warning):** Use `OrderManagementPkg.PlaceOrder` to order a product such that its stock quantity drops to 3 (e.g., 'Wireless Mouse' initially 200, order 197). Verify order creation, stock update, audit log, and that `CriticalStockLevelException` (-20011) is propagated and caught by the anonymous block.
-        *   **Scenario B (Failure - insufficient stock):** Attempt to place an order for 'Laptop Pro' (initial stock 50) with a quantity of 60. Verify `InsufficientStockException` (via the re-raised application error from `PlaceOrder`) is caught and no changes are made.
-        *   **Scenario C (Direct DML - Delete):** Directly delete an `OrderItem`. Verify stock is incremented via `ProductStockPkg.CheckAndAdjustStock` called from `trgEnforceOrderIntegrityAndAudit` and an audit entry is made.
-        *   **Scenario D (Direct DML - Update price to invalid):** Attempt to directly update an `OrderItem` to have a negative `itemPrice`. Verify the `BEFORE EACH ROW` part of `trgEnforceOrderIntegrityAndAudit` raises error -20012.
+            -- If stock is sufficient, proceed with order creation and stock update
+            -- All of this should be part of the same transaction.
+            -- A SAVEPOINT could be used here if parts of the order could proceed even if others fail,
+            -- but for this exercise, we'll treat the whole order placement as atomic.
 
-*   **Focus:** This complex problem integrates package design (multiple packages interacting), advanced exception handling (user-defined, `PRAGMA EXCEPTION_INIT`, `RAISE_APPLICATION_ERROR`, propagation, handling exceptions from called procedures), and complex trigger logic (compound trigger, multiple timing points, conditional logic, `:OLD`/`:NEW`, calling packages from triggers).
-*   **Preceding Concepts Used:** All concepts from Chunk 7, plus PL/SQL Fundamentals (Chunk 5), Procedures/Functions (Chunk 6), and SQL DML/Data Types (Chunks 1-3).
-*   **PostgreSQL Bridge:** This demonstrates a sophisticated use of Oracle's PL/SQL features. While PostgreSQL can achieve parts of this with functions and triggers, Oracle's packages provide superior organization and state management. Compound triggers are an Oracle-specific feature for handling multiple DML events and timing points within a single trigger unit, which can be more efficient and manageable than multiple simple triggers for complex logic. The way exceptions are declared and handled with pragmas is also Oracle-specific.
+            INSERT INTO Orders (orderId, customerId, orderDate, status)
+            VALUES (orderSeq.NEXTVAL, pCustomerId, SYSDATE, 'Processing')
+            RETURNING orderId INTO vOrderId; -- Oracle 23ai RETURNING INTO for sequences
 
----
+            INSERT INTO OrderItems (orderItemId, orderId, productId, quantity, itemPrice)
+            VALUES (orderItemSeq.NEXTVAL, vOrderId, pProductId, pQuantity, pItemPrice);
+            
+            UPDATE Products
+            SET stockQuantity = stockQuantity - pQuantity
+            WHERE productId = pProductId;
 
-## Key Takeaways & Best Practices
+            DBMS_OUTPUT.PUT_LINE('Order ' || vOrderId || ' placed successfully.');
+            COMMIT; -- Commit the successful transaction
 
-Reviewing these solutions for PL/SQL Packages, Exception Handling, and Triggers should reinforce several key Oracle concepts:
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN -- Product not found
+                RAISE_APPLICATION_ERROR(-20003, 'Product ID ' || pProductId || ' not found.');
+                -- No explicit ROLLBACK needed here as DML hasn't happened or will be rolled back by unhandled exception
+            WHEN OTHERS THEN
+                DBMS_OUTPUT.PUT_LINE('Unexpected error in PlaceOrder: ' || SQLCODE || ' - ' || SQLERRM);
+                ROLLBACK; -- Rollback on any other unexpected error
+                RAISE; -- Re-raise the original exception
+        END PlaceOrder;
+    END OrderManagementPkg;
+    /
 
-*   **Packages for Organization:** Always group related procedures, functions, types, and variables into packages. This is fundamental for maintainable and scalable Oracle applications. Remember the separation of specification (the "what") and body (the "how").
-*   **Principled Exception Handling:**
-    *   Strive to handle specific, named exceptions whenever possible, rather than relying solely on `WHEN OTHERS`.
-    *   Use `PRAGMA EXCEPTION_INIT` to associate custom error messages and codes (via `RAISE_APPLICATION_ERROR`) with user-defined exceptions for clearer error reporting.
-    *   `SQLCODE` and `SQLERRM` are invaluable for diagnosing errors within `WHEN OTHERS` blocks, but always aim to re-raise the exception or a more meaningful one unless you can fully recover.
-*   **Strategic Trigger Use:**
-    *   Triggers are powerful but use them judiciously. They can introduce complexity and performance overhead if not carefully designed.
-    *   DML triggers (`BEFORE`/`AFTER`, `FOR EACH ROW`/`STATEMENT`) are common for auditing, maintaining data integrity, or enforcing complex business rules.
-    *   Leverage the `:OLD` and `:NEW` pseudorecords effectively within row-level triggers to access data values before and after the DML operation.
-    *   Use conditional predicates (`INSERTING`, `UPDATING`, `DELETING`, and `WHEN` clause) to control precisely when a trigger's logic executes.
-*   **Oracle vs. PostgreSQL Nuances:** While PostgreSQL offers functions and triggers, Oracle's package system provides a more comprehensive module structure. Oracle's exception handling syntax and predefined exceptions will also differ. Pay close attention to these Oracle-specific implementations.
+    -- Trigger: trgUpdateProductStockAudit
+    CREATE OR REPLACE TRIGGER trgUpdateProductStockAudit
+    AFTER UPDATE OF stockQuantity ON Products
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO AuditLog (tableName, operationType, recordId, oldValue, newValue)
+        VALUES ('Products', 'UPDATE', :OLD.productId, TO_CHAR(:OLD.stockQuantity), TO_CHAR(:NEW.stockQuantity));
+    END;
+    /
 
-**Tips for Internalizing Learning:**
-*   **Re-Type, Don't Just Copy-Paste:** Manually re-typing solutions helps build muscle memory for Oracle syntax.
-*   **Experiment:** Modify the solutions. What happens if you change a parameter type? What if you remove an exception handler? Active experimentation solidifies understanding.
-*   **Consult Documentation:** The Oracle PL/SQL Language Reference is your best friend. If a concept in a solution is unclear, look it up! The provided PDFs (especially `reduction-f46753-09-PLSQL-Language-Reference.pdf` Chapters 10, 11, 12) are direct excerpts and invaluable.
-*   **Think "Why":** For each solution, ask yourself *why* it's designed that way. What Oracle features does it leverage? How does it compare to how you might have solved it in PostgreSQL?
+    -- Trigger: trgLogEmployeeSalaryChanges
+    CREATE OR REPLACE TRIGGER trgLogEmployeeSalaryChanges
+    AFTER UPDATE OF salary ON Employees
+    FOR EACH ROW
+    WHEN (NEW.salary <> OLD.salary) -- Conditional Predicate
+    BEGIN
+        INSERT INTO AuditLog (tableName, operationType, recordId, oldValue, newValue)
+        VALUES ('Employees', 'UPDATE', :OLD.employeeId, TO_CHAR(:OLD.salary), TO_CHAR(:NEW.salary));
+    END;
+    /
 
-## Conclusion & Next Steps
+    -- Test Scenario 1: Successful order
+    SET SERVEROUTPUT ON;
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('--- Test Scenario 1: Successful Order ---');
+        OrderManagementPkg.PlaceOrder(pCustomerId => 1, pProductId => 1000, pQuantity => 2, pItemPrice => 1200);
+        -- Verify data in Orders, OrderItems, Products, AuditLog tables manually or with SELECTs
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error in Test Scenario 1: ' || SQLERRM);
+    END;
+    /
 
-Mastering packages, exception handling, and triggers is a significant step in becoming proficient with Oracle PL/SQL. These constructs allow you to build robust, maintainable, and automated database applications.
+    -- Test Scenario 2: Insufficient stock
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('--- Test Scenario 2: Insufficient Stock ---');
+        -- Product 1003 (Monitor HD) has stockQuantity = 0
+        OrderManagementPkg.PlaceOrder(pCustomerId => 2, pProductId => 1003, pQuantity => 1, pItemPrice => 300);
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Caught expected error in Test Scenario 2: ' || SQLCODE || ' - ' || SQLERRM);
+            -- Verify no order/orderitem created and stock for product 1003 is still 0
+    END;
+    /
 
-<div class="rhyme">
-Your PL/SQL skills, now truly advance,<br>
-With packages, errors, and triggers that dance!
+    -- Test Scenario 3: Update employee salary (should log)
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('--- Test Scenario 3: Update Employee Salary (should log) ---');
+        UPDATE Employees SET salary = salary + 5000 WHERE employeeId = 100;
+        COMMIT;
+        -- Verify AuditLog for employee 100
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error in Test Scenario 3: ' || SQLERRM);
+    END;
+    /
+    
+    -- Test Scenario 4: Update employee salary to same value (should NOT log)
+    DECLARE
+        vCurrentSalary Employees.salary%TYPE;
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('--- Test Scenario 4: Update Employee Salary to same value (should NOT log) ---');
+        SELECT salary INTO vCurrentSalary FROM Employees WHERE employeeId = 101;
+        UPDATE Employees SET salary = vCurrentSalary WHERE employeeId = 101;
+        COMMIT;
+        -- Verify AuditLog - no new entry for employee 101 for this specific operation.
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error in Test Scenario 4: ' || SQLERRM);
+    END;
+    /
+    ```
+*   **Detailed Explanation:**
+    1.  **`OrderManagementPkg` Specification:**
+        *   Declares `InsufficientStockException` for clear, business-specific error handling.
+        *   `PRAGMA EXCEPTION_INIT` associates this custom PL/SQL exception with an Oracle error number (-20001). This allows calling applications (like Java) to potentially catch this specific Oracle error number if the exception propagates unhandled by PL/SQL up to the client.
+        *   Defines the public interface `PlaceOrder`.
+    2.  **`OrderManagementPkg` Body:**
+        *   **`PlaceOrder` Procedure:**
+            *   **Pre-check for Stock:** Before any DML, it queries the `Products` table to get the `productName` (for a user-friendly message) and `stockQuantity`. This uses `SELECT INTO` (Chunk 5).
+            *   **Raise Custom Exception:** If `vCurrentStock < pQuantity`, it uses `RAISE_APPLICATION_ERROR(-20001, ...)` to raise the custom error with a dynamic message. This immediately halts processing within the `BEGIN...END` block of `PlaceOrder` and transfers control to its `EXCEPTION` section.
+            *   **Atomic Operations:** If stock is sufficient, it performs `INSERT` into `Orders` (using `orderSeq.NEXTVAL` - Chunk 2 SQL features), then `INSERT` into `OrderItems`, and finally `UPDATE`s `Products` stock.
+            *   The Oracle 23ai feature `RETURNING orderId INTO vOrderId` is used with the INSERT into `Orders` to get the newly generated `orderId` without a separate `SELECT` statement.
+            *   **Transaction Control:** `COMMIT` is issued only after all DML operations succeed. If any exception occurs before the `COMMIT` (either the stock check or an unexpected DML error), the `EXCEPTION` block's `ROLLBACK` (or the implicit rollback on unhandled exception propagation) will undo all changes made within the procedure call.
+            *   **Exception Handling:**
+                *   `WHEN NO_DATA_FOUND THEN`: Catches the case where the `pProductId` doesn't exist in the `Products` table during the initial stock check. It then raises a different custom application error.
+                *   `WHEN OTHERS THEN`: Catches any other unexpected SQL or PL/SQL errors. It logs the `SQLCODE` and `SQLERRM` (Oracle built-in error functions) and then `RAISE`s the original exception to let the calling environment know something went wrong. This is crucial for not silently swallowing unexpected errors.
+    3.  **`trgUpdateProductStockAudit` Trigger:**
+        *   `AFTER UPDATE OF stockQuantity ON Products`: Fires after an update operation specifically on the `stockQuantity` column of the `Products` table.
+        *   `FOR EACH ROW`: Indicates it's a row-level trigger, meaning it fires for each row affected by the `UPDATE` statement.
+        *   The trigger body simply `INSERT`s a new record into `AuditLog`, using `:OLD.productId` (the product ID of the row being updated), `:OLD.stockQuantity` (the value before the update), and `:NEW.stockQuantity` (the value after the update). The `:OLD` and `:NEW` are pseudorecords (this Chunk).
+    4.  **`trgLogEmployeeSalaryChanges` Trigger:**
+        *   `AFTER UPDATE OF salary ON Employees`: Fires after the `salary` column is updated.
+        *   `WHEN (NEW.salary <> OLD.salary)`: This is a conditional predicate (this Chunk). The trigger body will only execute if the new salary is actually different from the old salary, preventing unnecessary audit logs for "updates" that don't change the value.
+        *   The body logs the change to `AuditLog` using `:OLD` and `:NEW` values.
+    5.  **Test Scenarios:** The anonymous blocks demonstrate various use cases, including successful operations, expected error handling (insufficient stock), and the conditional logic of the salary update trigger.
+
+<div class="oracle-specific">
+**Oracle Power Play:** This hardcore problem combines several key Oracle PL/SQL features:
+*   **Packages** for modularity and encapsulation.
+*   **User-defined exceptions** and `RAISE_APPLICATION_ERROR` for robust, application-specific error signaling.
+*   **Triggers** for automated auditing and business rule enforcement at the database level.
+*   **:OLD and :NEW pseudorecords** for accessing row data within triggers.
+*   **Conditional predicates in triggers** for fine-grained control over trigger execution.
+*   **Implicit and explicit transaction control** (`COMMIT`, `ROLLBACK`).
+*   **Oracle 23ai's `RETURNING INTO`** with sequence-generated values in `INSERT` statements provides a more concise way to get generated IDs.
+This type of integrated design ensures data integrity, provides clear error feedback, and automates common tasks, making the application more resilient and maintainable.
 </div>
-
-You're now well-equipped to tackle more advanced PL/SQL topics. Continue your journey with the next chunk in "Server Programming with Oracle (DB 23 ai) PL/SQL: A Transition Guide for PostgreSQL Users," which will likely delve into **Collections & Records, Bulk Operations, and Dynamic SQL.**
-
-Keep practicing, and your Oracle expertise will continue to grow!
 
 </div>

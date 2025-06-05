@@ -14,7 +14,7 @@ After completing these exercises, you will be able to:
 
 *   Design, implement, and utilize PL/SQL packages for modularity, encapsulation, and state management.
 *   Effectively handle runtime errors using Oracle's exception handling mechanisms, including predefined and user-defined exceptions.
-*   Implement DML triggers to automate actions based on data modifications, utilizing `:NEW` and `:OLD` qualifiers and conditional predicates.
+*   Implement DML triggers to automate actions based on data modifications, utilizing <code>:NEW</code> and <code>:OLD</code> qualifiers and conditional predicates.
 *   Understand and apply Oracle-specific syntax and nuances for these concepts, bridging your existing PostgreSQL knowledge.
 
 <div class="rhyme">
@@ -42,11 +42,11 @@ The exercises in this section will use a predefined dataset. The complete Oracle
 1.  Copy the entire SQL script block provided in the "Exercises" section (it will be marked clearly).
 2.  Execute this script in your Oracle DB 23ai environment. You can use tools like:
     *   **SQL Developer:** Open a SQL Worksheet, paste the script, and run it (usually by pressing F5 or the "Run Script" button).
-    *   **SQL\*Plus:** Save the script to a `.sql` file (e.g., `dataset.sql`) and run it from the SQL\*Plus command line using `@path/to/your/dataset.sql`.
+    *   **SQL\*Plus:** Save the script to a <code>.sql</code> file (e.g., <code>dataset.sql</code>) and run it from the SQL\*Plus command line using <code>@path/to/your/dataset.sql</code>.
     *   **Oracle Live SQL:** Paste the script into the SQL Worksheet and click "Run".
 
 **Dataset Schema Overview:**
-The dataset includes tables such as `Departments`, `Employees`, `Products`, `Orders`, `OrderItems`, and `AuditLog`. These tables are interrelated to simulate a basic business environment, allowing you to practice creating packages for business logic, triggers for auditing, and exception handling for data validation and operational errors.
+The dataset includes tables such as <code>Departments,</code> <code>Employees,</code> <code>Products,</code> <code>Orders,</code> <code>OrderItems,</code> and <code>AuditLog</code>. These tables are interrelated to simulate a basic business environment, allowing you to practice creating packages for business logic, triggers for auditing, and exception handling for data validation and operational errors.
 
 <div class="caution">
 <strong>Important:</strong> Ensure the dataset is correctly set up before attempting the exercises. Many exercises depend on these specific tables and their initial data.
@@ -301,10 +301,10 @@ COMMIT;
 <h4>Exercise 1.4: Handling Predefined Exceptions</h4>
 <p><span class="problem-label">Problem:</span> Write a PL/SQL anonymous block that attempts to:</p>
 <ol>
-    <li>Select an employee's salary into a variable for an `employeeId` that does not exist in the `Employees` table.</li>
-    <li>Handle the `NO_DATA_FOUND` exception specifically. Inside the handler, display a user-friendly message "Employee not found."</li>
+    <li>Select an employee's salary into a variable for an <code>employeeId</code> that does not exist in the <code>Employees</code> table.</li>
+    <li>Handle the <code>NO_DATA_FOUND</code> exception specifically. Inside the handler, display a user-friendly message "Employee not found."</li>
     <li>Attempt to divide a number by zero.</li>
-    <li>Handle the `ZERO_DIVIDE` exception specifically. Inside the handler, display "Cannot divide by zero."</li>
+    <li>Handle the <code>ZERO_DIVIDE</code> exception specifically. Inside the handler, display "Cannot divide by zero."</li>
 </ol>
 <div class="oracle-specific">
 <p><strong>Focus:</strong> Understand and use predefined exceptions. Refer to <code>PL/SQL Language Reference</code>, Chapter 12, "Predefined Exceptions" (p. 12-11) and "Overview of Exception Handling" (p. 12-5).</p>
@@ -313,43 +313,45 @@ COMMIT;
 <h4>Exercise 1.5: User-Defined Exceptions and PRAGMA EXCEPTION_INIT</h4>
 <p><span class="problem-label">Problem:</span></p>
 <ol>
-    <li>In a PL/SQL anonymous block, declare a user-defined exception named `NegativeSalaryException`.</li>
+    <li>In a PL/SQL anonymous block, declare a user-defined exception named <code>NegativeSalaryException</code>.</li>
     <li>Attempt to update an employee's salary to a negative value.</li>
-    <li>If the attempted salary is negative, explicitly `RAISE` the `NegativeSalaryException`.</li>
-    <li>Include an exception handler for `NegativeSalaryException` that displays a message like "Error: Salary cannot be negative."</li>
-    <li>Now, modify the block: associate `NegativeSalaryException` with the Oracle error code -20002 using `PRAGMA EXCEPTION_INIT`. In a separate part of the block (or another procedure called by it), use `RAISE_APPLICATION_ERROR(-20002, 'Salary cannot be negative from RAISE_APPLICATION_ERROR.')`. Ensure your exception handler for `NegativeSalaryException` still catches this.</li>
+    <li>If the attempted salary is negative, explicitly <code>RAISE</code> the <code>NegativeSalaryException</code>.</li>
+    <li>Include an exception handler for <code>NegativeSalaryException</code> that displays a message like "Error: Salary cannot be negative."</li>
+    <li>Now, modify the block: associate <code>NegativeSalaryException</code> with the Oracle error code -20002 using <code>PRAGMA EXCEPTION_INIT</code>. In a separate part of the block (or another procedure called by it), use <code>RAISE_APPLICATION_ERROR(-20002, 'Salary cannot be negative from RAISE_APPLICATION_ERROR.')</code>. Ensure your exception handler for <code>NegativeSalaryException</code> still catches this.</li>
 </ol>
 <div class="oracle-specific">
-<p><strong>Focus:</strong> Declaring, raising, and handling user-defined exceptions; using `PRAGMA EXCEPTION_INIT` and `RAISE_APPLICATION_ERROR`. Refer to <code>PL/SQL Language Reference</code>, Chapter 12, sections "User-Defined Exceptions" (p. 12-13), "EXCEPTION_INIT Pragma" (p. 14-74), and "RAISE_APPLICATION_ERROR Procedure" (p. 12-18).</p>
+<p><strong>Focus:</strong> Declaring, raising, and handling user-defined exceptions; using <code>PRAGMA EXCEPTION_INIT</code> and <code>RAISE_APPLICATION_ERROR</code>. Refer to <code>PL/SQL Language Reference</code>, Chapter 12, sections "User-Defined Exceptions" (p. 12-13), "EXCEPTION_INIT Pragma" (p. 14-74), and "RAISE_APPLICATION_ERROR Procedure" (p. 12-18).</p>
 </div>
 
 <h4>Exercise 1.6: Using SQLCODE and SQLERRM</h4>
-<p><span class="problem-label">Problem:</span> Write a PL/SQL anonymous block that attempts an operation known to cause a less common, unnamed Oracle error (e.g., try to insert a string longer than a `VARCHAR2(10)` column allows *without* a specific named exception for it). In the `WHEN OTHERS` exception handler, display the `SQLCODE` and `SQLERRM` to identify the error.</p>
+<p><span class="problem-label">Problem:</span> Write a PL/SQL anonymous block that attempts an operation known to cause a less common, unnamed Oracle error (e.g., try to insert a string longer than a <code>VARCHAR2(10)</code> column allows *without* a specific named exception for it). In the <code>WHEN OTHERS</code> exception handler, display the <code>SQLCODE</code> and <code>SQLERRM</code> to identify the error.</p>
 <div class="oracle-specific">
-<p><strong>Focus:</strong> Using `SQLCODE` and `SQLERRM` for generic error reporting. Refer to <code>PL/SQL Language Reference</code>, Chapter 12, "Retrieving Error Code and Error Message" (p. 12-27).</p>
+<p><strong>Focus:</strong> Using <code>SQLCODE</code> and <code>SQLERRM</code> for generic error reporting. Refer to <code>PL/SQL Language Reference</code>, Chapter 12, "Retrieving Error Code and Error Message" (p. 12-27).</p>
 </div>
 
 <h3>(ii) Disadvantages and Pitfalls</h3>
 
 <h4>Exercise 2.3: Overly Broad WHEN OTHERS Handler</h4>
-<p><span class="problem-label">Problem:</span> Create a procedure `ProcessEmployeeData(pEmployeeId IN NUMBER)` that performs several DML operations:
-1.  Updates the employee's salary by 10%.
-2.  Inserts a record into `AuditLog` noting the salary change.
-3.  Attempts to update the `Departments` table based on the employee's department (potentially causing a constraint violation if the department does not exist or if there's a typo in a column name).
-Include a single `WHEN OTHERS` exception handler at the end of the procedure that simply logs "An unspecified error occurred" to `DBMS_OUTPUT.PUT_LINE` and then exits without re-raising the exception.
+<p><span class="problem-label">Problem:</span> Create a procedure <code>ProcessEmployeeData(pEmployeeId IN NUMBER)</code> that performs several DML operations:
+<ol>
+    <li>Updates the employee's salary by 10%.</li>
+    <li>Inserts a record into <code>AuditLog</code> noting the salary change.</li>
+    <li>Attempts to update the <code>Departments</code> table based on the employee's department (potentially causing a constraint violation if the department does not exist or if there's a typo in a column name).</li>
+</ol>
+Include a single <code>WHEN OTHERS</code> exception handler at the end of the procedure that simply logs "An unspecified error occurred" to <code>DBMS_OUTPUT.PUT_LINE</code> and then exits without re-raising the exception.
 Discuss the disadvantages of this approach. Why is it a pitfall? What information is lost?</p>
 <div class="oracle-specific">
-<p><strong>Focus:</strong> Illustrate the dangers of generic `WHEN OTHERS` handlers that mask the actual error, making debugging difficult. Refer to `PL/SQL Language Reference</code>, Chapter 12, "Unhandled Exceptions" (p. 12-27) and general best practices for error handling.</p>
+<p><strong>Focus:</strong> Illustrate the dangers of generic <code>WHEN OTHERS</code> handlers that mask the actual error, making debugging difficult. Refer to <code>PL/SQL Language Reference</code>, Chapter 12, "Unhandled Exceptions" (p. 12-27) and general best practices for error handling.</p>
 </div>
 
 <h4>Exercise 2.4: Exception Propagation and Scope</h4>
 <p><span class="problem-label">Problem:</span> Create a nested PL/SQL block structure:
-An outer block declares an exception `OuterException`.
-An inner block declares an exception `InnerException`.
-The inner block raises `InnerException` and handles it.
-Then, the inner block raises `OuterException`.
-The outer block has a handler for `OuterException`.
-What happens? Now, modify the inner block to *not* handle `InnerException`. What happens to `InnerException`? Explain the propagation rules demonstrated.</p>
+An outer block declares an exception <code>OuterException</code>.
+An inner block declares an exception <code>InnerException</code>.
+The inner block raises <code>InnerException</code> and handles it.
+Then, the inner block raises <code>OuterException</code>.
+The outer block has a handler for <code>OuterException</code>.
+What happens? Now, modify the inner block to *not* handle <code>InnerException</code>. What happens to <code>InnerException?</code> Explain the propagation rules demonstrated.</p>
 <div class="oracle-specific">
 <p><strong>Focus:</strong> Understand how exceptions propagate out of blocks if not handled locally. Refer to <code>PL/SQL Language Reference</code>, Chapter 12, "Exception Propagation" (p. 12-19).</p>
 </div>
@@ -357,14 +359,16 @@ What happens? Now, modify the inner block to *not* handle `InnerException`. What
 <h3>(iii) Contrasting with Inefficient Common Solutions</h3>
 
 <h4>Exercise 3.2: Manual Error Checking vs. Exception Handling</h4>
-<p><strong>Scenario:** A procedure needs to fetch an employee's salary. If the employee doesn't exist, it should return NULL. If multiple employees are found (which shouldn't happen if `employeeId` is primary key, but assume a faulty query for demonstration), it should also indicate an error.</p>
-<p><strong>Inefficient Common Solution (Problem):** Implement this by:
-1.  Executing a `SELECT COUNT(*)` to check if the employee exists.
-2.  If count is 1, execute another `SELECT salary INTO ...`.
-3.  If count is 0, set salary to NULL.
-4.  If count > 1, set salary to a special error indicator (e.g., -1).</p>
-<p><strong>Oracle-Idiomatic Solution (Solution):** Implement this using a single `SELECT salary INTO ...` statement within a BEGIN...EXCEPTION...END block, handling `NO_DATA_FOUND` and `TOO_MANY_ROWS` exceptions appropriately.</p>
-<p><strong>Task:** Implement both versions. Discuss the verbosity, performance implications (multiple queries vs. one), and clarity of the exception-handling approach.</p>
+<p><strong>Scenario:</strong> A procedure needs to fetch an employee's salary. If the employee doesn't exist, it should return NULL. If multiple employees are found (which shouldn't happen if <code>employeeId</code> is primary key, but assume a faulty query for demonstration), it should also indicate an error.</p>
+<p><strong>Inefficient Common Solution (Problem):</strong> Implement this by:
+<ol>
+    <li>Executing a <code>SELECT COUNT(*)</code> to check if the employee exists.</li>
+    <li>If count is 1, execute another <code>SELECT salary INTO ...</code>.</li>
+    <li>If count is 0, set salary to NULL.</li>
+    <li>If count > 1, set salary to a special error indicator (e.g., -1).</p></li>
+</ol>
+<p><strong>Oracle-Idiomatic Solution (Solution):</strong> Implement this using a single <code>SELECT salary INTO ...</code> statement within a BEGIN...EXCEPTION...END block, handling <code>NO_DATA_FOUND</code> and <code>TOO_MANY_ROWS</code> exceptions appropriately.</p>
+<p><strong>Task:</strong> Implement both versions. Discuss the verbosity, performance implications (multiple queries vs. one), and clarity of the exception-handling approach.</p>
 <div class="oracle-specific">
 <p><strong>Focus:</strong> Showcasing the conciseness and efficiency of PL/SQL exception handling over manual, multi-step error checking.</p>
 </div>
@@ -376,32 +380,33 @@ What happens? Now, modify the inner block to *not* handle `InnerException`. What
 <h3>(i) Meanings, Values, Relations, and Advantages</h3>
 
 <h4>Exercise 1.7: Basic AFTER INSERT Trigger</h4>
-<p><span class="problem-label">Problem:</span> Create an `AFTER INSERT ON Orders FOR EACH ROW` trigger named `trgLogNewOrder`. This trigger should insert a record into the `AuditLog` table with `tableName` = 'Orders', `operationType` = 'INSERT', and `recordId` = `:NEW.orderId`.</p>
-<p>Test by inserting a new order into the `Orders` table.</p>
+<p><span class="problem-label">Problem:</span> Create an <code>AFTER INSERT ON Orders FOR EACH ROW</code> trigger named <code>trgLogNewOrder</code>. This trigger should insert a record into the <code>AuditLog</code> table with <code>tableName</code> = 'Orders', <code>operationType</code> = 'INSERT', and <code>recordId</code> = <code>:NEW.orderId</code>.</p>
+<p>Test by inserting a new order into the <code>Orders</code> table.</p>
 <div class="oracle-specific">
-<p><strong>Focus:</strong> Basic DML trigger syntax, `AFTER INSERT` timing, `FOR EACH ROW`, and usage of `:NEW` qualifier. Refer to `PL/SQL Language Reference`, Chapter 10, "DML Triggers" (p. 10-4) and "Correlation Names and Pseudorecords" (p. 10-28).</p>
+<p><strong>Focus:</strong> Basic DML trigger syntax, <code>AFTER INSERT</code> timing, <code>FOR EACH ROW,</code> and usage of <code>:NEW</code> qualifier. Refer to <code>PL/SQL Language Reference,</code> Chapter 10, "DML Triggers" (p. 10-4) and "Correlation Names and Pseudorecords" (p. 10-28).</p>
 </div>
 
 <h4>Exercise 1.8: BEFORE UPDATE Trigger with :OLD and :NEW</h4>
-<p><span class="problem-label">Problem:</span> Create a `BEFORE UPDATE OF salary ON Employees FOR EACH ROW` trigger named `trgPreventSalaryDecrease`. This trigger should prevent any update that attempts to decrease an employee's salary. If a decrease is attempted, it should use `RAISE_APPLICATION_ERROR` with a custom error number (-20003) and a message "Salary decrease not allowed."</p>
+<p><span class="problem-label">Problem:</span> Create a <code>BEFORE UPDATE OF salary ON Employees FOR EACH ROW</code> trigger named <code>trgPreventSalaryDecrease</code>. This trigger should prevent any update that attempts to decrease an employee's salary. If a decrease is attempted, it should use <code>RAISE_APPLICATION_ERROR</code> with a custom error number (-20003) and a message "Salary decrease not allowed."</p>
 <p>Test by attempting to decrease an employee's salary and then by increasing it.</p>
 <div class="oracle-specific">
-<p><strong>Focus:</strong> `BEFORE UPDATE` timing, accessing `:OLD.salary` and `:NEW.salary`, and raising an application error to prevent DML. Refer to `Get Started with Oracle Database Development`, Chapter 6, "About OLD and NEW Pseudorecords" (p. 6-3).</p>
+<p><strong>Focus:</strong> <code>BEFORE UPDATE</code> timing, accessing <code>:OLD.salary</code> and <code>:NEW.salary,</code> and raising an application error to prevent DML. Refer to <code>Get Started with Oracle Database Development,</code> Chapter 6, "About OLD and NEW Pseudorecords" (p. 6-3).</p>
 </div>
 
 <h4>Exercise 1.9: Trigger with Conditional Predicates</h4>
-<p><span class="problem-label">Problem:</span> Create an `AFTER UPDATE ON Products FOR EACH ROW` trigger named `trgLogSignificantPriceChange`. This trigger should log to `AuditLog` only if the `unitPrice` changes by more than 20% (either increase or decrease). The `operationType` should be 'PRICE_ADJUST'. Use the `UPDATING('unitPrice')` conditional predicate in conjunction with your percentage check in the trigger body.</p>
+<p><span class="problem-label">Problem:</span> Create an <code>AFTER UPDATE ON Products FOR EACH ROW</code> trigger named <code>trgLogSignificantPriceChange</code>. This trigger should log to <code>AuditLog</code> only if the <code>unitPrice</code> changes by more than 20% (either increase or decrease). The <code>operationType</code> should be 'PRICE_ADJUST'. Use the <code>UPDATING('unitPrice')</code> conditional predicate in conjunction with your percentage check in the trigger body.</p>
 <p>Test with various price updates.</p>
 <div class="oracle-specific">
-<p><strong>Focus:</strong> Using conditional predicates like `UPDATING('columnName')` combined with PL/SQL logic to control trigger firing conditions. Refer to `PL/SQL Language Reference`, Chapter 10, "Conditional Predicates for Detecting Triggering DML Statement" (p. 10-5).</p>
+<p><strong>Focus:</strong> Using conditional predicates like <code>UPDATING('columnName')</code> combined with PL/SQL logic to control trigger firing conditions. Refer to <code>PL/SQL Language Reference,</code> Chapter 10, "Conditional Predicates for Detecting Triggering DML Statement" (p. 10-5).</p>
 </div>
 
 <h3>(ii) Disadvantages and Pitfalls</h3>
 
 <h4>Exercise 2.5: Mutating Table Error (ORA-04091)</h4>
-<p><span class="problem-label">Problem:</span> Attempt to create a trigger on the `Employees` table that, for each row being updated, queries the *same* `Employees` table to find the average salary of the employee's department and then tries to ensure the employee's new salary is not more than 1.5 times this average.
+<p><span class="problem-label">Problem:</span> Attempt to create a trigger on the <code>Employees</code> table that, for each row being updated, queries the *same* <code>Employees</code> table to find the average salary of the employee's department and then tries to ensure the employee's new salary is not more than 1.5 times this average.
 For example:
-`CREATE OR REPLACE TRIGGER trgCheckMaxSalary
+<pre><code class="language-sql">
+CREATE OR REPLACE TRIGGER trgCheckMaxSalary
 BEFORE UPDATE OF salary ON Employees
 FOR EACH ROW
 DECLARE
@@ -412,29 +417,29 @@ BEGIN
     RAISE_APPLICATION_ERROR(-20004, 'Salary exceeds 1.5x department average.');
   END IF;
 END;
-/`
-Execute an update statement that would fire this trigger. What error do you get and why? How can compound triggers (introduced conceptually in `PL/SQL Language Reference`, Chapter 10, "Compound DML Triggers", p.10-10) help solve this? (Detailed compound trigger implementation is beyond this chunk but understanding the problem is key).</p>
+/</code></pre>
+Execute an update statement that would fire this trigger. What error do you get and why? How can compound triggers (introduced conceptually in <code>PL/SQL Language Reference,</code> Chapter 10, "Compound DML Triggers", p.10-10) help solve this? (Detailed compound trigger implementation is beyond this chunk but understanding the problem is key).</p>
 <div class="oracle-specific">
-<p><strong>Focus:</strong> Understanding the mutating table error (ORA-04091) which is a common pitfall when triggers query or modify the table they are defined on. Refer to `PL/SQL Language Reference`, Chapter 10, "Mutating-Table Restriction" (p. 10-42).</p>
+<p><strong>Focus:</strong> Understanding the mutating table error (ORA-04091) which is a common pitfall when triggers query or modify the table they are defined on. Refer to <code>PL/SQL Language Reference,</code> Chapter 10, "Mutating-Table Restriction" (p. 10-42).</p>
 </div>
 
 <h4>Exercise 2.6: Trigger Firing Order and Cascading Effects</h4>
 <p><span class="problem-label">Problem:</span>
-1.  Create a simple `AFTER UPDATE ON Departments FOR EACH ROW` trigger (`trgDeptUpdate`) that prints "Department updated" to `DBMS_OUTPUT`.
-2.  Create an `AFTER UPDATE OF departmentId ON Employees FOR EACH ROW` trigger (`trgEmpDeptFkUpdate`) that prints "Employee's departmentId updated".
-3.  Now, write an UPDATE statement that changes a `departmentId` in the `Departments` table. Assume there's a foreign key with `ON UPDATE CASCADE` from `Employees.departmentId` to `Departments.departmentId` (though you don't need to create the FK with cascade for this exercise, just understand the hypothetical).
+1.  Create a simple <code>AFTER UPDATE ON Departments FOR EACH ROW</code> trigger (`trgDeptUpdate</code>) that prints "Department updated" to <code>DBMS_OUTPUT</code>.
+2.  Create an <code>AFTER UPDATE OF departmentId ON Employees FOR EACH ROW</code> trigger (`trgEmpDeptFkUpdate</code>) that prints "Employee's departmentId updated".
+3.  Now, write an UPDATE statement that changes a <code>departmentId</code> in the <code>Departments</code> table. Assume there's a foreign key with <code>ON UPDATE CASCADE</code> from <code>Employees.departmentId</code> to <code>Departments.departmentId</code> (though you don't need to create the FK with cascade for this exercise, just understand the hypothetical).
 Discuss the potential firing order and the "cascading" effect if the FK was set to cascade updates. What are the implications if one trigger's action inadvertently causes another trigger to fire multiple times?</p>
 <div class="oracle-specific">
-<p><strong>Focus:</strong> Understanding that triggers can cause other triggers to fire, and the order can sometimes be non-obvious or lead to performance issues if not designed carefully. Refer to `PL/SQL Language Reference`, Chapter 10, "Order in Which Triggers Fire" (p. 10-46).</p>
+<p><strong>Focus:</strong> Understanding that triggers can cause other triggers to fire, and the order can sometimes be non-obvious or lead to performance issues if not designed carefully. Refer to <code>PL/SQL Language Reference,</code> Chapter 10, "Order in Which Triggers Fire" (p. 10-46).</p>
 </div>
 
 <h3>(iii) Contrasting with Inefficient Common Solutions</h3>
 
 <h4>Exercise 3.3: Auditing via Application Code vs. Triggers</h4>
-<p><strong>Scenario:** Every time a product's `stockQuantity` is changed, an audit record needs to be created in `AuditLog`.</p>
-<p><strong>Inefficient Common Solution (Problem):** The application developers are instructed to manually insert a record into `AuditLog` every time their Java or other application code updates the `Products.stockQuantity`. Describe the DML statement the application would execute and the subsequent `INSERT` into `AuditLog`.</p>
-<p><strong>Oracle-Idiomatic Solution (Solution):** Implement an `AFTER UPDATE OF stockQuantity ON Products FOR EACH ROW` trigger (similar to `trgUpdateProductStockAudit` from the hardcore problem) to automatically log these changes.</p>
-<p><strong>Task:** Discuss why the trigger-based approach is superior for this auditing requirement in terms of data integrity, consistency, and reduced application code complexity/redundancy.</p>
+<p><strong>Scenario:</strong> Every time a product's <code>stockQuantity</code> is changed, an audit record needs to be created in <code>AuditLog</code>.</p>
+<p><strong>Inefficient Common Solution (Problem):</strong> The application developers are instructed to manually insert a record into <code>AuditLog</code> every time their Java or other application code updates the <code>Products.stockQuantity</code>. Describe the DML statement the application would execute and the subsequent <code>INSERT</code> into <code>AuditLog</code>.</p>
+<p><strong>Oracle-Idiomatic Solution (Solution):</strong> Implement an <code>AFTER UPDATE OF stockQuantity ON Products FOR EACH ROW</code> trigger (similar to <code>trgUpdateProductStockAudit</code> from the hardcore problem) to automatically log these changes.</p>
+<p><strong>Task:</strong> Discuss why the trigger-based approach is superior for this auditing requirement in terms of data integrity, consistency, and reduced application code complexity/redundancy.</p>
 <div class="oracle-specific">
 <p><strong>Focus:</strong> Highlighting the reliability and data-centricity of triggers for auditing over manual application-level logging, which can be inconsistent or bypassed.</p>
 </div>
@@ -455,7 +460,7 @@ So Oracle's power resides in your heart.
 
 *   **Experiment Freely:** Don't just run the solutions. Modify them. Try different values, introduce deliberate errors, and observe Oracle's behavior. This hands-on experimentation is invaluable.
 *   **Understand the "Why":** For each solution, ensure you understand not just *what* it does, but *why* it's structured that way and *why* it's the Oracle-idiomatic approach.
-*   **Consult the Oracle Docs:** The provided PDF snippets in the main lecture are your friends! For deeper dives, the full `PL/SQL Language Reference` and `PL/SQL Packages and Types Reference` are your ultimate guides.
+*   **Consult the Oracle Docs:** The provided PDF snippets in the main lecture are your friends! For deeper dives, the full <code>PL/SQL Language Reference</code> and <code>PL/SQL Packages and Types Reference</code> are your ultimate guides.
 *   **Bridge from PostgreSQL:** If you're stuck, think about how you might have solved a similar problem in PostgreSQL. Then, focus on finding the Oracle equivalent or the Oracle-specific feature that addresses it more effectively.
 *   **Break Down Complexity:** For the hardcore problem, tackle it piece by piece. Implement one requirement at a time, test it, and then integrate it with others.
 

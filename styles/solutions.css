@@ -153,6 +153,20 @@ h3:hover {
     color: var(--primary-color);
 }
 
+h3 {
+    color: var(--accent-color);
+    font-size: 1.7em;
+    margin-top: 25px;
+    border-left: 4px solid var(--primary-color);
+    padding-left: 10px;
+    transition: all var(--transition-speed) ease;
+}
+h3:hover {
+    border-left-color: var(--secondary-color);
+    color: var(--primary-color);
+    font-size: large;
+}
+
 h4 {
     font-size: 1.2em;
     margin-top: 30px;
@@ -166,6 +180,10 @@ h4:hover {
     color: var(--secondary-color);
 }
 
+.problem-label {
+    font-style: italic;
+    font-weight: normal;
+}
 
 p { /* li styling moved to specific list item rules */
     font-size: 1em; /* Relative to body font-size */
@@ -440,7 +458,7 @@ pre code {
     border: none;
     padding: 0;
     color: inherit;
-    font-size: inherit; /* Inherits from pre's 1em */
+    font-size: 1rem; /* Inherits from pre's 1em */
 }
 
 table {
