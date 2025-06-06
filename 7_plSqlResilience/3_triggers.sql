@@ -191,3 +191,280 @@ COMMIT;
 -- Task: Discuss why the trigger-based approach is superior for this auditing requirement in terms of data integrity, consistency, and reduced application code 
 -- complexity/redundancy.
 -- Focus: Highlighting the reliability and data-centricity of triggers for auditing over manual application-level logging, which can be inconsistent or bypassed.
+
+
+--      (iv) Hardcore Combined Problem
+
+-- Problem: Comprehensive Order Processing and Auditing
+-- You are tasked with creating a robust order processing system. This involves a package to handle new orders, ensure product availability, update stock, and log 
+-- activities. Additionally, a trigger will independently audit product stock changes.
+
+-- Part 1: Order Management Package (`OrderProcessingPkg`)
+-- Create a package named OrderProcessingPkg.
+--     Package Specification:
+--         Declare a public record type OrderItemRec with fields productId NUMBER and quantity NUMBER.
+--         Declare a public collection type OrderItemList as a TABLE OF OrderItemRec INDEX BY PLS_INTEGER.
+--         Declare two public user-defined exceptions: e_insufficient_stock EXCEPTION; and e_product_not_found EXCEPTION;. Use PRAGMA EXCEPTION_INIT to associate 
+--         e_insufficient_stock with -20010 and e_product_not_found with -20011.
+--         Declare a public procedure CreateNewOrder with the following parameters:
+--             p_customer_id IN Orders.customerId%TYPE
+--             p_items IN OrderItemList (the collection of order items)
+--             p_order_id OUT Orders.orderId%TYPE (to return the ID of the newly created order)
+--     Package Body:
+--         Implement a private procedure LogOrderAttempt:
+--         Parameters: p_customer_id IN NUMBER, p_status IN VARCHAR2, p_error_message IN VARCHAR2 DEFAULT NULL, p_product_id_issue IN NUMBER DEFAULT NULL
+--             This procedure will insert a record into AuditLog.
+--             tableName = 'Orders'
+--             operationType: 'ORDER_ATTEMPT_SUCCESS' if p_status is 'SUCCESS', 'ORDER_ATTEMPT_FAIL_STOCK' if error due to stock, 'ORDER_ATTEMPT_FAIL_PRODUCT' if 
+--             product not found, 'ORDER_ATTEMPT_FAIL_OTHER' otherwise.
+--             recordId: NULL (as order might not be created yet).
+--             details: A composite message including customer ID, product ID if relevant, and p_error_message.
+--     Implement the public procedure CreateNewOrder:
+--         Start a new transaction (conceptually - PL/SQL procedures run within the caller's transaction unless autonomous).
+--         Declare local variables for current product price, available stock.
+--         Loop through each item in p_items:
+--             Attempt to select unitPrice and stockQuantity from Products for item.productId.
+--                 If product not found (NO_DATA_FOUND), call LogOrderAttempt with appropriate status, then RAISE e_product_not_found;
+--             If item.quantity > available stock, call LogOrderAttempt, then RAISE e_insufficient_stock;
+--         If all items are validated (no exceptions raised so far):
+--             Generate a new orderId using orderSeq.NEXTVAL and assign to p_order_id.
+--             Insert a new row into the Orders table (customerId from parameter, orderDate = SYSDATE, status = 'Pending').
+--             Loop through p_items again:
+--                 Fetch current unitPrice for item.productId.
+--                 Insert a row into OrderItems (using orderItemSeq.NEXTVAL, the new orderId, item.productId, item.quantity, and the fetched unitPrice).
+--                 Update Products table: decrement stockQuantity by item.quantity for item.productId.
+--             Call LogOrderAttempt with status 'SUCCESS' and the new p_order_id.
+--             COMMIT the transaction.
+--         Exception Handling Section for CreateNewOrder:
+--             WHEN e_insufficient_stock THEN
+--                 ROLLBACK;
+--                 RAISE_APPLICATION_ERROR(-20010, 'Order failed: Insufficient stock for one or more products.');
+--             WHEN e_product_not_found THEN
+--                 ROLLBACK;
+--                 RAISE_APPLICATION_ERROR(-20011, 'Order failed: Product not found.');
+--             WHEN OTHERS THEN
+--                 Call LogOrderAttempt with error status, SQLCODE || ': ' || SQLERRM as the message.
+--                 ROLLBACK;
+--                 RAISE; -- Re-raise the original exception.
+
+ALTER TABLE PLSQLRESILIENCE.AUDITLOG MODIFY OPERATIONTYPE VARCHAR2(50 BYTE);
+ALTER TABLE PLSQLRESILIENCE.AUDITLOG ADD DETAILS VARCHAR2(200 BYTE);
+
+CREATE OR REPLACE PACKAGE PLSQLRESILIENCE.OrderProcessingPkg AS
+    TYPE OrderItemRect IS RECORD (productId PLSQLRESILIENCE.PRODUCTS.PRODUCTID%TYPE, quantity PLSQLRESILIENCE.PRODUCTS.STOCKQUANTITY%TYPE);
+    TYPE OrderItemList IS TABLE OF OrderItemRect INDEX BY PLS_INTEGER;
+    e_insufficient_stock EXCEPTION;
+    e_product_not_found EXCEPTION;
+    e_invalid_quantity EXCEPTION;
+    PRAGMA EXCEPTION_INIT(e_insufficient_stock, -10);
+    PRAGMA EXCEPTION_INIT(e_product_not_found, -11);
+    PRAGMA EXCEPTION_INIT(e_invalid_quantity, -12);
+    PROCEDURE CreateNewOrder(
+        p_customer_id IN PLSQLRESILIENCE.ORDERS.CUSTOMERID%TYPE, 
+        p_items IN OrderItemList, 
+        p_order_id OUT PLSQLRESILIENCE.ORDERS.OrderId%TYPE
+    );
+END OrderProcessingPkg;
+/
+
+CREATE OR REPLACE PACKAGE BODY PLSQLRESILIENCE.OrderProcessingPkg AS
+    PROCEDURE LogOrderAttempt(
+        p_customer_id IN NUMBER, 
+        p_status IN VARCHAR2, 
+        p_error_message IN VARCHAR2 DEFAULT NULL, 
+        p_product_id_issue IN NUMBER DEFAULT NULL
+    ) IS BEGIN
+        INSERT INTO PLSQLRESILIENCE.AUDITLOG(TABLENAME, OPERATIONTYPE, DETAILS) VALUES (
+            'Orders', 
+            CASE 
+                WHEN p_status = 'SUCCESS' THEN 'ORDER_ATTEMPT_SUCCESS' 
+                WHEN p_error_message = 'error due to stock%' THEN 'ORDER_ATTEMPT_FAIL_STOCK'
+                WHEN p_error_message LIKE 'product not found%' THEN 'ORDER_ATTEMPT_FAIL_PRODUCT'
+                ELSE 'ORDER_ATTEMPT_FAIL_OTHER'
+            END,
+            p_customer_id||', '||p_status||', '||p_product_id_issue||', '||p_error_message
+        );
+    END;
+    
+    PROCEDURE CreateNewOrder(
+        p_customer_id IN PLSQLRESILIENCE.ORDERS.CUSTOMERID%TYPE, 
+        p_items IN OrderItemList, 
+        p_order_id OUT PLSQLRESILIENCE.ORDERS.OrderId%TYPE
+    ) 
+    IS  currentIndex PLS_INTEGER;
+        currentItem OrderItemRect;
+        pUnitPrice PLSQLRESILIENCE.PRODUCTS.UNITPRICE%TYPE;
+        pStockQuantity PLSQLRESILIENCE.PRODUCTS.STOCKQUANTITY%TYPE;
+        pCustomerId PLSQLRESILIENCE.EMPLOYEES.EMPLOYEEID%TYPE := 100;
+    BEGIN
+        currentIndex := p_items.FIRST;
+        SAVEPOINT starting;
+        WHILE currentIndex IS NOT NULL LOOP
+            currentItem := p_items(currentIndex);
+            BEGIN
+                SELECT UNITPRICE, STOCKQUANTITY INTO pUnitPrice, pStockQuantity 
+                FROM PLSQLRESILIENCE.PRODUCTS WHERE PRODUCTID = currentItem.productId;
+            EXCEPTION
+                WHEN NO_DATA_FOUND THEN 
+                    LogOrderAttempt(pCustomerId, 'ERROR', 'product not found (ID: '||TO_CHAR(currentItem.productId)||')');
+                    RAISE e_product_not_found; 
+            END;
+            IF currentItem.quantity > pStockQuantity THEN 
+                LogOrderAttempt(pCustomerId, 'ERROR', 'error due to stock (ID: '||TO_CHAR(currentItem.productId)||')');
+                RAISE e_insufficient_stock;
+            END IF;
+            currentIndex := p_items.NEXT(currentIndex);
+        END LOOP;
+        p_order_id := PLSQLRESILIENCE.orderSeq.NEXTVAL;
+        INSERT INTO PLSQLRESILIENCE.ORDERS(ORDERID, CUSTOMERID) VALUES (p_order_id, p_customer_id);
+        currentIndex := p_items.FIRST;
+        WHILE currentIndex IS NOT NULL LOOP
+            currentItem := p_items(currentIndex);
+            BEGIN
+                SELECT STOCKQUANTITY, UNITPRICE INTO pStockQuantity, pUnitPrice
+                FROM PLSQLRESILIENCE.PRODUCTS WHERE PRODUCTID = currentItem.productId;
+            EXCEPTION
+                WHEN NO_DATA_FOUND THEN RAISE e_product_not_found;
+            END;
+            INSERT INTO PLSQLRESILIENCE.ORDERITEMS(ORDERITEMID, ORDERID, PRODUCTID, QUANTITY, ITEMPRICE)
+            VALUES (PLSQLRESILIENCE.orderItemSeq.NEXTVAL, p_order_id, currentItem.productId, pStockQuantity, pUnitPrice);
+            UPDATE PLSQLRESILIENCE.PRODUCTS SET STOCKQUANTITY = pStockQuantity - currentItem.quantity WHERE PRODUCTID = currentItem.productId;
+            LogOrderAttempt(pCustomerId, 'SUCCESS', p_customer_id);
+            COMMIT;
+            currentIndex := p_items.NEXT(currentIndex);
+        END LOOP;
+    EXCEPTION 
+        WHEN e_product_not_found THEN 
+            ROLLBACK;
+            RAISE_APPLICATION_ERROR(-20010, 'Order failed: Insufficient stock for one or more products.');
+        WHEN e_insufficient_stock THEN
+            ROLLBACK; 
+            RAISE_APPLICATION_ERROR(-20011, 'Order failed: Product not found.');
+        WHEN OTHERS THEN 
+            LogOrderAttempt(pCustomerId, 'ERROR', SQLCODE || ': ' || SQLERRM);
+            ROLLBACK;
+            RAISE;
+    END;
+END OrderProcessingPkg;
+/
+-- Part 2: Product Stock Audit Trigger (`trgAuditStockChange`)
+--     Create a DML trigger named trgAuditStockChange.
+--         It should fire AFTER UPDATE OF stockQuantity ON Products.
+--         It must be a FOR EACH ROW trigger.
+--         Trigger Body:
+--             If UPDATING('stockQuantity') AND :NEW.stockQuantity <> :OLD.stockQuantity (to ensure actual change):
+--                 Insert a record into AuditLog:
+--                     tableName = 'Products'
+--                     operationType = 'STOCK_UPDATE'
+--                     recordId = :NEW.productId
+--                     oldValue = TO_CLOB(:OLD.stockQuantity)
+--                     newValue = TO_CLOB(:NEW.stockQuantity)
+--                     details = 'Stock quantity changed for product ' || :NEW.productName
+CREATE OR REPLACE TRIGGER PLSQLRESILIENCE.trgAuditStockChange
+AFTER UPDATE OF STOCKQUANTITY ON PLSQLRESILIENCE.PRODUCTS
+FOR EACH ROW
+BEGIN
+    IF UPDATING('STOCKQUANTITY') AND :NEW.STOCKQUANTITY <> :OLD.STOCKQUANTITY 
+        THEN INSERT INTO PLSQLRESILIENCE.AUDITLOG(TABLENAME, OPERATIONTYPE, RECORDID, OLDVALUE, NEWVALUE, DETAILS)
+        VALUES('Products', 'STOCK_UPDATE', :NEW.PRODUCTID, TO_CLOB(:OLD.STOCKQUANTITY), TO_CLOB(:NEW.STOCKQUANTITY), 'Stock quantity changed for product '||:NEW.productName);
+    END IF;
+END;
+/
+
+-- Part 3: Testing Anonymous Block
+--     Write a PL/SQL anonymous block to test the functionality:
+--     Enable SERVEROUTPUT.
+--     Declare variables: v_items OrderProcessingPkg.OrderItemList;, v_new_order_id Orders.orderId%TYPE;.
+--     Find product IDs for 'Laptop Pro' (stock 50), 'Wireless Mouse' (stock 200), 'Keyboard Ultra' (stock 10), and 'Monitor HD' (stock 0).
+--     Test Case 1: Successful Order
+--         Populate v_items: 1 Laptop Pro, 2 Wireless Mouse.
+--         Call OrderProcessingPkg.CreateNewOrder(p_customer_id => 123, p_items => v_items, p_order_id => v_new_order_id);
+--         DBMS_OUTPUT.PUT_LINE('Successful order created with ID: ' || v_new_order_id);
+--     Test Case 2: Insufficient Stock
+--         Populate v_items: 50 Keyboard Ultra (stock is 10).
+--         Wrap the call to CreateNewOrder in a BEGIN...EXCEPTION block to catch OrderProcessingPkg.e_insufficient_stock (or the ORA-20010 error).
+--         DBMS_OUTPUT.PUT_LINE('Caught insufficient stock: ' || SQLERRM);
+--     Test Case 3: Product Not Found
+--         Populate v_items: 1 item with a non-existent productId (e.g., 9999).
+--         Wrap the call to CreateNewOrder in a BEGIN...EXCEPTION block to catch OrderProcessingPkg.e_product_not_found (or ORA-20011).
+--         DBMS_OUTPUT.PUT_LINE('Caught product not found: ' || SQLERRM);
+--     After all tests, query Orders, OrderItems, Products (to check stock levels), and AuditLog to verify all operations and logging.
+
+SET SERVEROUTPUT ON;
+DECLARE
+    v_idx PLS_INTEGER;
+    TYPE OrderItemRect IS RECORD (
+        productId PLSQLRESILIENCE.PRODUCTS.PRODUCTID%TYPE,
+        quantity PLSQLRESILIENCE.PRODUCTS.STOCKQUANTITY%TYPE
+    );
+    TYPE OrderItemList IS TABLE OF OrderItemRect INDEX BY VARCHAR2(50);
+    v_new_order_id PLSQLRESILIENCE.Orders.ORDERID%TYPE;
+    case_1 PLSQLRESILIENCE.OrderProcessingPkg.OrderItemList;
+    case_2 PLSQLRESILIENCE.OrderProcessingPkg.OrderItemList;
+    case_3 PLSQLRESILIENCE.OrderProcessingPkg.OrderItemList;
+    v_product_id PLSQLRESILIENCE.PRODUCTS.PRODUCTID%TYPE;
+    v_quantity PLSQLRESILIENCE.PRODUCTS.STOCKQUANTITY%TYPE;
+    v_laptop_id    PLSQLRESILIENCE.Products.productId%TYPE;
+    v_mouse_id     PLSQLRESILIENCE.Products.productId%TYPE;
+    v_keyboard_id  PLSQLRESILIENCE.Products.productId%TYPE;
+    v_monitor_id   PLSQLRESILIENCE.Products.productId%TYPE;
+BEGIN
+    -- Lookup product IDs by name
+    SELECT productId INTO v_laptop_id FROM PLSQLRESILIENCE.Products WHERE productName = 'Laptop Pro';
+    SELECT productId INTO v_mouse_id FROM PLSQLRESILIENCE.Products WHERE productName = 'Wireless Mouse';
+    SELECT productId INTO v_keyboard_id FROM PLSQLRESILIENCE.Products WHERE productName = 'Keyboard Ultra';
+    SELECT productId INTO v_monitor_id FROM PLSQLRESILIENCE.Products WHERE productName = 'Monitor HD';
+
+    -- Test Case 1: Successful Order (1 Laptop Pro, 2 Wireless Mouse)
+    case_1(1).productId := v_laptop_id;
+    case_1(1).quantity := 50;
+    case_1(2).productId := v_mouse_id;
+    case_1(2).quantity := 200;
+    BEGIN
+        PLSQLRESILIENCE.OrderProcessingPkg.CreateNewOrder(
+            p_customer_id => 123,
+            p_items       => case_1,
+            p_order_id    => v_new_order_id
+        );
+        DBMS_OUTPUT.PUT_LINE('Successful order created with ID: ' || v_new_order_id);
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error in Test Case 1: ' || SQLERRM);
+    END;
+    -- Test case 2; Insufficient Stock
+    case_2(1).quantity := 10;
+    case_2(1).productId := v_keyboard_id;
+    BEGIN
+        PLSQLRESILIENCE.OrderProcessingPkg.CreateNewOrder(
+            p_customer_id => 123,
+            p_items       => case_2,
+            p_order_id    => v_new_order_id
+        );
+        DBMS_OUTPUT.PUT_LINE('Successful order created with ID: ' || v_new_order_id);
+    EXCEPTION
+        WHEN PLSQLRESILIENCE.OrderProcessingPkg.e_insufficient_stock 
+            THEN DBMS_OUTPUT.PUT_LINE('Caught insufficient stock: ' || SQLERRM);
+    END;
+    -- Test case 3: Product Not Found
+    case_3(1).quantity := 10;
+    case_3(1).productId := 9999;
+    BEGIN
+        PLSQLRESILIENCE.OrderProcessingPkg.CreateNewOrder(
+            p_customer_id => 123,
+            p_items       => case_3,
+            p_order_id    => v_new_order_id
+        );
+        DBMS_OUTPUT.PUT_LINE('Successful order created with ID: ' || v_new_order_id);
+    EXCEPTION
+        WHEN PLSQLRESILIENCE.OrderProcessingPkg.e_product_not_found 
+            THEN DBMS_OUTPUT.PUT_LINE('Caught product not found: ' || SQLERRM);
+    END;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN 
+        DBMS_OUTPUT.PUT_LINE('Product not found');
+    WHEN INVALID_NUMBER THEN 
+        DBMS_OUTPUT.PUT_LINE('A quantity cant be les than zero, but is ('||v_quantity||')');
+END;
+/
+
+ROLLBACK;

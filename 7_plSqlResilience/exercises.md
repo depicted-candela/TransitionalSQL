@@ -380,7 +380,7 @@ What happens? Now, modify the inner block to *not* handle <code>InnerException</
 <h3>(i) Meanings, Values, Relations, and Advantages</h3>
 
 <h4>Exercise 1.7: Basic AFTER INSERT Trigger</h4>
-<p><span class="problem-label">Problem:</span> Create an <code>AFTER INSERT ON Orders FOR EACH ROW</code> trigger named <code>trgLogNewOrder</code>. This trigger should insert a record into the <code>AuditLog</code> table with <code>tableName</code> = 'Orders', <code>operationType</code> = 'INSERT', and <code>recordId</code> = <code>:NEW.orderId</code>.</p>
+<p><span class="problem-label">Problem:</span> Create an <code>AFTER INSERT ON Orders FOR EACH ROW</code> trigger named <code>trgLogNewOrder</code>. This trigger should insert a record into the <code>AuditLog</code> table with <code>tableName</code> = <code>Orders</code>, <code>operationType</code> = <code>INSERT</code>, and <code>recordId</code> = <code>:NEW.orderId</code>.</p>
 <p>Test by inserting a new order into the <code>Orders</code> table.</p>
 <div class="oracle-specific">
 <p><strong>Focus:</strong> Basic DML trigger syntax, <code>AFTER INSERT</code> timing, <code>FOR EACH ROW,</code> and usage of <code>:NEW</code> qualifier. Refer to <code>PL/SQL Language Reference,</code> Chapter 10, "DML Triggers" (p. 10-4) and "Correlation Names and Pseudorecords" (p. 10-28).</p>
@@ -476,8 +476,8 @@ Use <code>PRAGMA EXCEPTION_INIT</code> to associate <code>e_insufficient_stock</
 <li>Parameters: <code>p_customer_id IN NUMBER, p_status IN VARCHAR2, p_error_message IN VARCHAR2 DEFAULT NULL, p_product_id_issue IN NUMBER DEFAULT NULL</code></li>
 <li>This procedure will insert a record into <code>AuditLog</code>.
 <ul>
-<li><code>tableName</code> = 'Orders'</li>
-<li><code>operationType</code>: 'ORDER_ATTEMPT_SUCCESS' if <code>p_status</code> is 'SUCCESS', 'ORDER_ATTEMPT_FAIL_STOCK' if error due to stock, 'ORDER_ATTEMPT_FAIL_PRODUCT' if product not found, 'ORDER_ATTEMPT_FAIL_OTHER' otherwise.</li>
+<li><code>tableName</code> = <code>Orders</code></li>
+<li><code>operationType</code>: 'ORDER_ATTEMPT_SUCCESS' if <code>p_status</code> is <code>SUCCESS</code>, <code>ORDER_ATTEMPT_FAIL_STOCK</code> if error due to stock, 'ORDER_ATTEMPT_FAIL_PRODUCT' if product not found, <code>ORDER_ATTEMPT_FAIL_OTHER</code> otherwise.</li>
 <li><code>recordId</code>: NULL (as order might not be created yet).</li>
 <li><code>details</code>: A composite message including customer ID, product ID if relevant, and <code>p_error_message</code>.</li>
 </ul>
@@ -501,7 +501,7 @@ Use <code>PRAGMA EXCEPTION_INIT</code> to associate <code>e_insufficient_stock</
 <li>If all items are validated (no exceptions raised so far):
 <ul>
 <li>Generate a new <code>orderId</code> using <code>orderSeq.NEXTVAL</code> and assign to <code>p_order_id</code>.</li>
-<li>Insert a new row into the <code>Orders</code> table (<code>customerId</code> from parameter, <code>orderDate</code> = <code>SYSDATE</code>, <code>status</code> = 'Pending').</li>
+<li>Insert a new row into the <code>Orders</code> table (<code>customerId</code> from parameter, <code>orderDate</code> = <code>SYSDATE</code>, <code>status</code> = <code>Pending</code>).</li>
 <li>Loop through <code>p_items</code> again:
 <ul>
 <li>Fetch current <code>unitPrice</code> for <code>item.productId</code>.</li>
@@ -509,7 +509,7 @@ Use <code>PRAGMA EXCEPTION_INIT</code> to associate <code>e_insufficient_stock</
 <li>Update <code>Products</code> table: decrement <code>stockQuantity</code> by <code>item.quantity</code> for <code>item.productId</code>.</li>
 </ul>
 </li>
-<li>Call <code>LogOrderAttempt</code> with status 'SUCCESS' and the new <code>p_order_id</code>.</li>
+<li>Call <code>LogOrderAttempt</code> with status <code>SUCCESS</code> and the new <code>p_order_id</code>.</li>
 <li><code>COMMIT</code> the transaction.</li>
 </ul>
 </li>
