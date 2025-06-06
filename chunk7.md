@@ -12,7 +12,7 @@ Let's break down each category and map it to the relevant documentation:
 
     *   **Primary Reference (for learning PL/SQL package creation and concepts):**
         *   **Book:** 
-        [Oracle® Database Database PL/SQL Language Reference, 23ai](../TransitionalSQL/books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf)
+        [Oracle® Database Database PL/SQL Language Reference, 23ai](/books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf)
         *   **Most Relevant Chapter:** **Chapter 11: PL/SQL Packages**
             *   "What is a Package?" (11-1)
             *   "Reasons to Use Packages" (11-2) - Covers benefits.
