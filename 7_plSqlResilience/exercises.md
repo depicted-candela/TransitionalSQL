@@ -445,11 +445,162 @@ Discuss the potential firing order and the "cascading" effect if the FK was set 
 <div class="oracle-specific">
 <p><strong>Focus:</strong> Highlighting the reliability and data-centricity of triggers for auditing over manual application-level logging, which can be inconsistent or bypassed.</p>
 </div>
-
 <hr>
 
 <h3>(iv) Hardcore Combined Problem</h3>
-<p>This was already provided in the prompt as Exercise 4.1. Its solution would integrate all the concepts of Packages, Exception Handling, and Triggers from this chunk.</p>
+<p><span class="problem-label">Problem: Comprehensive Order Processing and Auditing</span></p>
+<p>You are tasked with creating a robust order processing system. This involves a package to handle new orders, ensure product availability, update stock, and log activities. Additionally, a trigger will independently audit product stock changes.</p>
+<p><strong>Part 1: Order Management Package (`OrderProcessingPkg`)</strong></p>
+<p>Create a package named <code>OrderProcessingPkg</code>.</p>
+<ol>
+<li><strong>Package Specification:</strong>
+<ul>
+<li>Declare a public record type <code>OrderItemRec</code> with fields <code>productId NUMBER</code> and <code>quantity NUMBER</code>.</li>
+<li>Declare a public collection type <code>OrderItemList</code> as a <code>TABLE OF OrderItemRec INDEX BY PLS_INTEGER</code>.</li>
+<li>Declare two public user-defined exceptions: <code>e_insufficient_stock EXCEPTION;</code> and <code>e_product_not_found EXCEPTION;</code>.
+Use <code>PRAGMA EXCEPTION_INIT</code> to associate <code>e_insufficient_stock</code> with <code>-20010</code> and <code>e_product_not_found</code> with <code>-20011</code>.
+</li>
+<li>Declare a public procedure <code>CreateNewOrder</code> with the following parameters:
+<ul>
+<li><code>p_customer_id IN Orders.customerId%TYPE</code></li>
+<li><code>p_items IN OrderItemList</code> (the collection of order items)</li>
+<li><code>p_order_id OUT Orders.orderId%TYPE</code> (to return the ID of the newly created order)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Package Body:</strong>
+<ul>
+<li>Implement a private procedure <code>LogOrderAttempt</code>:
+<ul>
+<li>Parameters: <code>p_customer_id IN NUMBER, p_status IN VARCHAR2, p_error_message IN VARCHAR2 DEFAULT NULL, p_product_id_issue IN NUMBER DEFAULT NULL</code></li>
+<li>This procedure will insert a record into <code>AuditLog</code>.
+<ul>
+<li><code>tableName</code> = 'Orders'</li>
+<li><code>operationType</code>: 'ORDER_ATTEMPT_SUCCESS' if <code>p_status</code> is 'SUCCESS', 'ORDER_ATTEMPT_FAIL_STOCK' if error due to stock, 'ORDER_ATTEMPT_FAIL_PRODUCT' if product not found, 'ORDER_ATTEMPT_FAIL_OTHER' otherwise.</li>
+<li><code>recordId</code>: NULL (as order might not be created yet).</li>
+<li><code>details</code>: A composite message including customer ID, product ID if relevant, and <code>p_error_message</code>.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Implement the public procedure <code>CreateNewOrder</code>:
+<ol>
+<li>Start a new transaction (conceptually - PL/SQL procedures run within the caller's transaction unless autonomous).</li>
+<li>Declare local variables for current product price, available stock.</li>
+<li>Loop through each item in <code>p_items</code>:
+<ul>
+<li>Attempt to select <code>unitPrice</code> and <code>stockQuantity</code> from <code>Products</code> for <code>item.productId</code>.
+<ul>
+<li>If product not found (<code>NO_DATA_FOUND</code>), call <code>LogOrderAttempt</code> with appropriate status, then <code>RAISE e_product_not_found;</code></li>
+</ul>
+</li>
+<li>If <code>item.quantity</code> > available stock, call <code>LogOrderAttempt</code>, then <code>RAISE e_insufficient_stock;</code></li>
+</ul>
+</li>
+<li>If all items are validated (no exceptions raised so far):
+<ul>
+<li>Generate a new <code>orderId</code> using <code>orderSeq.NEXTVAL</code> and assign to <code>p_order_id</code>.</li>
+<li>Insert a new row into the <code>Orders</code> table (<code>customerId</code> from parameter, <code>orderDate</code> = <code>SYSDATE</code>, <code>status</code> = 'Pending').</li>
+<li>Loop through <code>p_items</code> again:
+<ul>
+<li>Fetch current <code>unitPrice</code> for <code>item.productId</code>.</li>
+<li>Insert a row into <code>OrderItems</code> (using <code>orderItemSeq.NEXTVAL</code>, the new <code>orderId</code>, <code>item.productId</code>, <code>item.quantity</code>, and the fetched <code>unitPrice</code>).</li>
+<li>Update <code>Products</code> table: decrement <code>stockQuantity</code> by <code>item.quantity</code> for <code>item.productId</code>.</li>
+</ul>
+</li>
+<li>Call <code>LogOrderAttempt</code> with status 'SUCCESS' and the new <code>p_order_id</code>.</li>
+<li><code>COMMIT</code> the transaction.</li>
+</ul>
+</li>
+<li><strong>Exception Handling Section for <code>CreateNewOrder</code>:</strong>
+<ul>
+<li><code>WHEN e_insufficient_stock THEN</code>
+<ul>
+<li><code>ROLLBACK;</code></li>
+<li><code>RAISE_APPLICATION_ERROR(-20010, 'Order failed: Insufficient stock for one or more products.');</code></li>
+</ul>
+</li>
+<li><code>WHEN e_product_not_found THEN</code>
+<ul>
+<li><code>ROLLBACK;</code></li>
+<li><code>RAISE_APPLICATION_ERROR(-20011, 'Order failed: Product not found.');</code></li>
+</ul>
+</li>
+<li><code>WHEN OTHERS THEN</code>
+<ul>
+<li>Call <code>LogOrderAttempt</code> with error status, <code>SQLCODE || ': ' || SQLERRM</code> as the message.</li>
+<li><code>ROLLBACK;</code></li>
+<li><code>RAISE;</code> -- Re-raise the original exception.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+</li>
+</ol>
+<p><strong>Part 2: Product Stock Audit Trigger (`trgAuditStockChange`)</strong></p>
+<p>Create a DML trigger named <code>trgAuditStockChange</code>.</p>
+<ul>
+<li>It should fire <code>AFTER UPDATE OF stockQuantity ON Products</code>.</li>
+<li>It must be a <code>FOR EACH ROW</code> trigger.</li>
+<li><strong>Trigger Body:</strong>
+<ul>
+<li>If <code>UPDATING('stockQuantity')</code> AND <code>:NEW.stockQuantity <> :OLD.stockQuantity</code> (to ensure actual change):
+<ul>
+<li>Insert a record into <code>AuditLog</code>:
+<ul>
+<li><code>tableName</code> = 'Products'</li>
+<li><code>operationType</code> = 'STOCK_UPDATE'</li>
+<li><code>recordId</code> = <code>:NEW.productId</code></li>
+<li><code>oldValue</code> = <code>TO_CLOB(:OLD.stockQuantity)</code></li>
+<li><code>newValue</code> = <code>TO_CLOB(:NEW.stockQuantity)</code></li>
+<li><code>details</code> = 'Stock quantity changed for product ' || <code>:NEW.productName</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>Part 3: Testing Anonymous Block</strong></p>
+<p>Write a PL/SQL anonymous block to test the functionality:</p>
+<ol>
+<li>Enable <code>SERVEROUTPUT</code>.</li>
+<li>Declare variables: <code>v_items OrderProcessingPkg.OrderItemList;</code>, <code>v_new_order_id Orders.orderId%TYPE;</code>.
+<li>Find product IDs for 'Laptop Pro' (stock 50), 'Wireless Mouse' (stock 200), 'Keyboard Ultra' (stock 10), and 'Monitor HD' (stock 0).</li>
+<li><strong>Test Case 1: Successful Order</strong>
+<ul>
+<li>Populate <code>v_items</code>: 1 Laptop Pro, 2 Wireless Mouse.</li>
+<li>Call <code>OrderProcessingPkg.CreateNewOrder(p_customer_id => 123, p_items => v_items, p_order_id => v_new_order_id);</code></li>
+<li><code>DBMS_OUTPUT.PUT_LINE('Successful order created with ID: ' || v_new_order_id);</code></li>
+</ul>
+</li>
+<li><strong>Test Case 2: Insufficient Stock</strong>
+<ul>
+<li>Populate <code>v_items</code>: 50 Keyboard Ultra (stock is 10).</li>
+<li>Wrap the call to <code>CreateNewOrder</code> in a <code>BEGIN...EXCEPTION</code> block to catch <code>OrderProcessingPkg.e_insufficient_stock</code> (or the ORA-20010 error).
+<li><code>DBMS_OUTPUT.PUT_LINE('Caught insufficient stock: ' || SQLERRM);</code></li>
+</ul>
+</li>
+<li><strong>Test Case 3: Product Not Found</strong>
+<ul>
+<li>Populate <code>v_items</code>: 1 item with a non-existent <code>productId</code> (e.g., 9999).</li>
+<li>Wrap the call to <code>CreateNewOrder</code> in a <code>BEGIN...EXCEPTION</code> block to catch <code>OrderProcessingPkg.e_product_not_found</code> (or ORA-20011).
+<li><code>DBMS_OUTPUT.PUT_LINE('Caught product not found: ' || SQLERRM);</code></li>
+</ul>
+</li>
+<li>After all tests, query <code>Orders</code>, <code>OrderItems</code>, <code>Products</code> (to check stock levels), and <code>AuditLog</code> to verify all operations and logging.</li>
+</ol>
+<div class="oracle-specific">
+<p><strong>Focus:</strong> This problem integrates package design (types, procedures, exceptions, private helpers), advanced exception handling (user-defined, <code>PRAGMA EXCEPTION_INIT</code>, <code>RAISE_APPLICATION_ERROR</code>, logging within handlers, transaction control), DML triggers with <code>:OLD</code>/<code>:NEW</code> and conditional predicates, and PL/SQL collections. It tests understanding of how these components interact in a more complex, realistic scenario.
+Refer to:
+<code>PL/SQL Language Reference</code>: Chapters 10 (Triggers), 11 (Packages), 12 (Error Handling).
+<code>Get Started with Oracle Database Development</code>: Chapter 6 (Using Triggers).
+</p>
+</div>
 </div>
 
 <!-- === END OF INSERTED EXERCISES === -->

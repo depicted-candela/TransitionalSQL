@@ -688,7 +688,7 @@ END;
     Oracle allows implicit conversion from <code>DATE</code> to <code>VARCHAR2</code>. It does *not* implicitly convert <code>DATE</code> to <code>NUMBER</code> for procedure calls.
     However, if multiple overloads could potentially match after an implicit conversion (even if one conversion is "better" or more direct than another, unless one is an exact match and others require conversion), PL/SQL might consider it ambiguous. In this specific case, <code>DATE</code> can be implicitly converted to <code>VARCHAR2</code>. If there were also a version accepting <code>TIMESTAMP</code>, and <code>DATE</code> could implicitly convert to that too, it could lead to PLS-00307 "too many declarations of 'PROCESSVALUE' match this call".
     The most common pitfall occurs when actual parameters of numeric types (e.g. <code>PLS_INTEGER</code>) are passed to overloaded procedures where one formal parameter is <code>NUMBER</code> and another is, say, <code>BINARY_FLOAT</code>. PL/SQL might prefer the "closest" numeric type, but complex rules apply (see "Formal Parameters that Differ Only in Numeric Data Type" p.9-30 in Subprograms chapter).
-    
+
 **Resolution:** To resolve ambiguity, explicitly convert the actual parameter to the type of the desired overloaded subprogram. For the <code>DATE</code> example, if we want the <code>VARCHAR2</code> version:
     <code>plsqlresilience.OverloadDemo.ProcessValue(TO_CHAR(v_date, 'YYYY-MM-DD'));</code></p>
     <div class="oracle-specific">
@@ -1610,6 +1610,315 @@ END trgAuditProductStockChange;
     </ol>
     <p>While triggers can add overhead to DML operations, for critical tasks like auditing, their benefits in terms of reliability and data integrity often outweigh the performance considerations, which can usually be managed through efficient trigger code.</p>
     <hr>
+</div>
+
+<h3>(iv) Hardcore Combined Problem Solution</h3>
+<p><strong>Comprehensive Order Processing and Auditing</strong></p>
+
+<p><strong>Part 1: Order Management Package (`OrderProcessingPkg`)</strong></p>
+<p><strong>Package Specification:</strong></p>
+
+```sql
+CREATE OR REPLACE PACKAGE plsqlresilience.OrderProcessingPkg AS
+    -- Public record type for order items
+    TYPE OrderItemRec IS RECORD (
+        productId     plsqlresilience.Products.productId%TYPE,
+        quantity      plsqlresilience.OrderItems.quantity%TYPE
+    );
+
+    -- Public collection type for a list of order items
+    TYPE OrderItemList IS TABLE OF OrderItemRec INDEX BY PLS_INTEGER;
+
+    -- Public user-defined exceptions
+    e_insufficient_stock EXCEPTION;
+    PRAGMA EXCEPTION_INIT(e_insufficient_stock, -20010);
+
+    e_product_not_found EXCEPTION;
+    PRAGMA EXCEPTION_INIT(e_product_not_found, -20011);
+    
+    e_invalid_quantity EXCEPTION;
+    PRAGMA EXCEPTION_INIT(e_invalid_quantity, -20012);
+
+    -- Public procedure to create a new order
+    PROCEDURE CreateNewOrder (
+        p_customer_id IN  plsqlresilience.Orders.customerId%TYPE,
+        p_items       IN  OrderItemList,
+        p_order_id    OUT plsqlresilience.Orders.orderId%TYPE
+    );
+
+END OrderProcessingPkg;
+/
+```
+
+<p><strong>Package Body:</strong></p>
+
+```sql
+CREATE OR REPLACE PACKAGE BODY plsqlresilience.OrderProcessingPkg AS
+
+    -- Private procedure to log order attempts/results
+    PROCEDURE LogOrderAttempt (
+        p_customer_id       IN NUMBER,
+        p_status_indicator  IN VARCHAR2, -- e.g., 'SUCCESS', 'FAIL_STOCK', 'FAIL_PRODUCT', 'FAIL_OTHER'
+        p_order_id_created  IN NUMBER DEFAULT NULL,
+        p_error_message     IN VARCHAR2 DEFAULT NULL,
+        p_product_id_issue  IN NUMBER DEFAULT NULL
+    ) IS
+        v_operation_type plsqlresilience.AuditLog.operationType%TYPE;
+        v_details        plsqlresilience.AuditLog.details%TYPE;
+    BEGIN
+        v_details := 'CustID: ' || p_customer_id;
+        IF p_order_id_created IS NOT NULL THEN
+            v_details := v_details || ', OrderID: ' || p_order_id_created;
+        END IF;
+        IF p_product_id_issue IS NOT NULL THEN
+            v_details := v_details || ', ProductIssueID: ' || p_product_id_issue;
+        END IF;
+        IF p_error_message IS NOT NULL THEN
+            v_details := v_details || ', Msg: ' || SUBSTR(p_error_message, 1, 500);
+        END IF;
+
+        CASE p_status_indicator
+            WHEN 'SUCCESS' THEN v_operation_type := 'ORDER_SUCCESS';
+            WHEN 'FAIL_STOCK' THEN v_operation_type := 'ORDER_FAIL_STOCK';
+            WHEN 'FAIL_PRODUCT' THEN v_operation_type := 'ORDER_FAIL_PROD';
+            WHEN 'FAIL_QUANTITY' THEN v_operation_type := 'ORDER_FAIL_QTY';
+            ELSE v_operation_type := 'ORDER_FAIL_OTHER';
+        END CASE;
+
+        INSERT INTO plsqlresilience.AuditLog (tableName, operationType, recordId, details)
+        VALUES ('Orders', v_operation_type, NVL(TO_CHAR(p_order_id_created), 'N/A'), v_details);
+        -- No COMMIT here, part of the main transaction or handled by autonomous transaction if preferred for logging failures
+    END LogOrderAttempt;
+
+    PROCEDURE CreateNewOrder (
+        p_customer_id IN  plsqlresilience.Orders.customerId%TYPE,
+        p_items       IN  OrderItemList,
+        p_order_id    OUT plsqlresilience.Orders.orderId%TYPE
+    ) IS
+        v_current_product_price plsqlresilience.Products.unitPrice%TYPE;
+        v_available_stock       plsqlresilience.Products.stockQuantity%TYPE;
+        v_item                  OrderItemRec;
+        v_idx                   PLS_INTEGER;
+    BEGIN
+        -- Validate all items first
+        IF p_items.COUNT = 0 THEN
+            RAISE_APPLICATION_ERROR(-20013, 'Order must contain at least one item.');
+        END IF;
+
+        v_idx := p_items.FIRST;
+        WHILE v_idx IS NOT NULL LOOP
+            v_item := p_items(v_idx);
+
+            IF v_item.quantity <= 0 THEN
+                 LogOrderAttempt(p_customer_id, 'FAIL_QUANTITY', NULL, 'Invalid quantity <= 0.', v_item.productId);
+                 RAISE e_invalid_quantity;
+            END IF;
+
+            BEGIN
+                SELECT unitPrice, stockQuantity
+                INTO v_current_product_price, v_available_stock
+                FROM plsqlresilience.Products
+                WHERE productId = v_item.productId;
+            EXCEPTION
+                WHEN NO_DATA_FOUND THEN
+                    LogOrderAttempt(p_customer_id, 'FAIL_PRODUCT', NULL, NULL, v_item.productId);
+                    RAISE e_product_not_found;
+            END;
+
+            IF v_item.quantity > v_available_stock THEN
+                LogOrderAttempt(p_customer_id, 'FAIL_STOCK', NULL, 'Stock: '||v_available_stock||', Req: '||v_item.quantity, v_item.productId);
+                RAISE e_insufficient_stock;
+            END IF;
+            v_idx := p_items.NEXT(v_idx);
+        END LOOP;
+
+        -- All items validated, proceed to create order and update stock
+        p_order_id := plsqlresilience.OrderSeq.NEXTVAL;
+
+        INSERT INTO plsqlresilience.Orders (orderId, customerId, orderDate, status)
+        VALUES (p_order_id, p_customer_id, SYSDATE, 'Pending');
+
+        v_idx := p_items.FIRST;
+        WHILE v_idx IS NOT NULL LOOP
+            v_item := p_items(v_idx);
+            
+            -- Re-fetch price at the time of insert to ensure current price is used
+            SELECT unitPrice INTO v_current_product_price 
+            FROM plsqlresilience.Products WHERE productId = v_item.productId;
+
+            INSERT INTO plsqlresilience.OrderItems (orderItemId, orderId, productId, quantity, itemPrice)
+            VALUES (plsqlresilience.OrderItemSeq.NEXTVAL, p_order_id, v_item.productId, v_item.quantity, v_current_product_price);
+
+            UPDATE plsqlresilience.Products
+            SET stockQuantity = stockQuantity - v_item.quantity
+            WHERE productId = v_item.productId;
+            
+            v_idx := p_items.NEXT(v_idx);
+        END LOOP;
+
+        LogOrderAttempt(p_customer_id, 'SUCCESS', p_order_id);
+        COMMIT;
+
+    EXCEPTION
+        WHEN e_invalid_quantity THEN
+            ROLLBACK;
+            RAISE_APPLICATION_ERROR(-20012, 'Order failed: Invalid item quantity.');
+        WHEN e_insufficient_stock THEN
+            ROLLBACK;
+            RAISE_APPLICATION_ERROR(-20010, 'Order failed: Insufficient stock for one or more products.');
+        WHEN e_product_not_found THEN
+            ROLLBACK;
+            RAISE_APPLICATION_ERROR(-20011, 'Order failed: Product not found.');
+        WHEN OTHERS THEN
+            LogOrderAttempt(p_customer_id, 'FAIL_OTHER', NULL, SQLCODE || ': ' || SQLERRM);
+            ROLLBACK;
+            RAISE; -- Re-raise the original exception
+    END CreateNewOrder;
+
+END OrderProcessingPkg;
+/
+
+```
+<p><strong>Part 2: Product Stock Audit Trigger (`trgAuditStockChange`)</strong></p>
+
+```sql
+CREATE OR REPLACE TRIGGER plsqlresilience.trgAuditStockChange
+AFTER UPDATE OF stockQuantity ON plsqlresilience.Products
+FOR EACH ROW
+BEGIN
+    -- Ensure the trigger only logs if the stock quantity actually changed.
+    -- The WHEN clause in trigger definition is simpler for this, but doing it in body for explicit demonstration.
+    IF :NEW.stockQuantity != :OLD.stockQuantity THEN
+        INSERT INTO plsqlresilience.AuditLog (tableName, operationType, recordId, oldValue, newValue, details)
+        VALUES ('Products',
+                'STOCK_UPDATE',
+                TO_CHAR(:NEW.productId),
+                TO_CLOB(:OLD.stockQuantity),
+                TO_CLOB(:NEW.stockQuantity),
+                'Stock quantity changed for product ' || :NEW.productName);
+    END IF;
+END trgAuditStockChange;
+/
+```
+<p><strong>Part 3: Testing Anonymous Block</strong></p>
+
+```sql
+SET SERVEROUTPUT ON SIZE UNLIMITED;
+DECLARE
+    v_items           plsqlresilience.OrderProcessingPkg.OrderItemList;
+    v_new_order_id    plsqlresilience.Orders.orderId%TYPE;
+    v_laptop_id       plsqlresilience.Products.productId%TYPE;
+    v_mouse_id        plsqlresilience.Products.productId%TYPE;
+    v_keyboard_id     plsqlresilience.Products.productId%TYPE;
+    v_monitor_id      plsqlresilience.Products.productId%TYPE;
+    v_customer_test_id NUMBER := 777; -- Example customer ID
+BEGIN
+    -- Get product IDs
+    SELECT productId INTO v_laptop_id FROM plsqlresilience.Products WHERE productName = 'Laptop Pro';
+    SELECT productId INTO v_mouse_id FROM plsqlresilience.Products WHERE productName = 'Wireless Mouse';
+    SELECT productId INTO v_keyboard_id FROM plsqlresilience.Products WHERE productName = 'Keyboard Ultra';
+    SELECT productId INTO v_monitor_id FROM plsqlresilience.Products WHERE productName = 'Monitor HD';
+
+    DBMS_OUTPUT.PUT_LINE('--- Test Case 1: Successful Order ---');
+    v_items.DELETE; -- Clear previous items
+    v_items(1).productId := v_laptop_id;
+    v_items(1).quantity  := 1;
+    v_items(2).productId := v_mouse_id;
+    v_items(2).quantity  := 2;
+    BEGIN
+        plsqlresilience.OrderProcessingPkg.CreateNewOrder(
+            p_customer_id => v_customer_test_id,
+            p_items       => v_items,
+            p_order_id    => v_new_order_id
+        );
+        DBMS_OUTPUT.PUT_LINE('Successful order created with ID: ' || v_new_order_id);
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error in Test Case 1: ' || SQLERRM);
+    END;
+
+    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- Test Case 2: Insufficient Stock ---');
+    v_items.DELETE;
+    v_items(1).productId := v_keyboard_id; -- Keyboard Ultra, stock is 10
+    v_items(1).quantity  := 15; -- Requesting more than available
+    BEGIN
+        plsqlresilience.OrderProcessingPkg.CreateNewOrder(
+            p_customer_id => v_customer_test_id,
+            p_items       => v_items,
+            p_order_id    => v_new_order_id 
+        );
+        DBMS_OUTPUT.PUT_LINE('Order created (should not happen): ' || v_new_order_id);
+    EXCEPTION
+        WHEN plsqlresilience.OrderProcessingPkg.e_insufficient_stock THEN
+            DBMS_OUTPUT.PUT_LINE('Caught expected insufficient stock: ' || SQLERRM);
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error in Test Case 2: ' || SQLERRM);
+    END;
+    
+    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- Test Case 3: Product Not Found ---');
+    v_items.DELETE;
+    v_items(1).productId := 9999; -- Non-existent product ID
+    v_items(1).quantity  := 1;
+    BEGIN
+        plsqlresilience.OrderProcessingPkg.CreateNewOrder(
+            p_customer_id => v_customer_test_id,
+            p_items       => v_items,
+            p_order_id    => v_new_order_id
+        );
+        DBMS_OUTPUT.PUT_LINE('Order created (should not happen): ' || v_new_order_id);
+    EXCEPTION
+        WHEN plsqlresilience.OrderProcessingPkg.e_product_not_found THEN
+            DBMS_OUTPUT.PUT_LINE('Caught expected product not found: ' || SQLERRM);
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error in Test Case 3: ' || SQLERRM);
+    END;
+
+    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- Test Case 4: Invalid Quantity ---');
+    v_items.DELETE;
+    v_items(1).productId := v_mouse_id;
+    v_items(1).quantity  := 0; -- Invalid quantity
+    BEGIN
+        plsqlresilience.OrderProcessingPkg.CreateNewOrder(
+            p_customer_id => v_customer_test_id,
+            p_items       => v_items,
+            p_order_id    => v_new_order_id
+        );
+        DBMS_OUTPUT.PUT_LINE('Order created (should not happen for invalid quantity): ' || v_new_order_id);
+    EXCEPTION
+        WHEN plsqlresilience.OrderProcessingPkg.e_invalid_quantity THEN
+            DBMS_OUTPUT.PUT_LINE('Caught expected invalid quantity: ' || SQLERRM);
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error in Test Case 4: ' || SQLERRM);
+    END;
+
+
+    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- Verification Queries ---');
+    DBMS_OUTPUT.PUT_LINE('-- Recent Orders --');
+    FOR rec IN (SELECT orderId, customerId, status FROM plsqlresilience.Orders ORDER BY orderDate DESC FETCH FIRST 3 ROWS ONLY) LOOP
+        DBMS_OUTPUT.PUT_LINE('Order ID: ' || rec.orderId || ', Cust ID: ' || rec.customerId || ', Status: ' || rec.status);
+    END LOOP;
+
+    DBMS_OUTPUT.PUT_LINE('-- Recent Order Items --');
+     FOR rec IN (SELECT oi.orderId, p.productName, oi.quantity, oi.itemPrice 
+                 FROM plsqlresilience.OrderItems oi JOIN plsqlresilience.Products p ON oi.productId = p.productId 
+                 WHERE oi.orderId = v_new_order_id -- Assuming v_new_order_id holds the ID from the successful order
+                 ORDER BY oi.orderItemId DESC) LOOP
+        DBMS_OUTPUT.PUT_LINE('Order ID: ' || rec.orderId || ', Product: ' || rec.productName || ', Qty: ' || rec.quantity || ', Price: ' || rec.itemPrice);
+    END LOOP;
+
+    DBMS_OUTPUT.PUT_LINE('-- Product Stock Levels --');
+    FOR rec IN (SELECT productName, stockQuantity FROM plsqlresilience.Products WHERE productId IN (v_laptop_id, v_mouse_id, v_keyboard_id)) LOOP
+        DBMS_OUTPUT.PUT_LINE('Product: ' || rec.productName || ', Stock: ' || rec.stockQuantity);
+    END LOOP;
+
+    DBMS_OUTPUT.PUT_LINE('-- Recent Audit Logs --');
+    FOR rec IN (SELECT operationType, tableName, recordId, details FROM plsqlresilience.AuditLog ORDER BY changeTimestamp DESC FETCH FIRST 10 ROWS ONLY) LOOP
+        DBMS_OUTPUT.PUT_LINE('Audit: ' || rec.operationType || ' on ' || rec.tableName || ' for ID ' || rec.recordId || '. Details: '|| rec.details);
+    END LOOP;
+
+END;
+/
+```
 </div>
 
 </div>
