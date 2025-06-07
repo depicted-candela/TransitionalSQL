@@ -1,0 +1,680 @@
+.
+├── 1_fromPostgreSQLtoSQLOracle
+│   ├── 1_meaningsValuesRelationsAdvantages.sql
+│   ├── 2_disadvantagesAndPitfalls.sql
+│   ├── 3_inefficientCommonSolutionsContrasted.sql
+│   ├── 4_hardcoreCombinedProblem.sql
+│   ├── dataset.sql
+│   ├── exercises.pdf
+│   ├── history.log
+│   ├── lecture.pdf
+│   ├── NewSchema.md
+│   ├── NewSchema.sql
+│   └── README.md
+├── 2_functionsAndDMLBasics
+│   ├── 1_dateFunctions_oracleSpecificsAndPractice.sql
+│   ├── 2_stringFunctions_oraclePractice.sql
+│   ├── 3_setOperators.sql
+│   ├── 4_DmlTcl_oraclePractice.sql
+│   ├── 5_hardcoreCombinedProblem.sql
+│   ├── dataset.sql
+│   ├── exercises.md
+│   ├── NewSchema.sql
+│   └── README.md
+├── 3_advancedQueryingTechniques
+│   ├── 1_hierarchicalQueries.sql
+│   ├── 2_analyticWindowFunctions.sql
+│   ├── 3_DmlAndTransactionControl.sql
+│   ├── 4_hardcoreCombinedProblem.sql
+│   ├── dataset.sql
+│   ├── exercises.md
+│   ├── NewSchema.sql
+│   └── README.md
+├── 4_conqueringComplexities
+│   ├── 1_LOB.sql
+│   ├── 2_XMLTYPEDataType.sql
+│   ├── 3_JSONDataTypeAndQuerying.sql
+│   ├── 4_hardcoreCombinedProblems.sql
+│   ├── dataset.sql
+│   ├── duality.md
+│   ├── exercises.md
+│   ├── lecturedata.sql
+│   ├── NewSchemaLecture.sql
+│   ├── NewSchema.sql
+│   ├── practices.sql
+│   └── README.md
+├── 5_plSqlAwakening
+│   ├── 1_meaningsValuesRelationsAndAdvantages.sql
+│   ├── 2_disadvatangesAndPitfalls.sql
+│   ├── 3_inefficientAlternatives.sql
+│   ├── 4_hardcoreCombinedProblem.sql
+│   ├── dataset-lecture.sql
+│   ├── dataset.sql
+│   ├── exercises.md
+│   ├── NewSchemaLecture.sql
+│   ├── NewSchema.sql
+│   ├── practices.sql
+│   └── README.md
+├── 6_plSqlPrecision
+│   ├── 1_cursors.sql
+│   ├── 2_storedProceduresAndFunctions.sql
+│   ├── 3_hardcoreCombinedProblem.sql
+│   ├── dataset.sql
+│   ├── exercises.md
+│   ├── NewSchema.sql
+│   └── README.md
+├── 7_plSqlResilience
+│   ├── 1_packagesSpecificacionBodyBenefitsOverloading.sql
+│   ├── 2_exceptionHandling.sql
+│   ├── 3_triggers.sql
+│   ├── dataset.sql
+│   ├── exercises.md
+│   ├── NewSchema.sql
+│   └── README.md
+├── books
+│   ├── database-administrators-guide
+│   │   ├── database-administrators-guide.pdf
+│   │   ├── metadata.txt
+│   │   └── parts
+│   ├── database_advanced_queuing_java_api_reference
+│   │   └── jajms
+│   ├── database-concepts
+│   │   ├── 00a_table-of-contents.pdf
+│   │   ├── 00b_preface.pdf
+│   │   ├── ch01_introduction-to-oracle-database.pdf
+│   │   ├── ch02_cdbs-and-pdbs.pdf
+│   │   ├── ch03_application-containers.pdf
+│   │   ├── ch04_tables-and-table-clusters.pdf
+│   │   ├── ch05_indexes-and-index-organized-tables.pdf
+│   │   ├── ch06_partitions-views-other-schema-objects.pdf
+│   │   ├── ch07_data-integrity.pdf
+│   │   ├── ch08_application-data-usage.pdf
+│   │   ├── ch09_data-dictionary-dynamic-performance-views.pdf
+│   │   ├── ch10_sql.pdf
+│   │   ├── ch11_server-side-programming.pdf
+│   │   ├── ch12_data-concurrency-and-consistency.pdf
+│   │   ├── ch13_transactions.pdf
+│   │   ├── ch14_physical-storage-structures.pdf
+│   │   ├── ch15_logical-storage-structures.pdf
+│   │   ├── ch16_oracle-database-instance.pdf
+│   │   ├── ch17_memory-architecture.pdf
+│   │   ├── ch18_process-architecture.pdf
+│   │   ├── ch19_application-and-oracle-net-services-architecture.pdf
+│   │   ├── ch20_topics-for-dbas-and-developers.pdf
+│   │   ├── ch21_artificial-intelligence.pdf
+│   │   ├── ch22_concepts-for-dbas.pdf
+│   │   ├── ch23_concepts-for-developers.pdf
+│   │   ├── database-concepts.pdf
+│   │   ├── glossary.pdf
+│   │   ├── index.pdf
+│   │   ├── metadata.txt
+│   │   ├── part01_multitenant-architecture_title.pdf
+│   │   ├── part02_oracle-data-structures_title.pdf
+│   │   ├── part03_oracle-data-access_title.pdf
+│   │   ├── part04_oracle-transaction-management_title.pdf
+│   │   ├── part05_oracle-database-storage-structures_title.pdf
+│   │   ├── part06_oracle-instance-architecture_title.pdf
+│   │   └── part07_oracle-db-admin-app-dev_title.pdf
+│   ├── database-development-guide
+│   │   ├── 00a_contents.pdf
+│   │   ├── 00b_list_of_tables.pdf
+│   │   ├── 00c_preface.pdf
+│   │   ├── 00d_changes_in_this_release.pdf
+│   │   ├── appA_troubleshooting_the_saga_framework.pdf
+│   │   ├── appB_troubleshooting_utl_http.pdf
+│   │   ├── appC_recording_dml_changes_on_the_tracked_table.pdf
+│   │   ├── ch01_design_basics.pdf
+│   │   ├── ch02_connection_strategies_for_database_applications.pdf
+│   │   ├── ch03_performance_and_scalability.pdf
+│   │   ├── ch04_designing_applications_for_oracle_real-world_performance.pdf
+│   │   ├── ch05_security.pdf
+│   │   ├── ch06_high_availability.pdf
+│   │   ├── ch07_advanced_pl_sql_features.pdf
+│   │   ├── ch08_sql_processing_for_application_developers.pdf
+│   │   ├── ch09_using_sql_data_types_in_database_applications.pdf
+│   │   ├── ch10_registering_application_data_usage_with_the_database.pdf
+│   │   ├── ch11_using_regular_expressions_in_database_applications.pdf
+│   │   ├── ch12_using_indexes_in_database_applications.pdf
+│   │   ├── ch13_maintaining_data_integrity_in_database_applications.pdf
+│   │   ├── ch14_coding_pl_sql_subprograms_and_packages.pdf
+│   │   ├── ch15_using_pl_scope.pdf
+│   │   ├── ch16_using_the_pl_sql_hierarchical_profiler.pdf
+│   │   ├── ch17_using_pl_sql_basic_block_coverage_to_maintain_quality.pdf
+│   │   ├── ch18_developing_pl_sql_web_applications.pdf
+│   │   ├── ch19_using_continuous_query_notification_cqn.pdf
+│   │   ├── ch20_choosing_a_programming_environment.pdf
+│   │   ├── ch21_developing_applications_with_multiple_programming_languages.pdf
+│   │   ├── ch22_using_oracle_flashback_technology.pdf
+│   │   ├── ch23_developing_applications_with_the_publish-subscribe_model.pdf
+│   │   ├── ch24_using_the_oracle_database_odbc_driver.pdf
+│   │   ├── ch25_using_the_identity_code_package.pdf
+│   │   ├── ch26_microservices_architecture.pdf
+│   │   ├── ch27_oracle_backend_for_microservices_and_ai.pdf
+│   │   ├── ch28_developing_applications_with_sagas.pdf
+│   │   ├── ch29_using_lock-free_reservation.pdf
+│   │   ├── ch30_developing_applications_with_oracle_xa.pdf
+│   │   ├── ch31_developing_applications_with_sessionless_transactions.pdf
+│   │   ├── ch32_understanding_schema_object_dependency.pdf
+│   │   ├── ch33_using_edition-based_redefinition.pdf
+│   │   ├── ch34_using_transaction_guard.pdf
+│   │   ├── ch35_table_ddl_change_notification.pdf
+│   │   ├── database-development-guide.pdf
+│   │   └── metadata.txt
+│   ├── database-performance-tuning-guide
+│   │   ├── database-performance-tuning-guide.pdf
+│   │   ├── metadata.txt
+│   │   └── parts
+│   ├── database-pl-sql-packages-and-types-reference
+│   │   ├── 00a_contents.pdf
+│   │   ├── 00c_preface.pdf
+│   │   ├── 00d_changes_in_this_release.pdf
+│   │   ├── ch01_introduction_to_oracle_supplied_pl_sql_packages_and_types.pdf
+│   │   ├── ch02_oracle_application_express_packages_apex_application_through_apex_zip.pdf
+│   │   ├── ch03_ctx_adm.pdf
+│   │   ├── ch04_ctx_anl.pdf
+│   │   ├── ch05_ctx_ddl.pdf
+│   │   ├── ch06_ctx_cls.pdf
+│   │   ├── ch07_ctx_doc.pdf
+│   │   ├── ch08_ctx_entity.pdf
+│   │   ├── ch09_ctx_output.pdf
+│   │   ├── ch100_dbms_hs_parallel.pdf
+│   │   ├── ch101_dbms_hs_passthrough.pdf
+│   │   ├── ch102_dbms_hybrid_vector.pdf
+│   │   ├── ch103_dbms_ilm.pdf
+│   │   ├── ch104_dbms_ilm_admin.pdf
+│   │   ├── ch105_dbms_immutable_table.pdf
+│   │   ├── ch106_dbms_inmemory.pdf
+│   │   ├── ch107_dbms_inmemory_admin.pdf
+│   │   ├── ch108_dbms_inmemory_advise.pdf
+│   │   ├── ch109_dbms_iot.pdf
+│   │   ├── ch10_dbms_saga_adm.pdf
+│   │   ├── ch110_dbms_java.pdf
+│   │   ├── ch111_dbms_job.pdf
+│   │   ├── ch112_dbms_json_duality.pdf
+│   │   ├── ch113_dbms_json.pdf
+│   │   ├── ch114_dbms_json_schema.pdf
+│   │   ├── ch115_dbms_kafka.pdf
+│   │   ├── ch116_dbms_kafka_adm.pdf
+│   │   ├── ch117_dbms_ldap.pdf
+│   │   ├── ch118_dbms_ldap_utl.pdf
+│   │   ├── ch119_dbms_libcache.pdf
+│   │   ├── ch11_ctx_query.pdf
+│   │   ├── ch120_dbms_lob.pdf
+│   │   ├── ch121_dbms_lock.pdf
+│   │   ├── ch122_dbms_logmnr.pdf
+│   │   ├── ch123_dbms_logstdby.pdf
+│   │   ├── ch124_dbms_logmnr_d.pdf
+│   │   ├── ch125_dbms_logstdby_context.pdf
+│   │   ├── ch126_dbms_memoptimize.pdf
+│   │   ├── ch127_dbms_memoptimize_admin.pdf
+│   │   ├── ch128_dbms_metadata.pdf
+│   │   ├── ch129_dbms_metadata_diff.pdf
+│   │   ├── ch12_ctx_report.pdf
+│   │   ├── ch130_dbms_mgd_id_utl.pdf
+│   │   ├── ch131_dbms_mgwadm.pdf
+│   │   ├── ch132_dbms_mgwmsg.pdf
+│   │   ├── ch133_dbms_mle.pdf
+│   │   ├── ch134_dbms_monitor.pdf
+│   │   ├── ch135_dbms_mview.pdf
+│   │   ├── ch136_dbms_mview_stats.pdf
+│   │   ├── ch137_dbms_network_acl_admin.pdf
+│   │   ├── ch138_dbms_network_acl_utility.pdf
+│   │   ├── ch139_dbms_odci.pdf
+│   │   ├── ch13_ctx_thes.pdf
+│   │   ├── ch140_dbms_optim_bundle.pdf
+│   │   ├── ch141_dbms_outln.pdf
+│   │   ├── ch142_dbms_output.pdf
+│   │   ├── ch143_dbms_parallel_execute.pdf
+│   │   ├── ch144_dbms_part.pdf
+│   │   ├── ch145_dbms_pclxutil.pdf
+│   │   ├── ch146_dbms_pdb.pdf
+│   │   ├── ch147_dbms_pdb_alter_sharing.pdf
+│   │   ├── ch148_dbms_perf.pdf
+│   │   ├── ch149_dbms_pipe.pdf
+│   │   ├── ch14_ctx_ulexer.pdf
+│   │   ├── ch150_dbms_plsql_code_coverage.pdf
+│   │   ├── ch151_dbms_predictive_analytics.pdf
+│   │   ├── ch152_dbms_preprocessor.pdf
+│   │   ├── ch153_dbms_privilege_capture.pdf
+│   │   ├── ch154_dbms_process.pdf
+│   │   ├── ch155_dbms_profiler.pdf
+│   │   ├── ch156_dbms_propagation_adm.pdf
+│   │   ├── ch157_dbms_qopatch.pdf
+│   │   ├── ch158_dbms_random.pdf
+│   │   ├── ch159_dbms_redact.pdf
+│   │   ├── ch15_dbms_activity.pdf
+│   │   ├── ch160_dbms_redefinition.pdf
+│   │   ├── ch161_dbms_refresh.pdf
+│   │   ├── ch162_dbms_repair.pdf
+│   │   ├── ch163_dbms_resconfig.pdf
+│   │   ├── ch164_dbms_resource_manager.pdf
+│   │   ├── ch165_dbms_resource_manager_privs.pdf
+│   │   ├── ch166_dbms_result_cache.pdf
+│   │   ├── ch167_dbms_resumable.pdf
+│   │   ├── ch168_dbms_rls.pdf
+│   │   ├── ch169_dbms_rolling.pdf
+│   │   ├── ch16_dbms_addm.pdf
+│   │   ├── ch170_dbms_rowid.pdf
+│   │   ├── ch171_dbms_rule.pdf
+│   │   ├── ch172_dbms_rule_adm.pdf
+│   │   ├── ch173_dbms_saga.pdf
+│   │   ├── ch174_dbms_scheduler.pdf
+│   │   ├── ch175_dbms_search.pdf
+│   │   ├── ch176_dbms_server_alert.pdf
+│   │   ├── ch177_dbms_service.pdf
+│   │   ├── ch178_dbms_session.pdf
+│   │   ├── ch179_dbms_sfw_acl_admin.pdf
+│   │   ├── ch17_dbms_advanced_rewrite.pdf
+│   │   ├── ch180_dbms_shared_pool.pdf
+│   │   ├── ch181_dbms_sharding_directory.pdf
+│   │   ├── ch182_dbms_soda.pdf
+│   │   ├── ch183_dbms_space.pdf
+│   │   ├── ch184_dbms_space_admin.pdf
+│   │   ├── ch185_dbms_spd.pdf
+│   │   ├── ch186_dbms_spm.pdf
+│   │   ├── ch187_dbms_sql.pdf
+│   │   ├── ch188_dbms_sql_firewall.pdf
+│   │   ├── ch189_dbms_sql_monitor.pdf
+│   │   ├── ch18_dbms_advisor.pdf
+│   │   ├── ch190_dbms_sql_translator.pdf
+│   │   ├── ch191_dbms_sqldiag.pdf
+│   │   ├── ch192_dbms_sqlpa.pdf
+│   │   ├── ch193_dbms_sqlq.pdf
+│   │   ├── ch194_dbms_sqlset.pdf
+│   │   ├── ch195_dbms_sqltune.pdf
+│   │   ├── ch196_dbms_stat_funcs.pdf
+│   │   ├── ch197_dbms_stats.pdf
+│   │   ├── ch198_dbms_storage_map.pdf
+│   │   ├── ch199_dbms_sync_refresh.pdf
+│   │   ├── ch19_dbms_autoim.pdf
+│   │   ├── ch200_dbms_table_data.pdf
+│   │   ├── ch201_dbms_tdb.pdf
+│   │   ├── ch202_dbms_tf.pdf
+│   │   ├── ch203_dbms_tns.pdf
+│   │   ├── ch204_dbms_trace.pdf
+│   │   ├── ch205_dbms_transaction.pdf
+│   │   ├── ch206_dbms_transform.pdf
+│   │   ├── ch207_dbms_tsdp_manage.pdf
+│   │   ├── ch208_dbms_tsdp_protect.pdf
+│   │   ├── ch209_dbms_tts.pdf
+│   │   ├── ch20_dbms_alert.pdf
+│   │   ├── ch210_dbms_types.pdf
+│   │   ├── ch211_dbms_umf.pdf
+│   │   ├── ch212_dbms_undo_adv.pdf
+│   │   ├── ch213_dbms_user_certs.pdf
+│   │   ├── ch214_dbms_userdiag.pdf
+│   │   ├── ch215_dbms_utility.pdf
+│   │   ├── ch216_dbms_vector.pdf
+│   │   ├── ch217_dbms_vector_chain.pdf
+│   │   ├── ch218_dbms_warning.pdf
+│   │   ├── ch219_dbms_wm.pdf
+│   │   ├── ch21_dbms_app_cont.pdf
+│   │   ├── ch220_dbms_workload_capture.pdf
+│   │   ├── ch221_dbms_workload_replay.pdf
+│   │   ├── ch222_dbms_workload_repository.pdf
+│   │   ├── ch223_dbms_xdb.pdf
+│   │   ├── ch224_dbms_xa.pdf
+│   │   ├── ch225_dbms_xdb_admin.pdf
+│   │   ├── ch226_dbms_xdb_config.pdf
+│   │   ├── ch227_dbms_xdb_constants.pdf
+│   │   ├── ch228_dbms_xdb_repos.pdf
+│   │   ├── ch229_dbms_xdb_version.pdf
+│   │   ├── ch22_dbms_app_cont_admin.pdf
+│   │   ├── ch230_dbms_xdbresource.pdf
+│   │   ├── ch231_dbms_xdbz.pdf
+│   │   ├── ch232_dbms_xevent.pdf
+│   │   ├── ch233_dbms_xmldom.pdf
+│   │   ├── ch234_dbms_xmlgen.pdf
+│   │   ├── ch235_dbms_xmlindex.pdf
+│   │   ├── ch236_dbms_xmlparser.pdf
+│   │   ├── ch237_dbms_xmlschema.pdf
+│   │   ├── ch238_dbms_xmlschema_annotate.pdf
+│   │   ├── ch239_dbms_xmlschema_util.pdf
+│   │   ├── ch23_dbms_app_cont_report.pdf
+│   │   ├── ch240_dbms_xmlstorage_manage.pdf
+│   │   ├── ch241_dbms_xmlstore.pdf
+│   │   ├── ch242_dbms_xplan.pdf
+│   │   ├── ch243_dbms_xslprocessor.pdf
+│   │   ├── ch244_dbms_xstream_adm.pdf
+│   │   ├── ch245_debug_extproc.pdf
+│   │   ├── ch246_htf.pdf
+│   │   ├── ch247_htp.pdf
+│   │   ├── ch248_owa_cache.pdf
+│   │   ├── ch249_owa_cookie.pdf
+│   │   ├── ch24_dbms_application_info.pdf
+│   │   ├── ch250_owa_custom.pdf
+│   │   ├── ch251_owa_image.pdf
+│   │   ├── ch252_owa_opt_lock.pdf
+│   │   ├── ch253_owa_pattern.pdf
+│   │   ├── ch254_owa_sec.pdf
+│   │   ├── ch255_owa_text.pdf
+│   │   ├── ch256_owa_util.pdf
+│   │   ├── ch257_sdo_cs.pdf
+│   │   ├── ch258_sdo_csw_process.pdf
+│   │   ├── ch259_sdo_gcdr.pdf
+│   │   ├── ch25_dbms_apply_adm.pdf
+│   │   ├── ch260_sdo_geom.pdf
+│   │   ├── ch261_sdo_geor.pdf
+│   │   ├── ch262_sdo_geor_admin.pdf
+│   │   ├── ch263_sdo_geor_aggr.pdf
+│   │   ├── ch264_sdo_geor_ra.pdf
+│   │   ├── ch265_sdo_geor_utl.pdf
+│   │   ├── ch266_sdo_lrs.pdf
+│   │   ├── ch267_sdo_migrate.pdf
+│   │   ├── ch268_sdo_net.pdf
+│   │   ├── ch269_sdo_nfe.pdf
+│   │   ├── ch26_dbms_aq.pdf
+│   │   ├── ch270_sdo_ols.pdf
+│   │   ├── ch271_sdo_pc_pkg.pdf
+│   │   ├── ch272_sdo_sam.pdf
+│   │   ├── ch273_sdo_tin_pkg.pdf
+│   │   ├── ch274_sdo_topo.pdf
+│   │   ├── ch275_sdo_topo_map.pdf
+│   │   ├── ch276_sdo_tune.pdf
+│   │   ├── ch277_sdo_util.pdf
+│   │   ├── ch278_sdo_wfs_lock.pdf
+│   │   ├── ch279_sdo_wfs_process.pdf
+│   │   ├── ch27_dbms_aqadm.pdf
+│   │   ├── ch280_sem_apis.pdf
+│   │   ├── ch281_sem_ols.pdf
+│   │   ├── ch282_sem_perf.pdf
+│   │   ├── ch283_sem_rdfctx.pdf
+│   │   ├── ch284_sem_rdfsa.pdf
+│   │   ├── ch285_utl_call_stack.pdf
+│   │   ├── ch286_utl_coll.pdf
+│   │   ├── ch287_utl_compress.pdf
+│   │   ├── ch288_utl_encode.pdf
+│   │   ├── ch289_utl_file.pdf
+│   │   ├── ch28_dbms_aqelm.pdf
+│   │   ├── ch290_utl_http.pdf
+│   │   ├── ch291_utl_i18n.pdf
+│   │   ├── ch292_utl_ident.pdf
+│   │   ├── ch293_utl_inaddr.pdf
+│   │   ├── ch294_utl_lms.pdf
+│   │   ├── ch295_utl_mail.pdf
+│   │   ├── ch296_utl_match.pdf
+│   │   ├── ch297_utl_nla.pdf
+│   │   ├── ch298_utl_raw.pdf
+│   │   ├── ch299_utl_recomp.pdf
+│   │   ├── ch29_dbms_aqin.pdf
+│   │   ├── ch300_utl_ref.pdf
+│   │   ├── ch301_utl_rpadv.pdf
+│   │   ├── ch302_utl_smtp.pdf
+│   │   ├── ch303_utl_tcp.pdf
+│   │   ├── ch304_utl_url.pdf
+│   │   ├── ch305_wpg_docload.pdf
+│   │   ├── ch306_anydata_type.pdf
+│   │   ├── ch307_anydataset_type.pdf
+│   │   ├── ch308_anytype_type.pdf
+│   │   ├── ch309_oracle_database_advanced_queuing_aq_types.pdf
+│   │   ├── ch30_dbms_aqmigtool.pdf
+│   │   ├── ch310_dbfs_content_interface_types.pdf
+│   │   ├── ch311_database_uri_types.pdf
+│   │   ├── ch312_jms_types.pdf
+│   │   ├── ch313_json_data_structures.pdf
+│   │   ├── ch314_logical_change_record_types.pdf
+│   │   ├── ch315_mgd_id_package_types.pdf
+│   │   ├── ch316_rule_types.pdf
+│   │   ├── ch317_soda_types.pdf
+│   │   ├── ch318_utl_streams_types.pdf
+│   │   ├── ch319_xmltype.pdf
+│   │   ├── ch31_dbms_assert.pdf
+│   │   ├── ch32_dbms_audit_mgmt.pdf
+│   │   ├── ch33_dbms_audit_util.pdf
+│   │   ├── ch34_dbms_auto_clustering.pdf
+│   │   ├── ch35_dbms_auto_sqltune.pdf
+│   │   ├── ch36_dbms_auto_index.pdf
+│   │   ├── ch37_dbms_auto_mv.pdf
+│   │   ├── ch38_dbms_auto_report.pdf
+│   │   ├── ch39_dbms_auto_task_admin.pdf
+│   │   ├── ch40_dbms_auto_zonemap.pdf
+│   │   ├── ch41_dbms_avtune.pdf
+│   │   ├── ch42_dbms_aw_stats.pdf
+│   │   ├── ch43_dbms_blockchain_table.pdf
+│   │   ├── ch44_dbms_blocker_resolver.pdf
+│   │   ├── ch45_dbms_capture_adm.pdf
+│   │   ├── ch46_dbms_cacheutil.pdf
+│   │   ├── ch47_dbms_cloud.pdf
+│   │   ├── ch48_dbms_cloud_ai.pdf
+│   │   ├── ch49_dbms_cloud_notification.pdf
+│   │   ├── ch50_dbms_cloud_pipeline.pdf
+│   │   ├── ch51_dbms_cloud_repo.pdf
+│   │   ├── ch52_dbms_comparison.pdf
+│   │   ├── ch53_dbms_compression.pdf
+│   │   ├── ch54_dbms_connection_pool.pdf
+│   │   ├── ch55_dbms_cq_notification.pdf
+│   │   ├── ch56_dbms_credential.pdf
+│   │   ├── ch57_dbms_crypto.pdf
+│   │   ├── ch58_dbms_csx_admin.pdf
+│   │   ├── ch59_dbms_cube.pdf
+│   │   ├── ch60_dbms_cube_advise.pdf
+│   │   ├── ch61_dbms_cube_log.pdf
+│   │   ├── ch62_dbms_data_mining.pdf
+│   │   ├── ch63_dbms_data_mining_transform.pdf
+│   │   ├── ch64_dbms_datapump.pdf
+│   │   ├── ch65_dbms_db_version.pdf
+│   │   ├── ch66_dbms_dbcomp.pdf
+│   │   ├── ch67_dbms_dbfs_content.pdf
+│   │   ├── ch68_dbms_dbfs_content_spi.pdf
+│   │   ├── ch69_dbms_dbfs_hs.pdf
+│   │   ├── ch70_dbms_dbfs_sfs.pdf
+│   │   ├── ch71_dbms_ddl.pdf
+│   │   ├── ch72_dbms_debug.pdf
+│   │   ├── ch73_dbms_debug_jdwp.pdf
+│   │   ├── ch74_dbms_debug_jdwp_custom.pdf
+│   │   ├── ch75_dbms_describe.pdf
+│   │   ├── ch76_dbms_developer.pdf
+│   │   ├── ch77_dbms_dg.pdf
+│   │   ├── ch78_dbms_dictionary_check.pdf
+│   │   ├── ch79_dbms_dimension.pdf
+│   │   ├── ch80_dbms_distributed_trust_admin.pdf
+│   │   ├── ch81_dbms_dnfs.pdf
+│   │   ├── ch82_dbms_dst.pdf
+│   │   ├── ch83_dbms_editions_utilities.pdf
+│   │   ├── ch84_dbms_epg.pdf
+│   │   ├── ch85_dbms_errlog.pdf
+│   │   ├── ch86_dbms_fga.pdf
+│   │   ├── ch87_dbms_file_transfer.pdf
+│   │   ├── ch88_dbms_flashback.pdf
+│   │   ├── ch89_dbms_flashback_archive.pdf
+│   │   ├── ch90_dbms_flashback_archive_migrate.pdf
+│   │   ├── ch91_dbms_frequent_itemset.pdf
+│   │   ├── ch92_dbms_fs.pdf
+│   │   ├── ch93_dbms_goldengate_adm.pdf
+│   │   ├── ch94_dbms_goldengate_auth.pdf
+│   │   ├── ch95_dbms_hadoop.pdf
+│   │   ├── ch96_dbms_heat_map.pdf
+│   │   ├── ch97_dbms_hierarchy.pdf
+│   │   ├── ch98_dbms_hm.pdf
+│   │   ├── ch99_dbms_hprof.pdf
+│   │   ├── database-pl-sql-packages-and-types-reference.pdf
+│   │   ├── index.pdf
+│   │   └── metadata.txt
+│   ├── database-reference.pdf
+│   ├── database-security-guide
+│   │   ├── database-security-guide.pdf
+│   │   ├── metadata.txt
+│   │   └── parts
+│   ├── database-transactional-event-queues-and-advanced-queuing-users-guide
+│   │   ├── database-transactional-event-queues-and-advanced-queuing-users-guide.pdf
+│   │   ├── metadata.txt
+│   │   └── parts
+│   ├── get-started-oracle-database-development
+│   │   ├── get-started-guide_00b_preface.pdf
+│   │   ├── get-started-guide_ch01_introduction.pdf
+│   │   ├── get-started-guide_ch02_connecting-and-exploring.pdf
+│   │   ├── get-started-guide_ch03_dml-statements-transactions.pdf
+│   │   ├── get-started-guide_ch04_creating-managing-schema-objects.pdf
+│   │   ├── get-started-guide_ch05_developing-stored-subprograms-packages.pdf
+│   │   ├── get-started-guide_ch06_using-triggers.pdf
+│   │   ├── get-started-guide_ch07_working-global-environment.pdf
+│   │   ├── get-started-guide_ch08_building-effective-applications.pdf
+│   │   ├── get-started-guide_ch09_developing-simple-application.pdf
+│   │   ├── get-started-guide_ch10_deploying-application.pdf
+│   │   └── get-started-oracle-database-development.pdf
+│   ├── jajms
+│   │   ├── allclasses-frame.html
+│   │   ├── allclasses-noframe.html
+│   │   ├── constant-values.html
+│   │   ├── debug.log
+│   │   ├── deprecated-list.html
+│   │   ├── help-doc.html
+│   │   ├── index-all.html
+│   │   ├── index.html
+│   │   ├── javax
+│   │   ├── olongdesc.html
+│   │   ├── oracle
+│   │   ├── overview-frame.html
+│   │   ├── overview-summary.html
+│   │   ├── overview-tree.html
+│   │   ├── package-list
+│   │   ├── script.js
+│   │   ├── serialized-form.html
+│   │   ├── stylesheet.css
+│   │   └── toc.htm
+│   ├── java-developers-guide
+│   │   ├── java-developers-guide.pdf
+│   │   ├── metadata.txt
+│   │   └── parts
+│   ├── jdbc-developers-guide
+│   │   ├── jdbc-developers-guide.pdf
+│   │   ├── metadata.txt
+│   │   └── parts
+│   ├── json-relational-duality-developers-guide.pdf
+│   ├── oracle-database-23ai-new-features-guide.pdf
+│   ├── oracle-database-javascript-developers-guide
+│   │   ├── metadata.txt
+│   │   ├── oracle-database-javascript-developers-guide.pdf
+│   │   └── parts
+│   ├── oracle-database-pl-sql-language-reference
+│   │   ├── 00b_preface.pdf
+│   │   ├── appA_source-text-wrapping.pdf
+│   │   ├── appB_name-resolution.pdf
+│   │   ├── appC_program-limits.pdf
+│   │   ├── appD_reserved-words-keywords.pdf
+│   │   ├── appE_predefined-data-types.pdf
+│   │   ├── ch01_changes-in-release.pdf
+│   │   ├── ch02_overview-of-plsql.pdf
+│   │   ├── ch03_language-fundamentals.pdf
+│   │   ├── ch04_data-types.pdf
+│   │   ├── ch05_control-statements.pdf
+│   │   ├── ch06_collections-records.pdf
+│   │   ├── ch07_static-sql.pdf
+│   │   ├── ch08_dynamic-sql.pdf
+│   │   ├── ch09_subprograms.pdf
+│   │   ├── ch10_triggers.pdf
+│   │   ├── ch11_packages.pdf
+│   │   ├── ch12_error-handling.pdf
+│   │   ├── ch13_optimization-tuning.pdf
+│   │   ├── ch14_language-elements.pdf
+│   │   ├── ch15_sql-statements-for-stored-units.pdf
+│   │   └── database-pl-sql-language-reference.pdf
+│   ├── oracle-database-sql-firewall-users-guide
+│   │   ├── metadata.txt
+│   │   ├── oracle-database-sql-firewall-users-guide.pdf
+│   │   └── parts
+│   ├── oracle-database-utilities-guide
+│   │   ├── 000_cover-title.pdf
+│   │   ├── 00a_table-of-contents.pdf
+│   │   ├── 00b_preface.pdf
+│   │   ├── appA_instant-client.pdf
+│   │   ├── appB_sqlloader-syntax-diagrams.pdf
+│   │   ├── ch01_overview-data-pump.pdf
+│   │   ├── ch02_data-pump-export.pdf
+│   │   ├── ch03_data-pump-import.pdf
+│   │   ├── ch04_data-pump-legacy-mode.pdf
+│   │   ├── ch05_data-pump-performance.pdf
+│   │   ├── ch06_data-pump-api.pdf
+│   │   ├── ch07_understanding-sqlloader.pdf
+│   │   ├── ch08_sqlloader-command-line.pdf
+│   │   ├── ch09_sqlloader-control-file.pdf
+│   │   ├── ch10_sqlloader-field-list.pdf
+│   │   ├── ch11_sqlloader-loading-objects-lobs.pdf
+│   │   ├── ch12_sqlloader-conventional-direct-path.pdf
+│   │   ├── ch13_sqlloader-express.pdf
+│   │   ├── ch14_external-tables-concepts.pdf
+│   │   ├── ch15_oracle-loader-access-driver.pdf
+│   │   ├── ch16_oracle-datapump-access-driver.pdf
+│   │   ├── ch17_oracle-bigdata-access-driver.pdf
+│   │   ├── ch18_external-tables-examples.pdf
+│   │   ├── ch19_cloud-premigration-advisor-tool.pdf
+│   │   ├── ch20_dbms-cloud-packages.pdf
+│   │   ├── ch21_migrating-json-to-duality.pdf
+│   │   ├── ch22_sql-access-to-kafka.pdf
+│   │   ├── ch23_adrci.pdf
+│   │   ├── ch24_dbverify.pdf
+│   │   ├── ch25_dbnewid.pdf
+│   │   ├── ch26_logminer.pdf
+│   │   ├── ch27_metadata-apis.pdf
+│   │   ├── ch28_original-import.pdf
+│   │   ├── metadata.txt
+│   │   └── oracle-database-utilities-guide.pdf
+│   ├── reductions
+│   │   ├── reduction-database-administrators-guide.pdf
+│   │   ├── reduction_database-administrators-guide.pdf
+│   │   ├── reduction-database-concepts.pdf
+│   │   ├── reduction-database-development-guide.pdf
+│   │   ├── reduction-database-performance-tuning-guide.pdf
+│   │   ├── reduction-database-pl-sql-language-reference.pdf
+│   │   ├── reduction-database-pl-sql-packages-and-types-reference.pdf
+│   │   ├── reduction-database-reference.pdf
+│   │   ├── reduction-database-security-guide.pdf
+│   │   ├── reduction-database-transactional-event-queues-and-advanced-queuing-users-guide.pdf
+│   │   ├── reduction-get-started-oracle-database-development.pdf
+│   │   ├── reduction-java-developers-guide.pdf
+│   │   ├── reduction-jdbc-developers-guide.pdf
+│   │   ├── reduction_oracle-database-javascript-developers-guide.pdf
+│   │   ├── reduction-oracle-database-sql-firewall-users-guide.pdf
+│   │   ├── reduction_oracle-database-sql-firewall-users-guide.pdf
+│   │   ├── reduction-oracle-database-utilities-guide.pdf
+│   │   ├── reduction-securefiles-and-large-objects-developers-guide.pdf
+│   │   ├── reduction-sql-language-reference.pdf
+│   │   ├── reduction-sql-tuning-guide.pdf
+│   │   ├── reduction-universal-connection-pool-developers-guide.pdf
+│   │   └── reduction-xml-db-developers-guide.pdf
+│   ├── securefiles-and-large-objects-developers-guide
+│   │   ├── metadata.txt
+│   │   ├── parts
+│   │   └── securefiles-and-large-objects-developers-guide.pdf
+│   ├── sql-language-reference
+│   │   ├── metadata.txt
+│   │   ├── parts
+│   │   └── sql-language-reference.pdf
+│   ├── sql-tuning-guide
+│   │   ├── metadata.txt
+│   │   ├── parts
+│   │   └── sql-tuning-guide.pdf
+│   ├── universal-connection-pool-developers-guide
+│   │   ├── metadata.txt
+│   │   ├── parts
+│   │   └── universal-connection-pool-developers-guide.pdf
+│   └── xml-db-developers-guide
+│       ├── metadata.txt
+│       ├── parts
+│       └── xml-db-developers-guide.pdf
+├── books.md
+├── chunk7_plSqlResilience.md
+├── chunk8_plSqlMastery.md
+├── oracle-database_23
+│   └── oracle-database_23_20250424
+│       ├── content
+│       └── Readme.html
+├── oracle-database_23.zip
+├── README.md
+├── setup.pdf
+├── solutions
+│   ├── 1_fromPostgreSQLtoSQLOracle.pdf
+│   ├── 2_functionsAndDMLBasics.md
+│   ├── 3_advancedQueryingTechniques.md
+│   ├── 4_conqueringComplexities.md
+│   ├── 5_plSqlAwakening.md
+│   ├── 6_plSqlPrecision.md
+│   └── 7_plSqlResilience.md
+├── styles
+│   ├── exercises.css
+│   ├── lecture.css
+│   └── solutions.css
+├── tempbooks.md
+└── tree.txt
+
+52 directories, 626 files

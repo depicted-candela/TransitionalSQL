@@ -40,7 +40,7 @@ The course is divided into 13 study chunks, each focusing on specific areas:
 ---
 
 ## Study Chunk 1: Crossing the Divide - Oracle SQL Basics for PostgreSQL Pros: 
-**Parental/Core Category: ORACLE SQL & BRIDGING FROM POSTGRESQL**
+**Parental/Core Category:** ORACLE SQL & BRIDGING FROM POSTGRESQL
 *Categories to be Studied:*
 - Key Differences & Core Syntax
 - Data Types *(Oracle Specific)* (VARCHAR2, NVARCHAR2, NUMBER, DATE, TIMESTAMP, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH LOCAL TIME ZONE)
@@ -51,7 +51,7 @@ The course is divided into 13 study chunks, each focusing on specific areas:
 - Comments
 
 ## Study Chunk 2: Essential Oracle Functions & DML Basics
-**Parental/Core Category: ORACLE SQL & BRIDGING FROM POSTGRESQL**
+**Parental/Core Category:** ORACLE SQL & BRIDGING FROM POSTGRESQL
 *Categories to be Studied:*
 - Date Functions *(Oracle Specifics & Practice)* (SYSDATE, CURRENT_DATE, SYSTIMESTAMP, CURRENT_TIMESTAMP, TO_DATE, TO_CHAR, ADD_MONTHS, MONTHS_BETWEEN, LAST_DAY, NEXT_DAY, TRUNC, ROUND (for dates), Date Arithmetic)
 - String Functions *(Practice in Oracle)*
@@ -59,14 +59,14 @@ The course is divided into 13 study chunks, each focusing on specific areas:
 - Data Manipulation Language (DML) & Transaction Control *(Practice in Oracle)* (INSERT, UPDATE, DELETE, SELECT, COMMIT, ROLLBACK, SAVEPOINT)
 
 ## Study Chunk 3: Advanced Oracle SQL Querying Techniques
-**Parental/Core Category: ORACLE SQL & BRIDGING FROM POSTGRESQL**
+**Parental/Core Category:** ORACLE SQL & BRIDGING FROM POSTGRESQL
 *Categories to be Studied:*
 - Hierarchical Queries *(Oracle Specific - Very Important)* (CONNECT BY clause, LEVEL pseudo-column, PRIOR operator, START WITH clause)
 - Analytic (Window) Functions *(Practice in Oracle Syntax)* (Ranking: RANK, DENSE_RANK, ROW_NUMBER; Navigation: LAG, LEAD; Aggregates: SUM() OVER (...), AVG() OVER (...))
 - Data Manipulation Language (DML) & Transaction Control *(Practice in Oracle)* (MERGE statement (Oracle Specific))
 
 ## Study Chunk 4: Conquering Complexity: Oracle’s XML, JSON, and More
-**Parental/Core Category:** ORACLE SQL & BRIDGING FROM POSTGRESQL**
+**Parental/Core Category:** ORACLE SQL & BRIDGING FROM POSTGRESQL
 *Categories to be Studied:*
 - Handling Complex Data Types (Essential for job tasks like XML/JSON handling in Flexcube)
 - Data Types Revisited: CLOB, BLOB (Contextual recap from Chunk 1)
