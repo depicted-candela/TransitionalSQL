@@ -138,7 +138,7 @@ BEGIN
             OTHERS THEN 
                 IF SQLCODE = -24381 THEN 
                     DBMS_OUTPUT.PUT_LINE(SQLERRM);
-                    DBMS_OUTPUT.PUT_LINE('There errors are '||SQL%BULK_EXCEPTIONS.COUNT);
+                    DBMS_OUTPUT.PUT_LINE('The errors are '||SQL%BULK_EXCEPTIONS.COUNT);
                     FOR x IN 1..SQL%BULK_EXCEPTIONS.COUNT LOOP
                         DBMS_OUTPUT.PUT_LINE(SQLERRM(-(SQL%BULK_EXCEPTIONS(x).ERROR_CODE))||' at '||SQL%BULK_EXCEPTIONS(x).ERROR_INDEX);
                     END LOOP;

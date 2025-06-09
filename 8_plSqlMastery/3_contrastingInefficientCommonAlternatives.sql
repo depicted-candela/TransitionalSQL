@@ -1,12 +1,11 @@
         -- Collections & Records, Bulk Operations for Performance, Dynamic SQL
 
---  (iii) Contrasting with Inefficient Common Solutions
 
+--  (iii) Contrasting with Inefficient Common Solutions
 
 --      Exercise 3.1: Row-by-Row Processing vs. Bulk Operations
 -- Processing data row by row between the SQL and PL/SQL engines is a common, intuitive approach but is highly inefficient for large datasets due to numerous context 
 -- switches.
-
 -- Create a PL/SQL anonymous block that declares a loop counter variable i. Loop through the product IDs 3000, 3002, 3005. Implement stock quantity updates for these 
 -- products using a standard FOR LOOP that executes an individual UPDATE statement for each product ID inside the loop. Use new quantities (e.g., 60, 350, 40).
 -- Create a second PL/SQL anonymous block that achieves the *same update* for the *same list of products and new quantities* using a FORALL statement. Assume the new 
@@ -97,14 +96,12 @@ BEGIN
 END;
 /
 -- Oracle Specific Context: Refer to these chapters for performance comparisons and the mechanism of bulk SQL.
-
 -- Performance and Scalability - Real-World Performance and Data Processing Techniques
 -- Bulk SQL and Bulk Binding - FORALL Statement
 
 --      Exercise 3.2: Manual Dynamic SQL String Building vs. Bind Variables
 -- Directly building SQL strings by concatenating application data (even if not malicious) prevents Oracle from effectively caching and reusing the parsed statement, 
 -- leading to parsing overhead.
-
 -- Create a PL/SQL anonymous block that declares a loop counter variable i. Loop 100 times. Inside the loop, construct a dynamic 
 -- SELECT 1 FROM DUAL WHERE 1 = [loop counter] statement by *concatenating* the loop counter (TO_CHAR(i)) into the string. 
 DECLARE
@@ -136,9 +133,3 @@ END;
 -- Answer: the bind variables enables soft parsing, that is a specialization of parsing juust for binded spaces not possible to done with queries made by concatenation
 -- because of their flexibility, the rigid mechanism of bind variables makes easier the process or parsing for the compiler
 -- (Conceptual Exercise - No Code Needed)
-
--- Oracle Specific Context: Refer to these chapters for the importance of bind variables and parsing.
-
--- Building Effective Applications - Using Bind Variables to Improve Scalability
--- Database Concepts - Process Architecture (for parsing context)
--- EXECUTE IMMEDIATE Statement

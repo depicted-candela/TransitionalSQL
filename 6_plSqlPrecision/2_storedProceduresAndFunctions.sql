@@ -25,7 +25,7 @@ END;
 BEGIN
     PLSQLPRECISION.ADDDEPARTMENT(50, 'AS', 'Bogotá');   -- Fails with The error ORA-00001: unique constraint (PLSQLPRECISION.SYS_C008825) violated on table 
                                                         -- PLSQLPRECISION.DEPARTMENTS columns (DEPARTMENTID) occurs
-    PLSQLPRECISION.ADDDEPARTMENT(100, 'AS', 'Bogotá');   -- Success and commit
+    PLSQLPRECISION.ADDDEPARTMENT(100, 'AS', 'Bogotá');  -- Success and commit
 END;
 /
 
