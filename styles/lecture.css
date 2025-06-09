@@ -449,7 +449,7 @@ tr:hover td {
     border-left: 6px solid var(--oracle-specific-border);
     padding: 12px 15px;
     margin: 18px 0;
-    font-size: small;
+    font-size: medium;
     border-radius: 4px;
     transition: all var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
 }

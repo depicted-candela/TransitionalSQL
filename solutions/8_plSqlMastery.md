@@ -24,259 +24,6 @@ Even if your code ran without errors, take the time to read through the explanat
 
 The exercises in this chunk utilize the standard dataset established at the beginning of this section of the course. It includes tables like `departments`, `employees`, `products`, `orders`, and `orderItems`, along with helper tables like `appSettings`, `customerLog`, `nestedData`, `varrayData`, `recordData`, `dynamicDataTarget`, and `ptfSourceData`, complete with necessary sequences and custom Oracle types (`nestedIntegerList`, `varrayStringList`, `productInfoRec`, `productInfoList`). This rich dataset provides the necessary context to practice the diverse applications of collections, bulk operations, and dynamic SQL in realistic (though simplified) scenarios.
 
-```sql
--- =============================================================================
--- DATASET DEFINITION AND POPULATION (Repeated for easy reference)
--- =============================================================================
-
--- Drop existing tables to start fresh (using IF EXISTS, a 23ai feature)
-DROP TABLE orderItems IF EXISTS;
-DROP TABLE orders IF EXISTS;
-DROP TABLE employees IF EXISTS;
-DROP TABLE departments IF EXISTS;
-DROP TABLE products IF EXISTS;
-DROP TABLE appSettings IF EXISTS;
-DROP TABLE customerLog IF EXISTS;
-DROP TABLE nestedData IF EXISTS;
-DROP TABLE varrayData IF EXISTS;
-DROP TABLE recordData IF EXISTS;
-DROP TABLE dynamicDataTarget IF EXISTS;
-DROP TABLE ptfSourceData IF EXISTS;
-
--- Sequences for primary keys
-DROP SEQUENCE employees_seq IF EXISTS;
-DROP SEQUENCE orders_seq IF EXISTS;
-DROP SEQUENCE products_seq IF EXISTS;
-DROP SEQUENCE customerlog_seq IF EXISTS;
-DROP SEQUENCE nesteddata_seq IF EXISTS;
-DROP SEQUENCE varraydata_seq IF EXISTS;
-DROP SEQUENCE recorddata_seq IF EXISTS;
-DROP SEQUENCE dynamicdatatarget_seq IF EXISTS;
-DROP SEQUENCE ptfsourcedata_seq IF EXISTS;
-
-CREATE SEQUENCE employees_seq START WITH 1000 INCREMENT BY 1;
-CREATE SEQUENCE orders_seq START WITH 2000 INCREMENT BY 1;
-CREATE SEQUENCE products_seq START WITH 3000 INCREMENT BY 1;
-CREATE SEQUENCE customerlog_seq START WITH 4000 INCREMENT BY 1;
-CREATE SEQUENCE nesteddata_seq START WITH 5000 INCREMENT BY 1;
-CREATE SEQUENCE varraydata_seq START WITH 6000 INCREMENT BY 1;
-CREATE SEQUENCE recorddata_seq START WITH 7000 INCREMENT BY 1;
-CREATE SEQUENCE dynamicdatatarget_seq START WITH 8000 INCREMENT BY 1;
-CREATE SEQUENCE ptfsourcedata_seq START WITH 9000 INCREMENT BY 1;
-
-
--- Departments table
-CREATE TABLE departments (
-    departmentId NUMBER(4) PRIMARY KEY,
-    departmentName VARCHAR2(30) NOT NULL UNIQUE,
-    location VARCHAR2(20)
-);
-
--- Employees table (simplified HR schema)
-CREATE TABLE employees (
-    employeeId NUMBER(6) PRIMARY KEY,
-    firstName VARCHAR2(20),
-    lastName VARCHAR2(25) NOT NULL,
-    email VARCHAR2(25) NOT NULL UNIQUE,
-    phoneNumber VARCHAR2(20),
-    hireDate DATE NOT NULL,
-    jobId VARCHAR2(10),
-    salary NUMBER(8,2),
-    commissionPct NUMBER(2,2),
-    managerId NUMBER(6),
-    departmentId NUMBER(4) REFERENCES departments(departmentId)
-);
-
--- Products table
-CREATE TABLE products (
-    productId NUMBER(6) PRIMARY KEY,
-    productName VARCHAR2(50) NOT NULL UNIQUE,
-    category VARCHAR2(20),
-    price NUMBER(10,2) NOT NULL,
-    stockQuantity NUMBER(6)
-);
-
--- Orders table
-CREATE TABLE orders (
-    orderId NUMBER(6) PRIMARY KEY,
-    customerId NUMBER(6), -- simplified customer ID (not linked to employees)
-    orderDate DATE NOT NULL,
-    status VARCHAR2(20) DEFAULT 'Pending',
-    totalAmount NUMBER(10,2) DEFAULT 0
-);
-
--- Order Items table
-CREATE TABLE orderItems (
-    orderItemId NUMBER(10) PRIMARY KEY, -- using sequence, not composite key
-    orderId NUMBER(6) REFERENCES orders(orderId),
-    productId NUMBER(6) REFERENCES products(productId),
-    quantity NUMBER(6) NOT NULL,
-    unitPrice NUMBER(10,2) NOT NULL,
-    itemAmount NUMBER(10,2) GENERATED ALWAYS AS (quantity * unitPrice) VIRTUAL -- Virtual column
-);
-
--- Application Settings table (for dynamic DDL/DML examples)
-CREATE TABLE appSettings (
-    settingName VARCHAR2(50) PRIMARY KEY,
-    settingValue VARCHAR2(255)
-);
-
--- Customer Log table (for dynamic SQL examples, especially injection)
-CREATE TABLE customerLog (
-    logId NUMBER(10) PRIMARY KEY,
-    logTimestamp TIMESTAMP DEFAULT SYSTIMESTAMP,
-    customerName VARCHAR2(100),
-    actionDetails VARCHAR2(4000)
-);
-
--- Tables for Collections & Records
--- Nested Table type definition
-CREATE OR REPLACE TYPE nestedIntegerList IS TABLE OF NUMBER;
-/
-
--- Varray type definition
-CREATE OR REPLACE TYPE varrayStringList IS VARRAY(10) OF VARCHAR2(50);
-/
-
--- Record type definition (simplified)
-CREATE OR REPLACE TYPE productInfoRec IS OBJECT (
-    pId NUMBER,
-    pName VARCHAR2(50),
-    pPrice NUMBER(10,2)
-);
-/
--- Nested Table using the Record Type
-CREATE OR REPLACE TYPE productInfoList IS TABLE OF productInfoRec;
-/
-
--- Tables using collection types
-CREATE TABLE nestedData (
-    id NUMBER PRIMARY KEY,
-    dataList nestedIntegerList
-) NESTED TABLE dataList STORE AS nestedData_nt;
-
-CREATE TABLE varrayData (
-    id NUMBER PRIMARY KEY,
-    dataArray varrayStringList
-);
-
--- Table for Record type examples
-CREATE TABLE recordData (
-    id NUMBER PRIMARY KEY,
-    info productInfoRec -- Column of a user-defined object type
-);
-
-
--- Dynamic Data Target table (for dynamic DML/SELECT output)
-CREATE TABLE dynamicDataTarget (
-    id NUMBER PRIMARY KEY,
-    stringValue VARCHAR2(100),
-    numericValue NUMBER,
-    dateValue DATE
-);
-
--- Table for PTF Source Data
-CREATE TABLE ptfSourceData (
-    sourceId NUMBER PRIMARY KEY,
-    sourceCategory VARCHAR2(20),
-    sourceValue NUMBER,
-    sourceDate DATE
-);
-
--- Populate Tables
-
--- Departments
-INSERT INTO departments VALUES (10, 'Administration', 'New York');
-INSERT INTO departments VALUES (20, 'Marketing', 'California');
-INSERT INTO departments VALUES (30, 'Purchasing', 'Washington');
-INSERT INTO departments VALUES (40, 'Human Resources', 'Arizona');
-
--- Employees
-INSERT INTO employees VALUES (employees_seq.NEXTVAL, 'John', 'Smith', 'jsmith@example.com', '555-1234', TO_DATE('2020-01-15', 'YYYY-MM-DD'), 'MANAGER', 70000, NULL, NULL, 10);
-INSERT INTO employees VALUES (employees_seq.NEXTVAL, 'Jane', 'Doe', 'jdoe@example.com', '555-5678', TO_DATE('2021-03-10', 'YYYY-MM-DD'), 'ANALYST', 60000, NULL, 1000, 10);
-INSERT INTO employees VALUES (employees_seq.NEXTVAL, 'Peter', 'Jones', 'pjones@example.com', '555-8765', TO_DATE('2019-07-01', 'YYYY-MM-DD'), 'SALESREP', 55000, 0.1, 1000, 20);
-INSERT INTO employees VALUES (employees_seq.NEXTVAL, 'Mary', 'Williams', 'mwilliams@example.com', '555-4321', TO_DATE('2022-05-20', 'YYYY-MM-DD'), 'CLERK', 40000, NULL, 1001, 20);
-INSERT INTO employees VALUES (employees_seq.NEXTVAL, 'David', 'Brown', 'dbrown@example.com', '555-0987', TO_DATE('2018-11-11', 'YYYY-MM-DD'), 'MANAGER', 80000, NULL, NULL, 30);
-INSERT INTO employees VALUES (employees_seq.NEXTVAL, 'Sarah', 'Davis', 'sdavis@example.com', '555-1122', TO_DATE('2023-02-28', 'YYYY-MM-DD'), 'ANALYST', 65000, NULL, 1004, 30);
-INSERT INTO employees VALUES (employees_seq.NEXTVAL, 'Michael', 'Garcia', 'mgarcia@example.com', '555-3344', TO_DATE('2020-09-01', 'YYYY-MM-DD'), 'SALESREP', 58000, 0.15, 1004, 20);
-INSERT INTO employees VALUES (employees_seq.NEXTVAL, 'Emily', 'Rodriguez', 'erodriguez@example.com', '555-5566', TO_DATE('2021-07-18', 'YYYY-MM-DD'), 'CLERK', 42000, NULL, 1005, 40);
-
--- Products
-INSERT INTO products VALUES (products_seq.NEXTVAL, 'Laptop 15"', 'Electronics', 1200.00, 50);
-INSERT INTO products VALUES (products_seq.NEXTVAL, 'Keyboard', 'Accessories', 75.00, 200);
-INSERT INTO products VALUES (products_seq.NEXTVAL, 'Mouse', 'Accessories', 25.00, 300);
-INSERT INTO products VALUES (products_seq.NEXTVAL, 'Monitor 27"', 'Electronics', 300.00, 80);
-INSERT INTO products VALUES (products_seq.NEXTVAL, 'Webcam', 'Accessories', 50.00, 150);
-INSERT INTO products VALUES (products_seq.NEXTVAL, 'Desk Chair', 'Office Furniture', 150.00, 30);
-INSERT INTO products VALUES (products_seq.NEXTVAL, 'Notebook', 'Supplies', 5.00, 500);
-
--- Orders (simplified customer IDs)
-INSERT INTO orders VALUES (orders_seq.NEXTVAL, 1, SYSDATE - 30, 'Shipped', 0); -- Will update total later
-INSERT INTO orders VALUES (orders_seq.NEXTVAL, 2, SYSDATE - 20, 'Pending', 0);
-INSERT INTO orders VALUES (orders_seq.NEXTVAL, 1, SYSDATE - 10, 'Processing', 0);
-INSERT INTO orders VALUES (orders_seq.NEXTVAL, 3, SYSDATE - 5, 'Pending', 0);
-INSERT INTO orders VALUES (orders_seq.NEXTVAL, 2, SYSDATE - 2, 'Pending', 0);
-
--- Order Items
--- Order 2000
-INSERT INTO orderItems VALUES (orderItems_seq.NEXTVAL, 2000, 3000, 1, 1200.00);
-INSERT INTO orderItems VALUES (orderItems_seq.NEXTVAL, 2000, 3001, 1, 75.00);
--- Order 2001
-INSERT INTO orderItems VALUES (orderItems_seq.NEXTVAL, 2001, 3003, 2, 300.00);
--- Order 2002
-INSERT INTO orderItems VALUES (orderItems_seq.NEXTVAL, 2002, 3000, 1, 1200.00);
-INSERT INTO orderItems VALUES (orderItems_seq.NEXTVAL, 2002, 3001, 2, 75.00);
-INSERT INTO orderItems VALUES (orderItems_seq.NEXTVAL, 2002, 3002, 1, 25.00);
--- Order 2003
-INSERT INTO orderItems VALUES (orderItems_seq.NEXTVAL, 2003, 3006, 10, 5.00);
--- Order 2004
-INSERT INTO orderItems VALUES (orderItems_seq.NEXTVAL, 2004, 3004, 1, 50.00);
-
--- Update order totals based on order items (manual for simplicity here)
-UPDATE orders SET totalAmount = (SELECT SUM(itemAmount) FROM orderItems WHERE orderId = 2000) WHERE orderId = 2000;
-UPDATE orders SET totalAmount = (SELECT SUM(itemAmount) FROM orderItems WHERE orderId = 2001) WHERE orderId = 2001;
-UPDATE orders SET totalAmount = (SELECT SUM(itemAmount) FROM orderItems WHERE orderId = 2002) WHERE orderId = 2002;
-UPDATE orders SET totalAmount = (SELECT SUM(itemAmount) FROM orderItems WHERE orderId = 2003) WHERE orderId = 2003;
-UPDATE orders SET totalAmount = (SELECT SUM(itemAmount) FROM orderItems WHERE orderId = 2004) WHERE orderId = 2004;
-
-
--- App Settings (example)
-INSERT INTO appSettings VALUES ('minimumStockForReorder', '50');
-
--- Customer Log (example entries for injection scenarios)
-INSERT INTO customerLog VALUES (customerLog_seq.NEXTVAL, SYSTIMESTAMP, 'Alice', 'Logged in from IP 192.168.1.100');
-INSERT INTO customerLog VALUES (customerLog_seq.NEXTVAL, SYSTIMESTAMP, 'Bob', 'Viewed order 2001');
-
-
--- Populate Nested/Varray/Record Data tables with some initial values
-INSERT INTO nestedData VALUES (nestedData_seq.NEXTVAL, nestedIntegerList(10, 20, 30, 40, 50));
-INSERT INTO nestedData VALUES (nestedData_seq.NEXTVAL, nestedIntegerList(1, 3, 5, 7, 9));
-INSERT INTO nestedData VALUES (nestedData_seq.NEXTVAL, NULL); -- Example null collection
-
-INSERT INTO varrayData VALUES (varrayData_seq.NEXTVAL, varrayStringList('Apple', 'Banana', 'Cherry'));
-INSERT INTO varrayData VALUES (varrayData_seq.NEXTVAL, varrayStringList('Red', 'Green', 'Blue', 'Yellow'));
-INSERT INTO varrayData VALUES (varrayData_seq.NEXTVAL, varrayStringList()); -- Example empty varray
-INSERT INTO varrayData VALUES (varrayData_seq.NEXTVAL, NULL); -- Example null varray
-
-INSERT INTO recordData VALUES (recordData_seq.NEXTVAL, productInfoRec(3000, 'Laptop 15"', 1200.00));
-INSERT INTO recordData VALUES (recordData_seq.NEXTVAL, productInfoRec(3006, 'Notebook', 5.00));
-INSERT INTO recordData VALUES (recordData_seq.NEXTVAL, NULL); -- Example null object column
-
-
--- Populate PTF Source Data
-INSERT INTO ptfSourceData VALUES (ptfSourceData_seq.NEXTVAL, 'A', 100, SYSDATE - 10);
-INSERT INTO ptfSourceData VALUES (ptfSourceData_seq.NEXTVAL, 'A', 150, SYSDATE - 5);
-INSERT INTO ptfSourceData VALUES (ptfSourceData_seq.NEXTVAL, 'B', 200, SYSDATE - 8);
-INSERT INTO ptfSourceData VALUES (ptfSourceData_seq.NEXTVAL, 'C', 50, SYSDATE - 15);
-INSERT INTO ptfSourceData VALUES (ptfSourceData_seq.NEXTVAL, 'A', 120, SYSDATE - 3);
-INSERT INTO ptfSourceData VALUES (ptfSourceData_seq.NEXTVAL, 'B', 220, SYSDATE - 2);
-
-COMMIT;
-
--- Enable DBMS_OUTPUT for results
-SET SERVEROUTPUT ON SIZE UNLIMITED;
-```
-
 ## Solution Structure Overview
 
 For each problem, you will find the following:
@@ -316,123 +63,59 @@ Compare the provided solutions and explanations to your own attempts. Focus not 
 
 ```sql
 DECLARE
-    -- Associative Array (Index-by Table)
-    type integerMap IS TABLE OF NUMBER INDEX BY PLS_INTEGER;
-    salaryMap integerMap;
-
-    -- Varray
-    type stringArray IS VARRAY(5) OF VARCHAR2(50);
-    colorArray stringArray;
-
-    -- Nested Table
-    type numberList IS TABLE OF NUMBER;
-    gradeList numberList;
-
-    -- Nested Table of Objects (using previously defined types)
-    productsList productInfoList;
-
-    -- Loop variables
-    idx PLS_INTEGER;
-    v_item VARCHAR2(50);
-
+    nestedIntegerList PLSQLMASTERY.nestedIntegerList := PLSQLMASTERY.nestedIntegerList(1, 2, 3);
+    varrayStringList PLSQLMASTERY.varrayStringList := PLSQLMASTERY.varrayStringList(
+        'Name 1', 'Name 2', 'Name 3', 'Name 4', 'Name 5'
+    );
+    TYPE productInfoRecTy IS TABLE OF PLSQLMASTERY.productInfoRec;
+    productInfoRecT productInfoRecTy := productInfoRecTy(
+        PLSQLMASTERY.productInfoRec(1, 'Educative Content', 30.0),
+        PLSQLMASTERY.productInfoRec(1, 'Psychology', 20.0),
+        PLSQLMASTERY.productInfoRec(1, 'Productivity', 30.0)
+    );
+    idx NUMBER;
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('--- Collections Basic Usage ---');
-
-    -- 1. Associative Array (Integer Indexed)
-    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- Associative Array ---');
-    salaryMap(101) := 70000;
-    salaryMap(105) := 80000;
-    salaryMap(103) := 55000;
-    salaryMap(107) := 42000; -- Adding out of index order
-
-    DBMS_OUTPUT.PUT_LINE('Salary Map COUNT: ' || salaryMap.COUNT);
-    -- This COUNT, unlike PG array_length(), is a method
-    DBMS_OUTPUT.PUT_LINE('Salary Map(103): ' || salaryMap(103)); -- Access by index
-
-    -- Oracle specific navigation methods (FIRST, LAST, NEXT, PRIOR work on *existing* elements,
-    -- great for sparse arrays like Associative Arrays or Nested Tables after DELETE)
-    idx := salaryMap.FIRST;
-    DBMS_OUTPUT.PUT_LINE('First index: ' || idx);
-    DBMS_OUTPUT.PUT_LINE('Value at first index: ' || salaryMap(idx));
-
-    idx := salaryMap.LAST;
-    DBMS_OUTPUT.PUT_LINE('Last index: ' || idx);
-    DBMS_OUTPUT.PUT_LINE('Value at last index: ' || salaryMap(idx));
-
-    idx := salaryMap.NEXT(salaryMap.FIRST);
-    DBMS_OUTPUT.PUT_LINE('Index after first: ' || idx);
-    DBMS_OUTPUT.PUT_LINE('Value after first: ' || salaryMap(idx));
-
-    idx := salaryMap.PRIOR(salaryMap.LAST);
-    DBMS_OUTPUT.PUT_LINE('Index before last: ' || idx);
-    DBMS_OUTPUT.PUT_LINE('Value before last: ' || salaryMap(idx));
-
-
-    -- 2. Varray
-    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- Varray (stringArray) ---');
-    -- Initialize with constructor (size 4, max 5)
-    colorArray := stringArray('Red', 'Green', 'Blue', 'Yellow');
-    -- Varrays are fixed size (max) but variable current size (COUNT), indexed 1 to COUNT
-    DBMS_OUTPUT.PUT_LINE('Color Array COUNT: ' || colorArray.COUNT);
-    DBMS_OUTPUT.PUT_LINE('Color Array(3): ' || colorArray(3)); -- Access by index (1-based in Oracle)
-
-    -- Demonstrate EXTEND (adds NULL if no element specified)
-    colorArray.EXTEND;
-    DBMS_OUTPUT.PUT_LINE('Color Array COUNT after EXTEND: ' || colorArray.COUNT);
-    -- Accessing extended (NULL) element - will be NULL
-    -- DBMS_OUTPUT.PUT_LINE('Color Array(5): ' || colorArray(5)); -- This would print NULL
-
-    -- 3. Nested Table (numberList)
-    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- Nested Table (numberList) ---');
-    -- Initialize with constructor
-    gradeList := numberList(85, 92, 78, 95, 88);
-    -- Nested Tables are variable size (no max defined in type) and indexed 1 to COUNT initially
-    DBMS_OUTPUT.PUT_LINE('Grade List COUNT: ' || gradeList.COUNT);
-    DBMS_OUTPUT.PUT_LINE('Grade List(2): ' || gradeList(2)); -- Access by index (1-based in Oracle)
-
-    -- Demonstrate DELETE (deletes element, indices are shifted in concept, but internal placeholder kept)
-    gradeList.DELETE(3); -- Delete element at index 3
-    DBMS_OUTPUT.PUT_LINE('Grade List COUNT after DELETE(3): ' || gradeList.COUNT);
-    -- Check if element exists using EXISTS method (Oracle specific)
-    IF gradeList.EXISTS(3) THEN
-        DBMS_OUTPUT.PUT_LINE('Grade List(3) EXISTS: ' || gradeList(3));
-    ELSE
-        DBMS_OUTPUT.PUT_LINE('Grade List(3) does NOT EXIST.');
-    END IF;
-     IF gradeList.EXISTS(2) THEN
-        DBMS_OUTPUT.PUT_LINE('Grade List(2) EXISTS: ' || gradeList(2));
-    ELSE
-        DBMS_OUTPUT.PUT_LINE('Grade List(2) does NOT EXIST.');
-    END IF;
-    -- Note: DELETE creates sparse collections for Nested Tables and Assoc Arrays (string or integer indexed),
-    -- meaning indices can have gaps. Varrays, however, are always dense.
-
-    -- 4. Nested Table of Objects (using previously defined types)
-     DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- Nested Table of Objects (productInfoList) ---');
-     productsList := productInfoList(); -- Initialize as empty
-     productsList.EXTEND(2); -- Extend to add space for 2 objects
-     productsList(1) := productInfoRec(3000, 'Laptop 15"', 1200.00); -- Assign object using constructor
-     productsList(2) := productInfoRec(3001, 'Keyboard', 75.00);
-
-     DBMS_OUTPUT.PUT_LINE('Products List COUNT: ' || productsList.COUNT);
-     DBMS_OUTPUT.PUT_LINE('Product 1 Name: ' || productsList(1).pName); -- Access field using dot notation
-     DBMS_OUTPUT.PUT_LINE('Product 2 Price: ' || productsList(2).pPrice);
-
-    <div class="oracle-specific">
-    <p>Oracle's collection types offer more built-in methods (<code>COUNT</code>, <code>FIRST</code>, <code>LAST</code>, <code>NEXT</code>, <code>PRIOR</code>, <code>EXTEND</code>, <code>DELETE</code>, <code>EXISTS</code>) compared to standard PostgreSQL arrays. This gives you more direct programmatic control over collection manipulation within PL/SQL.</p>
-    <p>The ability to define collections of user-defined records (like <code>productInfoList</code> of <code>productInfoRec</code>) is powerful for handling structured data sets directly within PL/SQL code.</p>
-    </div>
-    <div class="postgresql-bridge">
-    <p>While PostgreSQL uses a single array type with varied dimensions and element types, Oracle provides distinct types (Associative Array, Varray, Nested Table) with specific behaviors regarding indexing, density, and storage. This requires choosing the right collection type for the job.</p>
-    <p>PostgreSQL's array functions like <code>array_length()</code> are equivalent to Oracle's <code>COUNT</code> method. PostgreSQL array access uses <code>[index]</code> (0-based by default, or defined lower bound), while Oracle collections use <code>(index)</code> (1-based by default for Varrays/Nested Tables, flexible for Associative Arrays).</p>
-     <p>Just like in PostgreSQL, handling potentially non-existent or null collection elements is key to prevent errors. Oracle gives you the <code>EXISTS</code> method and the <code>COLLECTION_IS_NULL</code> exception for robustness.</p>
-    </div>
-
-    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- End Collections Basic Usage ---');
-
+    DBMS_OUTPUT.PUT_LINE('Nested Integer List.');
+    FOR x IN 1..nestedIntegerList.COUNT LOOP DBMS_OUTPUT.PUT_LINE('Integer '||x||' is: '||nestedIntegerList(x)); END LOOP;
+    DBMS_OUTPUT.PUT_LINE('Varray String List.');
+    FOR x IN 1..varrayStringList.COUNT LOOP DBMS_OUTPUT.PUT_LINE('Arranged string '||x||' is: '||varrayStringList(x)); END LOOP;
+    DBMS_OUTPUT.PUT_LINE('Product Info Rect.');
+    FOR x IN 1..productInfoRecT.COUNT LOOP
+        DBMS_OUTPUT.PUT_LINE(
+            'Product '||x||' with properties (id:'||productInfoRecT(x).pId||', name:'||productInfoRecT(x).pName||', pPrice:'||productInfoRecT(x).pPrice||')'
+        );
+    END LOOP;
+    DBMS_OUTPUT.PUT_LINE('Size of nestedIntegerList is '||nestedIntegerList.COUNT);
+    DBMS_OUTPUT.PUT_LINE('Size of varrayStringList is '||varrayStringList.COUNT);
+    DBMS_OUTPUT.PUT_LINE('Size of productInfoRecT is '||productInfoRecT.COUNT);
+    idx := varrayStringList.FIRST;
+    DBMS_OUTPUT.PUT_LINE('First element of the associative array is '||varrayStringList(idx));
+    DBMS_OUTPUT.PUT_LINE('Last element of the associative array is '||varrayStringList(varrayStringList.LAST));
+    idx := varrayStringList.NEXT(1);
+    DBMS_OUTPUT.PUT_LINE('2 element of the associative array is '||varrayStringList(idx));
+    idx := varrayStringList.PRIOR(idx);
+    DBMS_OUTPUT.PUT_LINE('1 returned element of the associative array is '||varrayStringList(idx));
+    varrayStringList.EXTEND(1);
+    DBMS_OUTPUT.PUT_LINE('Varray extended with a trail null element ('||varrayStringList(varrayStringList.LAST)||') now is of size '||varrayStringList.COUNT);
+    nestedIntegerList.DELETE(2);
+    DBMS_OUTPUT.PUT_LINE('After a deletion of a middle item now the list is.');
+    FOR x IN 1..nestedIntegerList.COUNT + 1 LOOP
+        IF nestedIntegerList.EXISTS(x) THEN DBMS_OUTPUT.PUT_LINE('Integer at '||x||' is: '||nestedIntegerList(x));
+        ELSE DBMS_OUTPUT.PUT_LINE('Integer at '||x||' is: NULL');
+        END IF;
+    END LOOP;
 END;
 /
 ```
+<div class="oracle-specific">
+    <p>Oracle's collection types offer more built-in methods (<code>COUNT</code>, <code>FIRST</code>, <code>LAST</code>, <code>NEXT</code>, <code>PRIOR</code>, <code>EXTEND</code>, <code>DELETE</code>, <code>EXISTS</code>) compared to standard PostgreSQL arrays. This gives you more direct programmatic control over collection manipulation within PL/SQL.</p>
+    <p>The ability to define collections of user-defined records (like <code>productInfoList</code> of <code>productInfoRec</code>) is powerful for handling structured data sets directly within PL/SQL code.</p>
+</div>
+<div class="postgresql-bridge">
+    <p>While PostgreSQL uses a single array type with varied dimensions and element types, Oracle provides distinct types (Associative Array, Varray, Nested Table) with specific behaviors regarding indexing, density, and storage. This requires choosing the right collection type for the job.</p>
+    <p>PostgreSQL's array functions like <code>array_length()</code> are equivalent to Oracle's <code>COUNT</code> method. PostgreSQL array access uses <code>[index]</code> (0-based by default, or defined lower bound), while Oracle collections use <code>(index)</code> (1-based by default for Varrays/Nested Tables, flexible for Associative Arrays).</p>
+     <p>Just like in PostgreSQL, handling potentially non-existent or null collection elements is key to prevent errors. Oracle gives you the <code>EXISTS</code> method and the <code>COLLECTION_IS_NULL</code> exception for robustness.</p>
+</div>
 
 **Exercise 1.2: Bulk Operations - BULK COLLECT and FORALL**
 
@@ -446,107 +129,78 @@ END;
 *   **Solution 1.2:**
 
 ```sql
+-- 1. Create a PL/SQL block to fetch the employeeId and lastName of all employees from the employees table into two separate associative arrays (empIds, empNames) 
+-- using BULK COLLECT. Print the count of elements fetched.
 DECLARE
-    -- Collections for BULK COLLECT
-    type empIdList IS TABLE OF employees.employeeId%TYPE INDEX BY PLS_INTEGER;
-    type empNameList IS TABLE OF employees.lastName%TYPE INDEX BY PLS_INTEGER;
-    empIds empIdList;
-    empNames empNameList;
-
-    -- Collection of records for BULK COLLECT
-    lowStockProducts productInfoList; -- Using the previously defined type
-
-    -- Collection for FORALL UPDATE
-    type quantityMap IS TABLE OF products.stockQuantity%TYPE INDEX BY PLS_INTEGER;
-    reorderQuantities quantityMap;
-
-    -- Collection for FORALL DELETE
-    orderItemsToDelete nestedIntegerList := nestedIntegerList(); -- Initialize as empty
-
-    -- Loop variable
-    i PLS_INTEGER;
-    totalUpdatedRows PLS_INTEGER;
-    totalDeletedItems PLS_INTEGER;
-
+    TYPE vEmployeeIdT IS TABLE OF PLSQLMASTERY.EMPLOYEES.EMPLOYEEID%TYPE INDEX BY PLS_INTEGER;
+    TYPE vLastNameT IS TABLE OF PLSQLMASTERY.EMPLOYEES.LASTNAME%TYPE INDEX BY PLS_INTEGER;
+    CURSOR employeesC IS (SELECT * FROM PLSQLMASTERY.EMPLOYEES);
+    empIds vEmployeeIdT;
+    empNames vLastNameT;
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('--- Bulk Operations ---');
-
-    -- 1. BULK COLLECT into associative arrays
-    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- BULK COLLECT into Assoc Arrays ---');
-    -- In PostgreSQL, you might fetch row by row or use a function returning a set/array
-    -- Oracle's BULK COLLECT is a direct PL/SQL feature for efficient fetching
-    SELECT employeeId, lastName
-    BULK COLLECT INTO empIds, empNames
-    FROM employees;
-
-    DBMS_OUTPUT.PUT_LINE('Fetched ' || empIds.COUNT || ' employees.');
-    -- Example: Print first few fetched items (assoc arrays might not be sequential from fetch)
-    IF empIds.COUNT > 0 THEN
-        i := empIds.FIRST;
-        DBMS_OUTPUT.PUT_LINE('First employee fetched: ID=' || empIds(i) || ', Name=' || empNames(i));
-         IF empIds.COUNT > 1 THEN
-            i := empIds.NEXT(i);
-            DBMS_OUTPUT.PUT_LINE('Second employee fetched: ID=' || empIds(i) || ', Name=' || empNames(i));
-        END IF;
-    END IF;
-
-
-    -- 2. BULK COLLECT into Nested Table of Objects
-    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- BULK COLLECT into Nested Table of Objects ---');
-    -- Fetch products with low stock
-    SELECT productInfoRec(productId, productName, price) -- Use the constructor
-    BULK COLLECT INTO lowStockProducts
-    FROM products
-    WHERE stockQuantity < 100; -- Filter in SQL before fetching
-
-    DBMS_OUTPUT.PUT_LINE('Fetched ' || lowStockProducts.COUNT || ' low stock products.');
-    IF lowStockProducts.COUNT > 0 THEN
-        FOR i IN 1 .. LEAST(lowStockProducts.COUNT, 3) LOOP -- Use 1-based index for nested table
-            DBMS_OUTPUT.PUT_LINE('Product ' || i || ': ' || lowStockProducts(i).pName || ' (Price: ' || lowStockProducts(i).pPrice || ')');
-        END LOOP;
-    END IF;
-
-    -- 3. FORALL UPDATE
-    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- FORALL UPDATE ---');
-    -- Populate collection with update data (product ID as index, new quantity as value)
-    reorderQuantities(3001) := 250; -- Keyboard
-    reorderQuantities(3004) := 180; -- Webcam
-
-    -- FORALL is Oracle's bulk DML statement, much faster than row-by-row updates in a loop
-    FORALL i IN reorderQuantities.FIRST .. reorderQuantities.LAST
-        UPDATE products
-        SET stockQuantity = reorderQuantities(i)
-        WHERE productId = i; -- Use the collection index as the product ID
-
-    totalUpdatedRows := SQL%ROWCOUNT; -- Get the total number of rows affected by the FORALL statement
-    DBMS_OUTPUT.PUT_LINE('FORALL updated ' || totalUpdatedRows || ' products.');
-
-    -- 4. FORALL DELETE
-    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- FORALL DELETE ---');
-    -- Populate collection with order item IDs to delete
-    SELECT orderItemId
-    BULK COLLECT INTO orderItemsToDelete
-    FROM orderItems
-    WHERE orderId = 2004; -- Get items for order 2004
-
-    DBMS_OUTPUT.PUT_LINE('Order 2004 had ' || orderItemsToDelete.COUNT || ' items to delete.');
-
-    IF orderItemsToDelete.COUNT > 0 THEN
-        -- Delete items using FORALL and the nested table collection
-        FORALL i IN orderItemsToDelete.FIRST .. orderItemsToDelete.LAST
-            DELETE FROM orderItems
-            WHERE orderItemId = orderItemsToDelete(i); -- Use collection value as item ID
-
-        totalDeletedItems := SQL%ROWCOUNT; -- Get the total number of rows affected
-        DBMS_OUTPUT.PUT_LINE('FORALL deleted ' || totalDeletedItems || ' order items.');
-    ELSE
-         DBMS_OUTPUT.PUT_LINE('No items to delete for order 2004.');
-    END IF;
-
-    -- Commit the changes made by the FORALL statements
+    SELECT EMPLOYEEID, LASTNAME BULK COLLECT INTO empIds, empNames FROM PLSQLMASTERY.EMPLOYEES;
+    DBMS_OUTPUT.PUT_LINE('Elements fetched are: '||empIds.COUNT);
+END;
+/
+-- 2. Create another PL/SQL block to fetch the productName and price of all products with a stockQuantity less than 100 into a Nested Table of productInfoRec objects (
+-- lowStockProducts) using BULK COLLECT. Print the name and price of the first three fetched products.
+DECLARE
+    TYPE vProductInfoT IS TABLE OF PLSQLMASTERY.productInfoRec INDEX BY PLS_INTEGER;
+    vProductInfo vProductInfoT;
+BEGIN
+    SELECT PLSQLMASTERY.productInfoRec(PRODUCTID, PRODUCTNAME, PRICE) BULK COLLECT INTO vProductInfo 
+    FROM PLSQLMASTERY.PRODUCTS;
+    DBMS_OUTPUT.PUT_LINE('First three fetched products');
+    FOR x IN 1..3 LOOP
+        DBMS_OUTPUT.PUT_LINE('Item '||x||' as name:'||vProductInfo(x).pName||' and price:'||vProductInfo(x).pPrice);
+    END LOOP;
+END;
+/
+-- 3. Create a PL/SQL block that declares an associative array reorderQuantities (indexed by PLS_INTEGER, value is NUMBER) and populates it with new stock quantities 
+-- for products that need reordering (e.g., productId 3001 needs 250, productId 3004 needs 180). Use a FORALL statement to update the stockQuantity in the products 
+-- table based on this collection. Print the total number of rows updated using SQL%ROWCOUNT.
+SET AUTOCOMMIT OFF;
+SET SERVEROUTPUT ON;
+DECLARE
+    TYPE productInfoR IS RECORD (
+        id PLSQLMASTERY.PRODUCTS.PRODUCTID%TYPE,
+        quantity PLSQLMASTERY.PRODUCTS.STOCKQUANTITY%TYPE
+    );
+    TYPE reorderQuantitiesT IS TABLE OF productInfoR INDEX BY PLS_INTEGER;
+    reorderQuantities reorderQuantitiesT;
+    totalUpdatedRows NUMBER;
+BEGIN
+    reorderQuantities(1).id := 3001;
+    reorderQuantities(1).quantity := 250;
+    reorderQuantities(2).id := 3004;
+    reorderQuantities(2).quantity := 180;
+    SAVEPOINT notUpdated;
+    FORALL i IN INDICES OF reorderQuantities
+        UPDATE PLSQLMASTERY.PRODUCTS
+        SET STOCKQUANTITY = reorderQuantities(i).quantity
+        WHERE PRODUCTID = reorderQuantities(i).id;
+    totalUpdatedRows := SQL%ROWCOUNT;
+    DBMS_OUTPUT.PUT_LINE('Counted lines are ' || totalUpdatedRows);
     COMMIT;
+END;
+/
+-- 4. Create a PL/SQL block that declares a Nested Table orderItemsToDelete (of NUMBER) and populate it with orderItemIds that are part of order 2004. Use a FORALL 
+-- statement to delete these items from the orderItems table. Print the total number of items deleted.
+DECLARE
+    TYPE orderItemsToDeleteT IS TABLE OF NUMBER INDEX BY PLS_INTEGER;
+    orderItemsToDelete orderItemsToDeleteT;
+BEGIN
+    SELECT ORDERITEMID BULK COLLECT INTO orderItemsToDelete
+    FROM PLSQLMASTERY.ORDERITEMS WHERE ORDERID = 2004;
+    FORALL i IN INDICES OF orderItemsToDelete
+        DELETE PLSQLMASTERY.ORDERITEMS
+        WHERE ORDERITEMID = orderItemsToDelete(i);
+    COMMIT;
+END;
+/
+```
 
-    <div class="oracle-specific">
+<div class="oracle-specific">
     <p><code>BULK COLLECT</code> is the perfect wingman for fetching data from SQL into PL/SQL collections efficiently. It minimizes context switches compared to row-by-row fetches, especially for large result sets.</p>
     <p><code>FORALL</code> is the powerhouse for bulk DML operations (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, <code>MERGE</code>). It sends collections of data from PL/SQL to SQL in one go, drastically reducing the back-and-forth overhead. Think of it as hitting the gym for your DML – it bulks up performance! 🏋️‍♀️</p>
      <p>Using <code>SQL%ROWCOUNT</code> after a <code>FORALL</code> statement gives you the total count of rows affected by the entire bulk operation, neat and sweet.</p>
@@ -554,13 +208,7 @@ BEGIN
     <div class="postgresql-bridge">
     <p>While PostgreSQL relies on client-side batching or clever set-based SQL (`UPDATE FROM`, `INSERT FROM SELECT`), Oracle's <code>BULK COLLECT</code> and <code>FORALL</code> provide built-in PL/SQL language features for achieving server-side bulk data movement and DML, often making the code more explicit and contained within the database layer.</p>
     <p>PostgreSQL's array types are more flexible in terms of indexing and density by default, whereas Oracle separates these characteristics into different collection types (Associative Array, Nested Table, Varray).</p>
-    </div>
-
-    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- End Bulk Operations ---');
-
-END;
-/
-```
+</div>
 
 **Exercise 1.3: Dynamic SQL - EXECUTE IMMEDIATE for DDL and DML**
 
@@ -573,93 +221,63 @@ END;
 *   **Solution 1.3:**
 
 ```sql
--- Create table first for drop example
-CREATE TABLE dynamicDataTarget (
-    id NUMBER PRIMARY KEY,
-    stringValue VARCHAR2(100),
-    numericValue NUMBER,
-    dateValue DATE
-);
-/
-
+-- Create a PL/SQL block that takes a table name (VARCHAR2) as input and dynamically drops that table using EXECUTE IMMEDIATE. Use the IF EXISTS clause (23ai feature)
+-- within the dynamic SQL string. Test it by trying to drop a table that exists (dynamicDataTarget) and one that doesn't (nonExistentTable).
 DECLARE
-    v_tableName VARCHAR2(30);
-    v_sqlStmt VARCHAR2(100);
-
-    v_customerName VARCHAR2(100);
-    v_actionDetails VARCHAR2(4000);
-    v_logId NUMBER;
-
-    v_employeeId employees.employeeId%TYPE;
-    v_newSalary employees.salary%TYPE;
-    v_oldSalary employees.salary%TYPE;
-    v_employeeLastName employees.lastName%TYPE;
-    v_selectStmt VARCHAR2(100);
-
+    schma VARCHAR2(50) := 'PLSQLMASTERY';
+    dynamicDataTarget VARCHAR2(50) := 'DYNAMICDATATARGET';
+    nonExistentTable VARCHAR2(50) := 'NONEXISTENTTABLE';
+    statemnt VARCHAR2(100);
+    table_count SMALLINT;
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('--- Dynamic SQL (EXECUTE IMMEDIATE) ---');
+    SELECT COUNT(*) INTO table_count FROM ALL_TABLES 
+    WHERE TABLE_NAME = dynamicDataTarget AND OWNER = schma;
+    IF table_count > 0 THEN 
+        statemnt := 'DROP TABLE '||schma||'.'||dynamicDataTarget;
+        EXECUTE IMMEDIATE statemnt;
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('Table '||dynamicDataTarget||' not found');
+    END IF;
+    SELECT COUNT(*) INTO table_count FROM ALL_TABLES 
+    WHERE TABLE_NAME = nonExistentTable AND OWNER = schma;
+    IF table_count > 0 THEN 
+        statemnt := 'DROP TABLE '||schma||'.'||nonExistentTable;
+        EXECUTE IMMEDIATE statemnt;
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('Table '||nonExistentTable||' not found');
+    END IF;
+END;
+/
+-- Create a PL/SQL block that takes a customerName (VARCHAR2) and actionDetails (VARCHAR2) as input and dynamically inserts a row into the customerLog table using 
+-- EXECUTE IMMEDIATE. Use bind variables (:1, :2) in the dynamic string and the USING clause. Demonstrate inserting a log entry.
+DECLARE
+    schma VARCHAR2(50) := 'PLSQLMASTERY';
+    tble VARCHAR2(50) := 'CUSTOMERLOG';
+    cName VARCHAR2(50) := 'Nicolás';
+    action VARCHAR2(50) := 'Started the system';
+    statemnt VARCHAR2(200) := 'INSERT INTO '||schma||'.'||tble||'(LOGID, LOGTIMESTAMP, CUSTOMERNAME, ACTIONDETAILS) VALUES(PlSQLMASTERY.CUSTOMERLOG_SEQ.NEXTVAL, SYSTIMESTAMP, :1, :2)';
+BEGIN
+    EXECUTE IMMEDIATE statemnt USING cName, action;
+    COMMIT;
+END;
+/
+-- Create a PL/SQL block that takes an employeeId (NUMBER) and a newSalary (NUMBER) as input and dynamically updates the salary for that employee in the employees 
+-- table using EXECUTE IMMEDIATE. Use bind variables (:newSal, :empId) in the dynamic string (demonstrating named binds) and the USING clause. Demonstrate updating an 
+-- employee's salary. Print the old and new salary using a subsequent static SELECT INTO.
+DECLARE
+    schma VARCHAR2(50) := 'PLSQLMASTERY';
+    tble VARCHAR2(50) := 'EMPLOYEES';
+    id NUMBER := 1000;
+    newSalary NUMBER := 70001;
+    statemnt VARCHAR2(200) := 'UPDATE '||schma||'.'||tble||' SET SALARY = :1 WHERE EMPLOYEEID = :2';
+BEGIN
+    EXECUTE IMMEDIATE statemnt USING newSalary, id;
+    COMMIT;
+END;
+/
+```
 
-    -- 1. Dynamic DDL (DROP TABLE IF EXISTS)
-    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- Dynamic DDL ---');
-    v_tableName := 'dynamicDataTarget';
-    -- Construct DDL string using concatenation (table name must be part of the string)
-    v_sqlStmt := 'DROP TABLE ' || v_tableName || ' IF EXISTS'; -- Use 23ai IF EXISTS
-    DBMS_OUTPUT.PUT_LINE('Executing: ' || v_sqlStmt);
-    EXECUTE IMMEDIATE v_sqlStmt; -- EXECUTE IMMEDIATE runs the dynamic DDL
-    DBMS_OUTPUT.PUT_LINE('Table ' || v_tableName || ' dropped (if existed).');
-
-    v_tableName := 'nonExistentTable';
-    v_sqlStmt := 'DROP TABLE ' || v_tableName || ' IF EXISTS';
-    DBMS_OUTPUT.PUT_LINE('Executing: ' || v_sqlStmt);
-    EXECUTE IMMEDIATE v_sqlStmt;
-    DBMS_OUTPUT.PUT_LINE('Table ' || v_tableName || ' attempted to drop (should not error due to IF EXISTS).');
-
-    -- Recreate the table for subsequent examples
-    v_sqlStmt := 'CREATE TABLE dynamicDataTarget (id NUMBER PRIMARY KEY, stringValue VARCHAR2(100), numericValue NUMBER, dateValue DATE)';
-    DBMS_OUTPUT.PUT_LINE('Executing: ' || v_sqlStmt);
-    EXECUTE IMMEDIATE v_sqlStmt;
-    DBMS_OUTPUT.PUT_LINE('Table dynamicDataTarget recreated.');
-
-    -- 2. Dynamic DML (INSERT) with Bind Variables
-    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- Dynamic INSERT with Bind Variables ---');
-    v_customerName := 'Charlie';
-    v_actionDetails := 'Placed new order.';
-    -- Use placeholders (:1, :2) in the dynamic string
-    v_sqlStmt := 'INSERT INTO customerLog (logId, logTimestamp, customerName, actionDetails) VALUES (customerLog_seq.NEXTVAL, SYSTIMESTAMP, :1, :2)';
-
-    DBMS_OUTPUT.PUT_LINE('Executing: ' || v_sqlStmt || ' USING ''' || v_customerName || ''', ''' || v_actionDetails || '''');
-    EXECUTE IMMEDIATE v_sqlStmt USING v_customerName, v_actionDetails; -- Provide values for placeholders via USING clause (positional)
-    DBMS_OUTPUT.PUT_LINE('Log entry inserted.');
-
-    -- Verify insertion (static select)
-    SELECT logId INTO v_logId FROM customerLog WHERE customerName = 'Charlie' ORDER BY logTimestamp DESC FETCH FIRST 1 ROW ONLY; -- 23ai FETCH FIRST
-    DBMS_OUTPUT.PUT_LINE('Inserted logId: ' || v_logId);
-
-
-    -- 3. Dynamic DML (UPDATE) with Named Bind Variables
-    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- Dynamic UPDATE with Named Bind Variables ---');
-    v_employeeId := 1000; -- John Smith
-    v_newSalary := 75000;
-    -- Use named placeholders (:newSal, :empId) in the dynamic string
-    v_sqlStmt := 'UPDATE employees SET salary = :newSal WHERE employeeId = :empId';
-
-    -- Get old salary first (static)
-    SELECT salary, lastName INTO v_oldSalary, v_employeeLastName FROM employees WHERE employeeId = v_employeeId;
-    DBMS_OUTPUT.PUT_LINE('Old salary for ' || v_employeeLastName || ': ' || v_oldSalary);
-
-    DBMS_OUTPUT.PUT_LINE('Executing: ' || v_sqlStmt || ' USING :newSal=' || v_newSalary || ', :empId=' || v_employeeId);
-    -- Provide values for named placeholders via USING clause (can use name or position)
-    EXECUTE IMMEDIATE v_sqlStmt USING :newSal v_newSalary, :empId v_employeeId; -- Using named association for clarity
-
-    -- Verify update (static)
-    SELECT salary INTO v_oldSalary FROM employees WHERE employeeId = v_employeeId; -- Fetch updated salary into old variable
-    DBMS_OUTPUT.PUT_LINE('New salary for ' || v_employeeLastName || ': ' || v_oldSalary);
-
-    -- Rollback the change
-    ROLLBACK;
-    DBMS_OUTPUT.PUT_LINE('Rolled back salary update.');
-
-    <div class="oracle-specific">
+<div class="oracle-specific">
     <p><code>EXECUTE IMMEDIATE</code> is Oracle's simplest form of Native Dynamic SQL. It compiles and runs a dynamic SQL statement in one go.</p>
     <p>Key to safe and efficient dynamic SQL is using **bind variables** (<code>:name</code> or <code>:position</code>) for values that are not known until runtime. These are passed separately in the <code>USING</code> clause and prevent SQL injection, while also allowing Oracle to reuse the parsed statement (improving performance via soft parsing).</p>
     <p>Dynamic DDL (like <code>DROP TABLE</code>) must be built by concatenating the object name directly into the string, as object names cannot be bind variables. Oracle 23ai's <code>IF EXISTS</code> is a nice touch for more robust dynamic DDL.</p>
@@ -667,13 +285,7 @@ BEGIN
     <div class="postgresql-bridge">
     <p>Oracle's <code>EXECUTE IMMEDIATE</code> with the <code>USING</code> clause is conceptually similar to PostgreSQL's <code>EXECUTE format(...)</code> combined with parameter substitution (e.g., <code>$1</code>, <code>$2</code>) in prepared statements or `EXECUTE` blocks, offering a way to safely pass values without concatenation.</p>
      <p>Both RDBMS require care when constructing dynamic SQL, but Oracle provides dedicated syntax (`EXECUTE IMMEDIATE`, <code>DBMS_SQL</code>) compared to PostgreSQL's reliance on `EXECUTE` and the generic `format()` function.</p>
-    </div>
-
-    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- End Dynamic SQL (EXECUTE IMMEDIATE) ---');
-
-END;
-/
-```
+</div>
 
 #### **(ii) Disadvantages and Pitfalls**
 
@@ -801,8 +413,11 @@ BEGIN
             -- Clean up temp table if it exists from failed create
             BEGIN EXECUTE IMMEDIATE 'DROP TABLE tempOrderItemsInsert IF EXISTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
     END;
-
-    <div class="caution">
+    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- End Collection Pitfalls ---');
+END;
+/
+```
+<div class="caution">
     <p>Be wary of null collections (atomically null) versus empty collections. Atomically null collections cannot be used with most collection methods (like <code>COUNT</code>, <code>FIRST</code>, <code>LAST</code>, <code>EXTEND</code>, <code>DELETE</code>) without raising <code>COLLECTION_IS_NULL</code>. Only <code>EXISTS</code> works on a null collection.</p>
     <p>Accessing elements in a sparse collection (Associative Array or Nested Table after <code>DELETE</code>) at an index that doesn't exist will raise <code>NO_DATA_FOUND</code> or <code>SUBSCRIPT_DOES_NOT_EXIST</code>. Always check with <code>EXISTS</code> first!</p>
     <p>Varrays have a fixed maximum size declared in their type definition. Trying to <code>EXTEND</code> beyond this limit will cause <code>SUBSCRIPT_BEYOND_LIMIT</code>. There's just no room for one more bloom! 🌼</p>
@@ -812,14 +427,7 @@ BEGIN
     <div class="postgresql-bridge">
     <p>PostgreSQL arrays handle non-existent elements by returning NULL (or an error if configured strictly) when accessed out of bounds, but they don't have dedicated methods like Oracle's <code>EXISTS</code>. PostgreSQL arrays of the same element type are generally assignable, unlike Oracle's stricter collection type matching.</p>
     <p>PostgreSQL doesn't have explicit fixed-size arrays like Oracle Varrays or the concept of atomically null collections in the same way.</p>
-    </div>
-
-
-    DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- End Collection Pitfalls ---');
-
-END;
-/
-```
+</div>
 
 **Exercise 2.2: Bulk Operations Pitfalls - Exception Handling**
 
@@ -859,11 +467,11 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- FORALL without SAVE EXCEPTIONS ---');
 
     -- Restore initial product names for the first test
-     UPDATE products SET productName = 'Keyboard' WHERE productId = 3001;
-     UPDATE products SET productName = 'Laptop 15"' WHERE productId = 3000;
-     UPDATE products SET productName = 'Mouse' WHERE productId = 3002;
-     COMMIT;
-     DBMS_OUTPUT.PUT_LINE('Product names reset. Attempting FORALL update without SAVE EXCEPTIONS...');
+    UPDATE products SET productName = 'Keyboard' WHERE productId = 3001;
+    UPDATE products SET productName = 'Laptop 15"' WHERE productId = 3000;
+    UPDATE products SET productName = 'Mouse' WHERE productId = 3002;
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Product names reset. Attempting FORALL update without SAVE EXCEPTIONS...');
 
     BEGIN
         -- Without SAVE EXCEPTIONS, the first error encountered stops the entire FORALL batch
@@ -895,11 +503,11 @@ BEGIN
     -- 2. FORALL WITH SAVE EXCEPTIONS
     DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- FORALL with SAVE EXCEPTIONS ---');
     -- Restore product names again for the second test
-     UPDATE products SET productName = 'Keyboard' WHERE productId = 3001;
-     UPDATE products SET productName = 'Laptop 15"' WHERE productId = 3000;
-     UPDATE products SET productName = 'Mouse' WHERE productId = 3002;
-     COMMIT;
-     DBMS_OUTPUT.PUT_LINE('Product names reset. Attempting FORALL update WITH SAVE EXCEPTIONS...');
+    UPDATE products SET productName = 'Keyboard' WHERE productId = 3001;
+    UPDATE products SET productName = 'Laptop 15"' WHERE productId = 3000;
+    UPDATE products SET productName = 'Mouse' WHERE productId = 3002;
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Product names reset. Attempting FORALL update WITH SAVE EXCEPTIONS...');
 
     BEGIN
         -- SAVE EXCEPTIONS allows the FORALL to attempt ALL DMLs in the batch.
@@ -951,17 +559,16 @@ BEGIN
             DBMS_OUTPUT.PUT_LINE('Caught unexpected exception during FORALL WITH SAVE EXCEPTIONS: ' || SQLERRM);
              ROLLBACK; -- Rollback if an unexpected error occurred
     END;
-
-    <div class="caution">
-    <p>Using <code>FORALL</code> without <code>SAVE EXCEPTIONS</code> is a recipe for disappointment if any batch item might fail! One bad apple, one bad batch! 🍎 Batch failure leads to rolling back the whole batch.</p>
-    <p><code>SAVE EXCEPTIONS</code> is your friend for resilience. It allows valid DMLs in the batch to succeed while reporting failures. You then handle the specific errors using <code>SQL%BULK_EXCEPTIONS</code> after the batch finishes. This gives you fine-grained control over which changes to keep.</p>
-    </div>
-
     DBMS_OUTPUT.PUT_LINE(CHR(10) || '--- End Bulk Operations Exception Handling ---');
 
 END;
 /
 ```
+
+<div class="caution">
+    <p>Using <code>FORALL</code> without <code>SAVE EXCEPTIONS</code> is a recipe for disappointment if any batch item might fail! One bad apple, one bad batch! 🍎 Batch failure leads to rolling back the whole batch.</p>
+    <p><code>SAVE EXCEPTIONS</code> is your friend for resilience. It allows valid DMLs in the batch to succeed while reporting failures. You then handle the specific errors using <code>SQL%BULK_EXCEPTIONS</code> after the batch finishes. This gives you fine-grained control over which changes to keep.</p>
+</div>
 
 **Exercise 2.3: Dynamic SQL Pitfalls - SQL Injection and String Concatenation**
 
@@ -1075,6 +682,9 @@ BEGIN
 END;
 /
 
+DBMS_OUTPUT.PUT_LINE(CHR(10));
+```
+
 <div class="caution">
 <p>Direct string concatenation for dynamic SQL (shown in <code>getLogEntryVulnerable</code>) is the primary cause of **SQL Injection**. User input can contain malicious code (like `' OR 1=1 --'`) that alters the intended query logic. A simple concatenation can turn your careful <code>WHERE</code> clause into Swiss cheese! 🧀</p>
 </div>
@@ -1085,9 +695,6 @@ END;
 <div class="postgresql-bridge">
 <p>SQL injection is a risk in PostgreSQL dynamic queries built with concatenation too. PostgreSQL's equivalent safe method is typically using parameterized queries with <code>$N</code> placeholders or the <code>format()</code> function. Oracle's `EXECUTE IMMEDIATE ... USING` serves the same crucial purpose as safe parameter binding in PostgreSQL.</p>
 </div>
-
-DBMS_OUTPUT.PUT_LINE(CHR(10));
-```
 
 **Exercise 2.4: DBMS_SQL vs EXECUTE IMMEDIATE - When to Use Which (Conceptual)**
 
@@ -1215,8 +822,10 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('The row-by-row FOR LOOP requires a context switch between the PL/SQL engine and the SQL engine for *each* row processed.');
     DBMS_OUTPUT.PUT_LINE('The FORALL statement sends the entire collection of data to the SQL engine in a *single batch*, drastically reducing the number of context switches and overhead.');
     DBMS_OUTPUT.PUT_LINE('This makes FORALL orders of magnitude faster for large bulk DML operations.');
-
-    <div class="caution">
+END;
+/
+```
+<div class="caution">
     <p>Using a <code>FOR LOOP</code> to run a DML statement for every row you process is often called "slow by slow" or "row-by-row" processing. It's like walking to the store to buy one apple, then walking back home, then walking back to buy another apple, etc. It's intuitive but inefficient for bulk tasks!</p>
     </div>
      <div class="oracle-specific">
@@ -1224,11 +833,7 @@ BEGIN
      </div>
     <div class="postgresql-bridge">
     <p>The inefficiency of row-by-row processing in a loop isn't unique to Oracle; it's a fundamental performance bottleneck in most RDBMS when mixing procedural code and SQL row by row. PostgreSQL users also know this and often use `UPDATE FROM` or client-side batching. Oracle's <code>FORALL</code> provides the server-side language construct explicitly for this bulk DML optimization.</p>
-    </div>
-
-END;
-/
-```
+</div>
 
 **Exercise 3.2: Manual Dynamic SQL String Building vs. Bind Variables**
 

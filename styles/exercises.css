@@ -147,12 +147,13 @@ h2:hover {
 
 h3 {
     color: var(--accent-color);
-    font-size: 1.7em;
+    font-size: 2em;
     margin-top: 25px;
     border-left: 4px solid var(--primary-color);
     padding-left: 10px;
     transition: all var(--transition-speed) ease;
 }
+
 h3:hover {
     border-left-color: var(--secondary-color);
     color: var(--primary-color);
@@ -160,7 +161,7 @@ h3:hover {
 }
 
 h4 {
-    font-size: 1.2em;
+    font-size: 1.7em;
     margin-top: 30px;
     border-left: 4px solid var(--accent-color);
     padding-left: 10px;
@@ -168,6 +169,19 @@ h4 {
 }
 
 h4:hover {
+    border-left-color: var(--primary-color);
+    color: var(--secondary-color);
+}
+
+h5 {
+    font-size: 1.3em;
+    margin-top: 25px;
+    border-left: 4px solid var(--accent-color);
+    padding-left: 10px;
+    transition: all var(--transition-speed) ease;
+}
+
+h5:hover {
     border-left-color: var(--primary-color);
     color: var(--secondary-color);
 }

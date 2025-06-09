@@ -25,7 +25,10 @@ CREATE OR REPLACE PACKAGE BODY PLSQLRESILIENCE.EmployeeUtils AS
         WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE('NO DATA FOUND for the employeeId '||empId); RETURN NULL;
     END GetEmployeeFullName;
 
-    PROCEDURE UpdateEmployeeSalary (empId IN PLSQLRESILIENCE.EMPLOYEES.employeeId%TYPE, newSalary IN PLSQLRESILIENCE.EMPLOYEES.salary%TYPE) IS
+    PROCEDURE UpdateEmployeeSalary (
+        empId IN PLSQLRESILIENCE.EMPLOYEES.employeeId%TYPE, 
+        newSalary IN PLSQLRESILIENCE.EMPLOYEES.salary%TYPE
+    ) IS
     BEGIN UPDATE PLSQLRESILIENCE.EMPLOYEES SET SALARY = newSalary WHERE EMPLOYEEID = empId;
     IF SQL%NOTFOUND THEN RETURN; END IF;
     DBMS_OUTPUT.PUT_LINE('Salary of employeeId '||empId||' updated to '||newSalary);

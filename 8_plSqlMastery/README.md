@@ -68,7 +68,7 @@ In PL/SQL, we're not limited to simple scalar variables. We have composite data 
 Moving data between the PL/SQL engine (where procedural logic lives) and the SQL engine (where data lives) involves context switches. For large datasets, doing this row by row becomes a performance bottleneck. Bulk operations minimize these context switches by processing collections of rows in a single round trip.
 
 *   `BULK COLLECT`: Used in `SELECT INTO` or `FETCH` statements to retrieve an entire result set (or a batch) into a PL/SQL collection variable in a single operation<sup class="footnote-ref"><a href="#fn1_3" id="fnref1_3">[3]</a></sup>. This drastically reduces the number of trips from the SQL engine to the PL/SQL engine for data fetching.
-*   `FORALL`: Used with `INSERT`, `UPDATE`, or `DELETE` statements to send an entire collection of data from PL/SQL to the SQL engine for batch processing<sup class="footnote-ref"><a href="#fn1_4" id="fnref1_4">[4]</a>部份. This reduces the number of trips from the PL/SQL engine to the SQL engine for DML operations.
+*   `FORALL`: Used with `INSERT`, `UPDATE`, or `DELETE` statements to send an entire collection of data from PL/SQL to the SQL engine for batch processing<sup class="footnote-ref"><a href="#fn1_4" id="fnref1_4">[4]</sup></a>. This reduces the number of trips from the PL/SQL engine to the SQL engine for DML operations.
 
 ### <a id="section1sub3"></a>Dynamic SQL
 
@@ -110,22 +110,96 @@ First, a small dataset to play with in our examples:
 -- Minimalist Dataset for Lecture Examples
 -- Only includes tables/columns needed for direct lecture examples
 
-DROP TABLE lectureDepartments IF EXISTS;
-DROP TABLE lectureEmployees IF EXISTS;
-DROP TABLE lectureProducts IF EXISTS;
-DROP TABLE lectureCustomerLog IF EXISTS;
-DROP TABLE lectureNestedData IF EXISTS;
-DROP TABLE lectureVarrayData IF EXISTS;
-DROP TABLE lectureRecordData IF EXISTS;
-DROP TABLE lectureDynamicTarget IF EXISTS;
-
-DROP SEQUENCE lectureEmployeesSeq IF EXISTS;
-DROP SEQUENCE lectureProductsSeq IF EXISTS;
-DROP SEQUENCE lectureCustomerLogSeq IF EXISTS;
-DROP SEQUENCE lectureNestedDataSeq IF EXISTS;
-DROP SEQUENCE lectureVarrayDataSeq IF EXISTS;
-DROP SEQUENCE lectureRecordDataSeq IF EXISTS;
-DROP SEQUENCE lectureDynamicTargetSeq IF EXISTS;
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE lectureDepartments';
+EXCEPTION WHEN OTHERS THEN
+  IF SQLCODE != -942 THEN RAISE; END IF;
+END;
+/
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE lectureEmployees';
+EXCEPTION WHEN OTHERS THEN
+  IF SQLCODE != -942 THEN RAISE; END IF;
+END;
+/
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE lectureProducts';
+EXCEPTION WHEN OTHERS THEN
+  IF SQLCODE != -942 THEN RAISE; END IF;
+END;
+/
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE lectureCustomerLog';
+EXCEPTION WHEN OTHERS THEN
+  IF SQLCODE != -942 THEN RAISE; END IF;
+END;
+/
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE lectureNestedData';
+EXCEPTION WHEN OTHERS THEN
+  IF SQLCODE != -942 THEN RAISE; END IF;
+END;
+/
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE lectureVarrayData';
+EXCEPTION WHEN OTHERS THEN
+  IF SQLCODE != -942 THEN RAISE; END IF;
+END;
+/
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE lectureRecordData';
+EXCEPTION WHEN OTHERS THEN
+  IF SQLCODE != -942 THEN RAISE; END IF;
+END;
+/
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE lectureDynamicTarget';
+EXCEPTION WHEN OTHERS THEN
+  IF SQLCODE != -942 THEN RAISE; END IF;
+END;
+/
+BEGIN
+  EXECUTE IMMEDIATE 'DROP SEQUENCE lectureEmployeesSeq';
+EXCEPTION WHEN OTHERS THEN
+  IF SQLCODE != -2289 THEN RAISE; END IF;
+END;
+/
+BEGIN
+  EXECUTE IMMEDIATE 'DROP SEQUENCE lectureProductsSeq';
+EXCEPTION WHEN OTHERS THEN
+  IF SQLCODE != -2289 THEN RAISE; END IF;
+END;
+/
+BEGIN
+  EXECUTE IMMEDIATE 'DROP SEQUENCE lectureCustomerLogSeq';
+EXCEPTION WHEN OTHERS THEN
+  IF SQLCODE != -2289 THEN RAISE; END IF;
+END;
+/
+BEGIN
+  EXECUTE IMMEDIATE 'DROP SEQUENCE lectureNestedDataSeq';
+EXCEPTION WHEN OTHERS THEN
+  IF SQLCODE != -2289 THEN RAISE; END IF;
+END;
+/
+BEGIN
+  EXECUTE IMMEDIATE 'DROP SEQUENCE lectureVarrayDataSeq';
+EXCEPTION WHEN OTHERS THEN
+  IF SQLCODE != -2289 THEN RAISE; END IF;
+END;
+/
+BEGIN
+  EXECUTE IMMEDIATE 'DROP SEQUENCE lectureRecordDataSeq';
+EXCEPTION WHEN OTHERS THEN
+  IF SQLCODE != -2289 THEN RAISE; END IF;
+END;
+/
+BEGIN
+  EXECUTE IMMEDIATE 'DROP SEQUENCE lectureDynamicTargetSeq';
+EXCEPTION WHEN OTHERS THEN
+  IF SQLCODE != -2289 THEN RAISE; END IF;
+END;
+/
 
 CREATE SEQUENCE lectureEmployeesSeq START WITH 100 INCREMENT BY 1;
 CREATE SEQUENCE lectureProductsSeq START WITH 1000 INCREMENT BY 1;
@@ -500,7 +574,7 @@ DECLARE
 
   -- Collection for RETURNING INTO BULK COLLECT
   TYPE updatedStockList IS TABLE OF lectureProducts.stockQuantity%TYPE INDEX BY PLS_INTEGER;
-  resultingStock Quantities updatedStockList;
+  resultingStock updatedStockList;
 
 BEGIN
   DBMS_OUTPUT.PUT_LINE('--- FORALL ---');
@@ -530,14 +604,14 @@ BEGIN
     UPDATE lectureProducts
     SET stockQuantity = newStockQuantities(i)
     WHERE productId = productsToUpdate(i)
-    RETURNING stockQuantity BULK COLLECT INTO resultingStockQuantities(i); -- Use the same index 'i'
+    RETURNING stockQuantity BULK COLLECT INTO  resultingStock(i); -- Use the same index 'i'
 
   DBMS_OUTPUT.PUT_LINE('Updated ' || SQL%ROWCOUNT || ' products using FORALL.'); -- SQL%ROWCOUNT for total rows
 
   -- Display resulting stock from RETURNING INTO
   DBMS_OUTPUT.PUT_LINE('Resulting stock quantities from RETURNING INTO:');
-   FOR i IN resultingStockQuantities.FIRST .. resultingStockQuantities.LAST LOOP
-       DBMS_OUTPUT.PUT_LINE('  Index ' || i || ': ' || resultingStockQuantities(i));
+   FOR i IN  resultingStock.FIRST ..  resultingStock.LAST LOOP
+       DBMS_OUTPUT.PUT_LINE('  Index ' || i || ': ' ||  resultingStock(i));
    END LOOP;
 
   -- Populate collection for delete (get some log IDs)
@@ -717,7 +791,6 @@ A new feature in Oracle 23ai is Polymorphic Table Functions (PTFs)<sup class="fo
 -- Assuming a package 'lecturePtfPkg' and a PTF 'passthrough' exists,
 -- that takes a table and COLUMNS input and returns the specified columns.
 
-/*
 -- Example Definition Structure (Simplified)
 CREATE OR REPLACE PACKAGE lecturePtfPkg AS
   FUNCTION passthrough(inputTable TABLE, cols COLUMNS) RETURN TABLE PIPELINED ROW POLYMORPHIC USING lecturePtfPkg;
@@ -732,7 +805,7 @@ CREATE OR REPLACE PACKAGE BODY lecturePtfPkg AS
   FUNCTION passthrough(inputTable TABLE, cols COLUMNS) RETURN TABLE PIPELINED ROW POLYMORPHIC USING lecturePtfPkg IS BEGIN RETURN; END;
 END;
 /
-*/
+
 
 -- Example Usage in a Query (Assuming 'passthrough' PTF exists)
 -- This query uses the conceptual PTF to select just employeeId and lastName
