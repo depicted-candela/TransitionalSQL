@@ -24,9 +24,9 @@
     -- Dynamically insert a row into the customerLog table using EXECUTE IMMEDIATE. The customerName column in customerLog should be populated by dynamically selecting 
     -- the lastName from the employees table based on customerId (assuming customerId maps to employeeId for simplicity in this dataset context). Handle NO_DATA_FOUND 
     -- if the customerId is not found in employees. Use bind variables for all data inputs in the dynamic SQL string.
-
-
-
+-- Dynamic Reporting: Create a packaged function getProductsAbovePrice that takes minPrice (NUMBER). Builds a SELECT productId, productName, price 
+    -- FROM products WHERE price > :minPrice. Use DBMS_SQL.OPEN_CURSOR, PARSE, BIND_VARIABLE, EXECUTE. Then use DBMS_SQL.TO_REFCURSOR to convert the `DBMS_SQL` cursor 
+    -- number to a SYS_REFCURSOR and return it.
 
 CREATE OR REPLACE PACKAGE PLSQLMASTERY.orderProcessor AS
     TYPE productIdsT IS TABLE OF PLSQLMASTERY.PRODUCTS.PRODUCTID%TYPE;
@@ -140,10 +140,6 @@ CREATE OR REPLACE PACKAGE BODY PLSQLMASTERY.orderProcessor AS
         WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('Customer id: '||customerId||' is necessary but it does not exists');
         RAISE;
     END;
-
--- Dynamic Reporting: Create a packaged function getProductsAbovePrice that takes minPrice (NUMBER). Builds a SELECT productId, productName, price 
-    -- FROM products WHERE price > :minPrice. Use DBMS_SQL.OPEN_CURSOR, PARSE, BIND_VARIABLE, EXECUTE. Then use DBMS_SQL.TO_REFCURSOR to convert the `DBMS_SQL` cursor 
-    -- number to a SYS_REFCURSOR and return it.
 
     FUNCTION getProductsAbovePrice(minPrice IN NUMBER) RETURN SYS_REFCURSOR IS
         statment VARCHAR2(250) := 'SELECT productId, productName, price FROM PLSQLMASTERY.PRODUCTS WHERE price > :minPrice';

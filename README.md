@@ -207,7 +207,7 @@ Experience PL/SQL fusion! Explore standard packages for common tasks and see Jav
 *   📚 [Oracle XML DB Developer's Guide](books/xml-db-developers-guide/xml-db-developers-guide.pdf)
     *   _Relevance:_ Provides context for XML work, including storing and changing XML in the database using packages like `DBMS_XMLGEN` and `XMLDOM`.
 
-*   📚 [Oracle Database Transactional Event Queues and Advanced Queuing User's Guide](books/database-transactional-event-queues-and-advanced-queuing-users-guide.pdf)
+*   📚 [Oracle Database Transactional Event Queues and Advanced Queuing User's Guide](books/database-transactional-event-queues-and-advanced-queuing-users-guide/database-transactional-event-queues-and-advanced-queuing-users-guide.pdf)
     *   _Relevance:_ Crucial for fully grasping Oracle's Advanced Queuing (AQ) message flow, directly touching your job's "JMS Queues" need.
 
 *   📚 [Oracle Database Advanced Queuing Java API Reference](books/database_advanced_queuing_java_api_reference/jajms/index.html)
@@ -240,7 +240,7 @@ Get the Oracle blueprint in your mind! This chunk brings vital database ideas fo
 *   📚 [Oracle® Database Concepts](books/database-concepts/database-concepts.pdf)
     *   _Relevance:_ Core for understanding Oracle's main build, including schema items, the data story, handling many users at once (MVCC), and managing transactions.
 
-*   📚 [Oracle® Database Reference](books/database-reference.pdf)
+*   📚 [Oracle® Database Reference](books/database-reference/database-reference.pdf)
     *   _Relevance:_ The source of truth for deep info on all Data Dictionary views (`USER_`, `ALL_`, `DBA_`), vital for looking inside the database and knowing its story.
 
 *   📚 [Oracle® Database SQL Language Reference](books/sql-language-reference/sql-language-reference.pdf)
@@ -359,7 +359,7 @@ Look to Oracle's horizons! This chunk explores how Oracle links with tech like J
 *   📚 [Oracle XML DB Developer's Guide](books/xml-db-developers-guide/xml-db-developers-guide.pdf)
     *   _Relevance:_ Crucial for full knowledge of Oracle's XML DB ways, including keeping, asking about, and changing XML data, good for Flexcube.
 
-*   📚 [Oracle Database Transactional Event Queues and Advanced Queuing User's Guide](books/database-transactional-event-queues-and-advanced-queuing-users-guide.pdf)
+*   📚 [Oracle Database Transactional Event Queues and Advanced Queuing User's Guide](books/database-transactional-event-queues-and-advanced-queuing-users-guide/database-transactional-event-queues-and-advanced-queuing-users-guide.pdf)
     *   _Relevance:_ This is the core paper for Oracle's Advanced Queuing (AQ), speaking directly to the "JMS Queues" need.
 
 *   📚 [Oracle Database Advanced Queuing Java API Reference](books/database_advanced_queuing_java_api_reference/jajms/index.html)
