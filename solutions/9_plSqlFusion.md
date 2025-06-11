@@ -34,7 +34,6 @@ Each solution is structured to provide maximum clarity and learning reinforcemen
 Pay close attention to the <div class="postgresql-bridge">PostgreSQL Bridge</div> and <div class="oracle-specific">Oracle Specific</div> callouts within the explanations. They are designed to accelerate your transition by directly addressing the differences and advantages you'll encounter.
 
 ---
----
 
 ## Solutions
 
@@ -83,22 +82,22 @@ BEGIN
 END;
 /
 ```
-<div class="solution-box advantage-box">
-<h4>Solution Insight</h4>
-<ul>
-    <li><span class="oracle-specific">Oracle Specific</span>: The <code>EMPTY_CLOB()</code> function is crucial. It creates a LOB locator in the table, which is a pointer to where the LOB data will be stored. You cannot write to a <code>NULL</code> LOB column; it must first be initialized.</li>
-    <li><strong>Advantage:</strong> The <code>DBMS_LOB.WRITEAPPEND</code> procedure is highly efficient for building large character objects. It directly appends data to the end of the LOB without the massive memory overhead of traditional string concatenation (`||`), which would create a new copy of the entire LOB in memory with each operation.</li>
-    <li><strong>Relation:</strong> This solution directly applies concepts from the <strong>Data Types</strong> category (<code>CLOB</code>) and the <strong>DML & Transaction Control</strong> category (<code>INSERT ... RETURNING</code>, <code>COMMIT</code>).</li>
-    <li><strong>Reference:</strong> For a deep dive, consult the <a href="books/database-pl-sql-packages-and-types-reference/ch120_dbms_lob.pdf">DBMS_LOB Chapter</a> in the <i>PL/SQL Packages and Types Reference</i>.</li>
-</ul>
-</div>
+  <div class="solution-box advantage-box">
+  <h4>Solution Insight</h4>
+    <ul>
+      <li><span class="oracle-specific">Oracle Specific</span>: The <code>EMPTY_CLOB()</code> function is crucial. It creates a LOB locator in the table, which is a pointer to where the LOB data will be stored. You cannot write to a <code>NULL</code> LOB column; it must first be initialized.</li>
+      <li><strong>Advantage:</strong> The <code>DBMS_LOB.WRITEAPPEND</code> procedure is highly efficient for building large character objects. It directly appends data to the end of the LOB without the massive memory overhead of traditional string concatenation (`||`), which would create a new copy of the entire LOB in memory with each operation.</li>
+      <li><strong>Relation:</strong> This solution directly applies concepts from the <strong>Data Types</strong> category (<code>CLOB</code>) and the <strong>DML & Transaction Control</strong> category (<code>INSERT ... RETURNING</code>, <code>COMMIT</code>).</li>
+      <li><strong>Reference:</strong> For a deep dive, consult the <a href="books/database-pl-sql-packages-and-types-reference/ch120_dbms_lob.pdf">DBMS_LOB Chapter</a> in the <i>PL/SQL Packages and Types Reference</i>.</li>
+    </ul>
+  </div>
 </div>
 
 <div class="exercise-wrapper">
 <h4>Exercise 1.2: Reading a BLOB in Chunks</h4>
 <p><strong>Problem:</strong> A 70-byte PDF document has been loaded into the <code>catalogPDF</code> (<code>BLOB</code>) for a new product line. Write a PL/SQL block to read the <code>BLOB</code> in 32-byte chunks and display the raw hex values of each chunk.</p>
 
-<strong>Solution:
+<strong>Solution:</strong>
 
 ```sql
 DECLARE
