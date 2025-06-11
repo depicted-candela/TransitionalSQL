@@ -1,4 +1,6 @@
 .
+├── 10_plSqlMastery.md
+├── 10_plSqlOracleBluePrint
 ├── 1_fromPostgreSQLtoSQLOracle
 │   ├── 1_meaningsValuesRelationsAdvantages.sql
 │   ├── 2_disadvantagesAndPitfalls.sql
@@ -71,13 +73,257 @@
 │   ├── exercises.md
 │   ├── NewSchema.sql
 │   └── README.md
+├── 7_plSqlResilience.md
+├── 8_plSqlMastery
+│   ├── 1_meaningsValuesRelationsAdvantages.sql
+│   ├── 2_disadvantagesAndPitfalls.sql
+│   ├── 3_contrastingInefficientCommonAlternatives.sql
+│   ├── 4_hardcoreCombinedProblem.sql
+│   ├── dataset.sql
+│   ├── exercises.md
+│   ├── lectureDataset.sql
+│   ├── LectureSchema.sql
+│   ├── NewSchema.sql
+│   ├── practices.sql
+│   └── README.md
+├── 8_plSqlMastery.md
+├── 9_plSqlFusion
+│   ├── exercises.md
+│   └── README.md
+├── 9_plSqlFusion.md
 ├── books
 │   ├── database-administrators-guide
+│   │   ├── 00a_contents.pdf
+│   │   ├── 00b_preface.pdf
+│   │   ├── ch01_17-managing-schema-objects.pdf
+│   │   ├── ch01_1-getting-started-with-database-administration.pdf
+│   │   ├── ch01_25-managing-automated-database-maintenance-tasks.pdf
+│   │   ├── ch01_31-distributed-database-concepts.pdf
+│   │   ├── ch01_36-read-only-materialized-view-concepts.pdf
+│   │   ├── ch01_8-managing-control-files.pdf
+│   │   ├── ch01_a-support-for-dbms-job.pdf
+│   │   ├── ch02_18-managing-space-for-schema-objects.pdf
+│   │   ├── ch02_26-managing-resources-with-oracle-database-resource-manager.pdf
+│   │   ├── ch02_2-configuring-automatic-restart-of-an-oracle-database.pdf
+│   │   ├── ch02_32-managing-a-distributed-database.pdf
+│   │   ├── ch02_37-read-only-materialized-view-architecture.pdf
+│   │   ├── ch02_9-managing-the-redo-log.pdf
+│   │   ├── ch02_b-blockchain-tables-reference.pdf
+│   │   ├── ch03_10-managing-archived-redo-log-files.pdf
+│   │   ├── ch03_19-managing-tables.pdf
+│   │   ├── ch03_27-oracle-scheduler-concepts.pdf
+│   │   ├── ch03_33-developing-applications-for-a-distributed-database-system.pdf
+│   │   ├── ch03_38-planning-for-read-only-materialized-views.pdf
+│   │   ├── ch03_3-managing-processes.pdf
+│   │   ├── ch04_11-managing-tablespaces.pdf
+│   │   ├── ch04_20-managing-indexes.pdf
+│   │   ├── ch04_28-scheduling-jobs-with-oracle-scheduler.pdf
+│   │   ├── ch04_34-distributed-transactions-concepts.pdf
+│   │   ├── ch04_39-creating-and-managing-read-only-materialized-views.pdf
+│   │   ├── ch04_4-managing-memory.pdf
+│   │   ├── ch05_12-managing-data-files-and-temp-files.pdf
+│   │   ├── ch05_21-managing-clusters.pdf
+│   │   ├── ch05_29-administering-oracle-scheduler.pdf
+│   │   ├── ch05_35-managing-distributed-transactions.pdf
+│   │   ├── ch05_40-troubleshooting-problems-with-read-only-materialized-views.pdf
+│   │   ├── ch05_5-managing-users-and-securing-the-database.pdf
+│   │   ├── ch06_13-transporting-data.pdf
+│   │   ├── ch06_22-managing-hash-clusters.pdf
+│   │   ├── ch06_30-managing-transactions.pdf
+│   │   ├── ch06_6-monitoring-the-database.pdf
+│   │   ├── ch07_14-managing-undo.pdf
+│   │   ├── ch07_23-managing-views-sequences-and-synonyms.pdf
+│   │   ├── ch07_7-diagnosing-and-resolving-problems.pdf
+│   │   ├── ch08_15-using-oracle-managed-files.pdf
+│   │   ├── ch08_24-repairing-corrupted-data.pdf
+│   │   ├── ch09_16-using-persistent-memory-database.pdf
 │   │   ├── database-administrators-guide.pdf
+│   │   ├── index.pdf
 │   │   ├── metadata.txt
+│   │   ├── part01_part-i-basic-database-administration_title.pdf
+│   │   ├── part02_part-ii-oracle-database-structure-and-storage_title.pdf
+│   │   ├── part03_part-iii-schema-objects_title.pdf
+│   │   ├── part04_part-iv-database-resource-management-and-task-scheduling_title.pdf
+│   │   ├── part05_part-v-distributed-database-management_title.pdf
+│   │   ├── part06_part-vi-managing-read-only-materialized-views_title.pdf
+│   │   ├── part07_part-vii-appendixes_title.pdf
 │   │   └── parts
+│   │       ├── 00a_contents.pdf
+│   │       ├── 00b_preface.pdf
+│   │       ├── ch01_17-managing-schema-objects.pdf
+│   │       ├── ch01_1-getting-started-with-database-administration.pdf
+│   │       ├── ch01_25-managing-automated-database-maintenance-tasks.pdf
+│   │       ├── ch01_31-distributed-database-concepts.pdf
+│   │       ├── ch01_36-read-only-materialized-view-concepts.pdf
+│   │       ├── ch01_8-managing-control-files.pdf
+│   │       ├── ch01_a-support-for-dbms-job.pdf
+│   │       ├── ch02_18-managing-space-for-schema-objects.pdf
+│   │       ├── ch02_26-managing-resources-with-oracle-database-resource-manager.pdf
+│   │       ├── ch02_2-configuring-automatic-restart-of-an-oracle-database.pdf
+│   │       ├── ch02_32-managing-a-distributed-database.pdf
+│   │       ├── ch02_37-read-only-materialized-view-architecture.pdf
+│   │       ├── ch02_9-managing-the-redo-log.pdf
+│   │       ├── ch02_b-blockchain-tables-reference.pdf
+│   │       ├── ch03_10-managing-archived-redo-log-files.pdf
+│   │       ├── ch03_19-managing-tables.pdf
+│   │       ├── ch03_27-oracle-scheduler-concepts.pdf
+│   │       ├── ch03_33-developing-applications-for-a-distributed-database-system.pdf
+│   │       ├── ch03_38-planning-for-read-only-materialized-views.pdf
+│   │       ├── ch03_3-managing-processes.pdf
+│   │       ├── ch04_11-managing-tablespaces.pdf
+│   │       ├── ch04_20-managing-indexes.pdf
+│   │       ├── ch04_28-scheduling-jobs-with-oracle-scheduler.pdf
+│   │       ├── ch04_34-distributed-transactions-concepts.pdf
+│   │       ├── ch04_39-creating-and-managing-read-only-materialized-views.pdf
+│   │       ├── ch04_4-managing-memory.pdf
+│   │       ├── ch05_12-managing-data-files-and-temp-files.pdf
+│   │       ├── ch05_21-managing-clusters.pdf
+│   │       ├── ch05_29-administering-oracle-scheduler.pdf
+│   │       ├── ch05_35-managing-distributed-transactions.pdf
+│   │       ├── ch05_40-troubleshooting-problems-with-read-only-materialized-views.pdf
+│   │       ├── ch05_5-managing-users-and-securing-the-database.pdf
+│   │       ├── ch06_13-transporting-data.pdf
+│   │       ├── ch06_22-managing-hash-clusters.pdf
+│   │       ├── ch06_30-managing-transactions.pdf
+│   │       ├── ch06_6-monitoring-the-database.pdf
+│   │       ├── ch07_14-managing-undo.pdf
+│   │       ├── ch07_23-managing-views-sequences-and-synonyms.pdf
+│   │       ├── ch07_7-diagnosing-and-resolving-problems.pdf
+│   │       ├── ch08_15-using-oracle-managed-files.pdf
+│   │       ├── ch08_24-repairing-corrupted-data.pdf
+│   │       ├── ch09_16-using-persistent-memory-database.pdf
+│   │       ├── index.pdf
+│   │       ├── metadata.txt
+│   │       ├── part01_part-i-basic-database-administration_title.pdf
+│   │       ├── part02_part-ii-oracle-database-structure-and-storage_title.pdf
+│   │       ├── part03_part-iii-schema-objects_title.pdf
+│   │       ├── part04_part-iv-database-resource-management-and-task-scheduling_title.pdf
+│   │       ├── part05_part-v-distributed-database-management_title.pdf
+│   │       ├── part06_part-vi-managing-read-only-materialized-views_title.pdf
+│   │       └── part07_part-vii-appendixes_title.pdf
 │   ├── database_advanced_queuing_java_api_reference
 │   │   └── jajms
+│   │       ├── allclasses-frame.html
+│   │       ├── allclasses-noframe.html
+│   │       ├── constant-values.html
+│   │       ├── debug.log
+│   │       ├── deprecated-list.html
+│   │       ├── help-doc.html
+│   │       ├── index-all.html
+│   │       ├── index.html
+│   │       ├── javax
+│   │       │   └── jms
+│   │       │       ├── BytesMessage.html
+│   │       │       ├── ConnectionConsumer.html
+│   │       │       ├── ConnectionFactory.html
+│   │       │       ├── Connection.html
+│   │       │       ├── ConnectionMetaData.html
+│   │       │       ├── DeliveryMode.html
+│   │       │       ├── Destination.html
+│   │       │       ├── ExceptionListener.html
+│   │       │       ├── IllegalStateException.html
+│   │       │       ├── InvalidClientIDException.html
+│   │       │       ├── InvalidDestinationException.html
+│   │       │       ├── InvalidSelectorException.html
+│   │       │       ├── JMSException.html
+│   │       │       ├── JMSSecurityException.html
+│   │       │       ├── MapMessage.html
+│   │       │       ├── MessageConsumer.html
+│   │       │       ├── MessageEOFException.html
+│   │       │       ├── MessageFormatException.html
+│   │       │       ├── Message.html
+│   │       │       ├── MessageListener.html
+│   │       │       ├── MessageNotReadableException.html
+│   │       │       ├── MessageNotWriteableException.html
+│   │       │       ├── MessageProducer.html
+│   │       │       ├── ObjectMessage.html
+│   │       │       ├── package-frame.html
+│   │       │       ├── package-summary.html
+│   │       │       ├── package-tree.html
+│   │       │       ├── QueueBrowser.html
+│   │       │       ├── QueueConnectionFactory.html
+│   │       │       ├── QueueConnection.html
+│   │       │       ├── Queue.html
+│   │       │       ├── QueueReceiver.html
+│   │       │       ├── QueueRequestor.html
+│   │       │       ├── QueueSender.html
+│   │       │       ├── QueueSession.html
+│   │       │       ├── ResourceAllocationException.html
+│   │       │       ├── ServerSession.html
+│   │       │       ├── ServerSessionPool.html
+│   │       │       ├── Session.html
+│   │       │       ├── StreamMessage.html
+│   │       │       ├── TemporaryQueue.html
+│   │       │       ├── TemporaryTopic.html
+│   │       │       ├── TextMessage.html
+│   │       │       ├── TopicConnectionFactory.html
+│   │       │       ├── TopicConnection.html
+│   │       │       ├── Topic.html
+│   │       │       ├── TopicPublisher.html
+│   │       │       ├── TopicRequestor.html
+│   │       │       ├── TopicSession.html
+│   │       │       ├── TopicSubscriber.html
+│   │       │       ├── TransactionInProgressException.html
+│   │       │       ├── TransactionRolledBackException.html
+│   │       │       ├── XAConnectionFactory.html
+│   │       │       ├── XAConnection.html
+│   │       │       ├── XAQueueConnectionFactory.html
+│   │       │       ├── XAQueueConnection.html
+│   │       │       ├── XAQueueSession.html
+│   │       │       ├── XASession.html
+│   │       │       ├── XATopicConnectionFactory.html
+│   │       │       ├── XATopicConnection.html
+│   │       │       └── XATopicSession.html
+│   │       ├── olongdesc.html
+│   │       ├── oracle
+│   │       │   └── jms
+│   │       │       ├── AdtMessage.html
+│   │       │       ├── AQjmsAdtMessage.html
+│   │       │       ├── AQjmsBytesMessage.html
+│   │       │       ├── AQjmsConnectionFactory.html
+│   │       │       ├── AQjmsConnection.html
+│   │       │       ├── AQjmsConnectionMetaData.html
+│   │       │       ├── AQjmsConsumer.html
+│   │       │       ├── AQjmsDestinationFactory.html
+│   │       │       ├── AQjmsDestination.html
+│   │       │       ├── AQjmsDestinationProperty.html
+│   │       │       ├── AQjmsException.html
+│   │       │       ├── AQjmsFactory.html
+│   │       │       ├── AQjmsMapMessage.html
+│   │       │       ├── AQjmsMessage.html
+│   │       │       ├── AQjmsObjectMessage.html
+│   │       │       ├── AQjmsParseException.html
+│   │       │       ├── AQjmsProducer.html
+│   │       │       ├── AQjmsQueueBrowser.html
+│   │       │       ├── AQjmsQueueConnectionFactory.html
+│   │       │       ├── AQjmsQueueReceiver.html
+│   │       │       ├── AQjmsQueueSender.html
+│   │       │       ├── AQjmsSession.html
+│   │       │       ├── AQjmsStreamMessage.html
+│   │       │       ├── AQjmsTextMessage.html
+│   │       │       ├── AQjmsTopicBrowser.html
+│   │       │       ├── AQjmsTopicConnectionFactory.html
+│   │       │       ├── AQjmsTopicPublisher.html
+│   │       │       ├── AQjmsTopicReceiver.html
+│   │       │       ├── AQjmsTopicSubscriber.html
+│   │       │       ├── AQjmsXAConnectionFactory.html
+│   │       │       ├── AQjmsXAConnection.html
+│   │       │       ├── AQjmsXAQueueConnectionFactory.html
+│   │       │       ├── AQjmsXASession.html
+│   │       │       ├── AQjmsXATopicConnectionFactory.html
+│   │       │       ├── package-frame.html
+│   │       │       ├── package-summary.html
+│   │       │       ├── package-tree.html
+│   │       │       ├── TopicBrowser.html
+│   │       │       └── TopicReceiver.html
+│   │       ├── overview-frame.html
+│   │       ├── overview-summary.html
+│   │       ├── overview-tree.html
+│   │       ├── package-list
+│   │       ├── script.js
+│   │       ├── serialized-form.html
+│   │       ├── stylesheet.css
+│   │       └── toc.htm
 │   ├── database-concepts
 │   │   ├── 00a_table-of-contents.pdf
 │   │   ├── 00b_preface.pdf
@@ -161,9 +407,36 @@
 │   │   ├── database-development-guide.pdf
 │   │   └── metadata.txt
 │   ├── database-performance-tuning-guide
+│   │   ├── 00a_contents.pdf
+│   │   ├── 00b_preface.pdf
+│   │   ├── ch01_12-database-memory-allocation.pdf
+│   │   ├── ch01_18-io-configuration-and-design.pdf
+│   │   ├── ch01_1-performance-tuning-overview.pdf
+│   │   ├── ch01_5-measuring-database-performance.pdf
+│   │   ├── ch02_13-tuning-the-system-global-area.pdf
+│   │   ├── ch02_19-managing-operating-system-resources.pdf
+│   │   ├── ch02_2-designing-and-developing-for-performance.pdf
+│   │   ├── ch02_6-gathering-database-statistics.pdf
+│   │   ├── ch03_14-tuning-the-database-buffer-cache.pdf
+│   │   ├── ch03_20-working-with-automatic-materialized-views.pdf
+│   │   ├── ch03_3-performance-improvement-methods.pdf
+│   │   ├── ch03_7-automatic-performance-diagnostics.pdf
+│   │   ├── ch04_15-tuning-the-shared-pool-and-the-large-pool.pdf
+│   │   ├── ch04_4-configuring-a-database-for-performance.pdf
+│   │   ├── ch04_8-monitoring-databases-with-performance-hub.pdf
+│   │   ├── ch05_16-tuning-the-result-cache.pdf
+│   │   ├── ch05_9-comparing-database-performance-over-time.pdf
+│   │   ├── ch06_10-analyzing-sampled-data.pdf
+│   │   ├── ch06_17-tuning-the-process-global-area.pdf
+│   │   ├── ch07_11-instance-tuning-using-performance-views.pdf
 │   │   ├── database-performance-tuning-guide.pdf
+│   │   ├── glossary.pdf
+│   │   ├── index.pdf
 │   │   ├── metadata.txt
-│   │   └── parts
+│   │   ├── part01_part-i-database-performance-fundamentals_title.pdf
+│   │   ├── part02_part-ii-diagnosing-and-tuning-database-performance_title.pdf
+│   │   ├── part03_part-iii-tuning-database-memory_title.pdf
+│   │   └── part04_part-iv-managing-system-resources_title.pdf
 │   ├── database-pl-sql-packages-and-types-reference
 │   │   ├── 00a_contents.pdf
 │   │   ├── 00c_preface.pdf
@@ -490,15 +763,102 @@
 │   │   ├── database-pl-sql-packages-and-types-reference.pdf
 │   │   ├── index.pdf
 │   │   └── metadata.txt
-│   ├── database-reference.pdf
+│   ├── database-reference
+│   │   ├── 00_contents.pdf
+│   │   ├── 01_preface.pdf
+│   │   ├── 02_ch01_changes.pdf
+│   │   ├── 03_part01_initialization-parameters_title.pdf
+│   │   ├── 04_part02_static-data-dictionary-views_title.pdf
+│   │   ├── 05_part03_dynamic-performance-views_title.pdf
+│   │   ├── 06_part04_appendixes_title.pdf
+│   │   ├── 07_app_a_database_limits.pdf
+│   │   ├── 08_app_b_sql_scripts.pdf
+│   │   ├── 09_app_c_oracle_wait_events.pdf
+│   │   ├── 10_app_d_oracle_enqueue_names.pdf
+│   │   ├── 11_app_e_statistics_descriptions.pdf
+│   │   ├── 12_app_f_background_processes.pdf
+│   │   ├── 13_index.pdf
+│   │   ├── database-reference.pdf
+│   │   ├── extract_database-reference.sh
+│   │   └── metadata.txt
 │   ├── database-security-guide
+│   │   ├── 00a_contents.pdf
+│   │   ├── 00b_preface.pdf
+│   │   ├── ch01_12-managing-security-for-application-developers.pdf
+│   │   ├── ch01_13-using-application-contexts-to-retrieve-user-information.pdf
+│   │   ├── ch01_19-securing-data-for-oracle-database-connections.pdf
+│   │   ├── ch01_22-introduction-to-strong-authentication.pdf
+│   │   ├── ch01_28-introduction-to-auditing.pdf
+│   │   ├── ch01_2-managing-security-for-oracle-database-users.pdf
+│   │   ├── ch01_a-keeping-your-oracle-database-secure.pdf
+│   │   ├── ch02_14-using-oracle-virtual-private-database-to-control-data-access.pdf
+│   │   ├── ch02_20-configuring-oracle-database-native-network-encryption-and-data-integrity.pdf
+│   │   ├── ch02_23-strong-authentication-administration-tools.pdf
+│   │   ├── ch02_29-provisioning-audit-policies.pdf
+│   │   ├── ch02_3-configuring-authentication.pdf
+│   │   ├── ch02_b-managing-oracle-database-wallets-and-certificates.pdf
+│   │   ├── ch03_15-using-transparent-sensitive-data-protection.pdf
+│   │   ├── ch03_21-configuring-transport-layer-security-encryption.pdf
+│   │   ├── ch03_24-configuring-kerberos-authentication.pdf
+│   │   ├── ch03_30-creating-custom-unified-audit-policies.pdf
+│   │   ├── ch03_4-configuring-privilege-and-role-authorization.pdf
+│   │   ├── ch03_c-oracle-database-fips-140-2-settings.pdf
+│   │   ├── ch04_16-encryption-of-sensitive-credential-data-in-the-data-dictionary.pdf
+│   │   ├── ch04_25-configuring-pki-certificate-authentication.pdf
+│   │   ├── ch04_31-value-based-auditing-with-fine-grained-audit-policies.pdf
+│   │   ├── ch04_5-performing-privilege-analysis-to-identify-privilege-use.pdf
+│   │   ├── ch04_d-considerations-for-transitioning-from-traditional-to-unified-auditing.pdf
+│   │   ├── ch05_17-securing-and-isolating-resources-using-dbnest.pdf
+│   │   ├── ch05_26-configuring-radius-authentication.pdf
+│   │   ├── ch05_32-administering-the-audit-trail.pdf
+│   │   ├── ch05_6-configuring-centrally-managed-users-with-microsoft-active-directory.pdf
+│   │   ├── ch06_18-on-demand-encryption-of-data.pdf
+│   │   ├── ch06_27-customizing-the-use-of-strong-authentication.pdf
+│   │   ├── ch06_7-authenticating-and-authorizing-iam-users-for-oracle-dbaas-databases.pdf
+│   │   ├── ch07_8-authenticating-and-authorizing-microsoft-azure-users-for-oracle-databases.pdf
+│   │   ├── ch08_9-managing-security-for-definers-rights-and-invokers-rights.pdf
+│   │   ├── ch09_10-managing-fine-grained-access-in-plsql-packages-and-types.pdf
+│   │   ├── ch10_11-managing-security-for-a-multitenant-environment-in-enterprise-manager.pdf
 │   │   ├── database-security-guide.pdf
+│   │   ├── glossary.pdf
+│   │   ├── index.pdf
 │   │   ├── metadata.txt
-│   │   └── parts
+│   │   ├── part01_part-i-managing-user-authentication-and-authorization_title.pdf
+│   │   ├── part02_part-ii-application-development-security_title.pdf
+│   │   ├── part03_part-iii-controlling-access-to-data_title.pdf
+│   │   ├── part04_part-iv-securing-data-on-the-network_title.pdf
+│   │   ├── part05_part-v-managing-strong-authentication_title.pdf
+│   │   ├── part06_part-vi-monitoring-database-activity-with-auditing_title.pdf
+│   │   └── part07_part-vii-appendixes_title.pdf
 │   ├── database-transactional-event-queues-and-advanced-queuing-users-guide
+│   │   ├── 00_contents.pdf
+│   │   ├── 01_list_of_examples.pdf
+│   │   ├── 02_list_of_figures.pdf
+│   │   ├── 03_list_of_tables.pdf
+│   │   ├── 04_preface.pdf
+│   │   ├── 05_changes.pdf
+│   │   ├── 06_ch01_introduction-to-transactional-event-queues-and-advanced-queuing.pdf
+│   │   ├── 07_ch02_basic-components-of-oracle-transactional-event-queues-and-advanced-queuing.pdf
+│   │   ├── 08_ch03_oracle-transactional-event-queues-and-advanced-queuing-programmatic-interfaces.pdf
+│   │   ├── 09_ch04_managing-oracle-transactional-event-queues-and-advanced-queuing.pdf
+│   │   ├── 10_ch05_kafka-apis-for-oracle-transactional-event-queues.pdf
+│   │   ├── 11_ch06_java-message-service-for-transactional-event-queues-and-advanced-queuing.pdf
+│   │   ├── 12_ch07_oracle-database-advanced-queuing-operations-using-plsql.pdf
+│   │   ├── 13_ch08_oracle-transactional-event-queues-and-advanced-queuing-performance-and-scalability.pdf
+│   │   ├── 14_ch09_oracle-transactional-event-queue-and-advanced-queuing-views.pdf
+│   │   ├── 15_ch10_troubleshooting-oracle-database-advanced-queuing.pdf
+│   │   ├── 16_ch11_internet-access-to-oracle-database-advanced-queuing.pdf
+│   │   ├── 17_ch12_oracle-database-advanced-queuing-administrative-interface.pdf
+│   │   ├── 18_app_a_nonpersistent_queues.pdf
+│   │   ├── 19_app_b_oracle_jms_and_oracle_aq_xml_servlet_error_messages.pdf
+│   │   ├── 20_app_c_oracle_messaging_gateway.pdf
+│   │   ├── 21_app_d_advanced_queuing_sharded_queues.pdf
+│   │   ├── 22_glossary.pdf
+│   │   ├── 23_index.pdf
 │   │   ├── database-transactional-event-queues-and-advanced-queuing-users-guide.pdf
-│   │   ├── metadata.txt
-│   │   └── parts
+│   │   ├── extract_database-transactional-event-queues-and-advanced-queuing-users-guide.sh
+│   │   └── metadata.txt
+│   ├── generate_extraction_scripts.py
 │   ├── get-started-oracle-database-development
 │   │   ├── get-started-guide_00b_preface.pdf
 │   │   ├── get-started-guide_ch01_introduction.pdf
@@ -512,40 +872,131 @@
 │   │   ├── get-started-guide_ch09_developing-simple-application.pdf
 │   │   ├── get-started-guide_ch10_deploying-application.pdf
 │   │   └── get-started-oracle-database-development.pdf
-│   ├── jajms
-│   │   ├── allclasses-frame.html
-│   │   ├── allclasses-noframe.html
-│   │   ├── constant-values.html
-│   │   ├── debug.log
-│   │   ├── deprecated-list.html
-│   │   ├── help-doc.html
-│   │   ├── index-all.html
-│   │   ├── index.html
-│   │   ├── javax
-│   │   ├── olongdesc.html
-│   │   ├── oracle
-│   │   ├── overview-frame.html
-│   │   ├── overview-summary.html
-│   │   ├── overview-tree.html
-│   │   ├── package-list
-│   │   ├── script.js
-│   │   ├── serialized-form.html
-│   │   ├── stylesheet.css
-│   │   └── toc.htm
 │   ├── java-developers-guide
+│   │   ├── 00_contents.pdf
+│   │   ├── 01_list_of_tables.pdf
+│   │   ├── 02_preface.pdf
+│   │   ├── 03_changes.pdf
+│   │   ├── 04_ch01_introduction-to-java-in-oracle-database.pdf
+│   │   ├── 05_ch02_java-applications-on-oracle-database.pdf
+│   │   ├── 06_ch03_calling-java-methods-in-oracle-database.pdf
+│   │   ├── 07_ch04_java-installation-and-configuration.pdf
+│   │   ├── 08_ch05_developing-java-stored-procedures.pdf
+│   │   ├── 09_ch06_publishing-java-classes-with-call-specifications.pdf
+│   │   ├── 10_ch07_calling-stored-procedures.pdf
+│   │   ├── 11_ch08_java-stored-procedures-application-example.pdf
+│   │   ├── 12_ch09_oracle-database-java-application-performance.pdf
+│   │   ├── 13_ch10_security-for-oracle-database-java-applications.pdf
+│   │   ├── 14_ch11_native-oracle-jvm-support-for-jndi.pdf
+│   │   ├── 15_ch12_schema-objects-and-oracle-jvm-utilities.pdf
+│   │   ├── 16_ch13_database-web-services.pdf
+│   │   ├── 17_app_a_dbms_java_package.pdf
+│   │   ├── 18_app_b_classpath_extensions_and_user_classloaded_metadata.pdf
+│   │   ├── 19_index.pdf
+│   │   ├── extract_java-developers-guide.sh
 │   │   ├── java-developers-guide.pdf
-│   │   ├── metadata.txt
-│   │   └── parts
+│   │   └── metadata.txt
 │   ├── jdbc-developers-guide
+│   │   ├── 00a_contents.pdf
+│   │   ├── 00b_preface.pdf
+│   │   ├── ch01_12-accessing-and-manipulating-oracle-data.pdf
+│   │   ├── ch01_1-introducing-jdbc.pdf
+│   │   ├── ch01_22-statement-and-result-set-caching.pdf
+│   │   ├── ch01_32-transaction-guard-for-java.pdf
+│   │   ├── ch01_37-distributed-transactions.pdf
+│   │   ├── ch01_39-database-administration.pdf
+│   │   ├── ch01_3-jdbc-standards-support.pdf
+│   │   ├── ch01_8-data-sources-and-urls.pdf
+│   │   ├── ch01_a-jdbc-reference-information.pdf
+│   │   ├── ch02_13-java-streams-in-jdbc.pdf
+│   │   ├── ch02_23-performance-extensions.pdf
+│   │   ├── ch02_2-getting-started.pdf
+│   │   ├── ch02_33-application-continuity-for-java.pdf
+│   │   ├── ch02_38-sessionless-transactions.pdf
+│   │   ├── ch02_40-diagnosability-in-jdbc.pdf
+│   │   ├── ch02_4-oracle-extensions.pdf
+│   │   ├── ch02_9-jdbc-client-side-security-features.pdf
+│   │   ├── ch02_b-oracle-rac-fast-application-notification.pdf
+│   │   ├── ch03_10-jdbc-service-provider-extensions.pdf
+│   │   ├── ch03_14-working-with-vectors.pdf
+│   │   ├── ch03_24-jdbc-reactive-extensions.pdf
+│   │   ├── ch03_34-oracle-jdbc-support-for-fan-events.pdf
+│   │   ├── ch03_41-jdbc-dms-metrics.pdf
+│   │   ├── ch03_5-features-specific-to-jdbc-thin.pdf
+│   │   ├── ch03_c-jdbc-coding-tips.pdf
+│   │   ├── ch04_11-proxy-authentication.pdf
+│   │   ├── ch04_15-working-with-oracle-object-types.pdf
+│   │   ├── ch04_25-support-for-java-library-for-reactive-streams-ingestion.pdf
+│   │   ├── ch04_35-transparent-application-failover.pdf
+│   │   ├── ch04_6-features-specific-to-jdbc-oci-driver.pdf
+│   │   ├── ch04_d-jdbc-error-messages.pdf
+│   │   ├── ch05_16-working-with-large-objects-and-securefiles.pdf
+│   │   ├── ch05_26-support-for-pipelined-database-operations.pdf
+│   │   ├── ch05_36-single-client-access-name.pdf
+│   │   ├── ch05_7-server-side-internal-driver.pdf
+│   │   ├── ch05_e-troubleshooting.pdf
+│   │   ├── ch06_17-using-oracle-object-references.pdf
+│   │   ├── ch06_27-oci-connection-pooling.pdf
+│   │   ├── ch07_18-working-with-oracle-collections.pdf
+│   │   ├── ch07_28-database-resident-connection-pooling.pdf
+│   │   ├── ch08_19-result-set.pdf
+│   │   ├── ch08_29-jdbc-support-for-database-sharding.pdf
+│   │   ├── ch09_20-jdbc-rowsets.pdf
+│   │   ├── ch09_30-oracle-advanced-queuing.pdf
+│   │   ├── ch10_21-globalization-support.pdf
+│   │   ├── ch10_31-continuous-query-notification.pdf
+│   │   ├── index.pdf
 │   │   ├── jdbc-developers-guide.pdf
 │   │   ├── metadata.txt
-│   │   └── parts
-│   ├── json-relational-duality-developers-guide.pdf
+│   │   ├── part01_part-i-overview_title.pdf
+│   │   ├── part02_part-ii-oracle-jdbc_title.pdf
+│   │   ├── part03_part-iii-connection-and-security_title.pdf
+│   │   ├── part04_part-iv-data-access-and-manipulation_title.pdf
+│   │   ├── part05_part-v-performance-and-scalability_title.pdf
+│   │   ├── part06_part-vi-high-availability_title.pdf
+│   │   ├── part07_part-vii-transaction-management_title.pdf
+│   │   ├── part08_part-viii-manageability_title.pdf
+│   │   └── part09_part-ix-appendixes_title.pdf
+│   ├── json-relational-duality-developers-guide
+│   │   ├── 00_contents.pdf
+│   │   ├── 01_list_of_examples.pdf
+│   │   ├── 02_list_of_figures.pdf
+│   │   ├── 03_list_of_tables.pdf
+│   │   ├── 04_preface.pdf
+│   │   ├── 05_ch01_overview-of-json-relational-duality-views.pdf
+│   │   ├── 06_ch02_introduction-to-car-racing-duality-views-example.pdf
+│   │   ├── 07_ch03_creating-duality-views.pdf
+│   │   ├── 08_ch04_updatable-json-relational-duality-views.pdf
+│   │   ├── 09_ch05_using-json-relational-duality-views.pdf
+│   │   ├── 10_ch06_document-identifier-field-for-duality-views.pdf
+│   │   ├── 11_ch07_generated-fields-hidden-fields.pdf
+│   │   ├── 12_ch08_schema-flexibility-with-json-columns-in-duality-views.pdf
+│   │   ├── 13_ch09_graphql-language-used-for-json-relational-duality-views.pdf
+│   │   ├── 14_index.pdf
+│   │   ├── extract_json-relational-duality-developers-guide.sh
+│   │   ├── json-relational-duality-developers-guide.pdf
+│   │   └── metadata.txt
 │   ├── oracle-database-23ai-new-features-guide.pdf
 │   ├── oracle-database-javascript-developers-guide
+│   │   ├── 00_contents.pdf
+│   │   ├── 01_list_of_examples.pdf
+│   │   ├── 02_list_of_figures.pdf
+│   │   ├── 03_list_of_tables.pdf
+│   │   ├── 04_ch01_changes-in-this-release-for-javascript-developer-s-guide.pdf
+│   │   ├── 05_ch02_introduction-to-oracle-database-multilingual-engine-for-javascript.pdf
+│   │   ├── 06_ch03_mle-javascript-modules-and-environments.pdf
+│   │   ├── 07_ch04_overview-of-dynamic-mle-execution.pdf
+│   │   ├── 08_ch05_overview-of-importing-mle-javascript-modules.pdf
+│   │   ├── 09_ch06_mle-javascript-functions.pdf
+│   │   ├── 10_ch07_calling-plsql-and-sql-from-the-mle-javascript-sql-driver.pdf
+│   │   ├── 11_ch08_working-with-soda-collections-in-mle-javascript-code.pdf
+│   │   ├── 12_ch09_post-execution-debugging-of-mle-javascript-modules.pdf
+│   │   ├── 13_ch10_mle-security.pdf
+│   │   ├── 14_app_a_mle_type_conversions.pdf
+│   │   ├── 15_index.pdf
+│   │   ├── extract_oracle-database-javascript-developers-guide.sh
 │   │   ├── metadata.txt
-│   │   ├── oracle-database-javascript-developers-guide.pdf
-│   │   └── parts
+│   │   └── oracle-database-javascript-developers-guide.pdf
 │   ├── oracle-database-pl-sql-language-reference
 │   │   ├── 00b_preface.pdf
 │   │   ├── appA_source-text-wrapping.pdf
@@ -570,9 +1021,19 @@
 │   │   ├── ch15_sql-statements-for-stored-units.pdf
 │   │   └── database-pl-sql-language-reference.pdf
 │   ├── oracle-database-sql-firewall-users-guide
+│   │   ├── 00_contents.pdf
+│   │   ├── 01_preface.pdf
+│   │   ├── 02_changes.pdf
+│   │   ├── 03_ch01_overview-of-oracle-sql-firewall.pdf
+│   │   ├── 04_ch02_configuring-oracle-sql-firewall.pdf
+│   │   ├── 05_ch03_how-oracle-sql-firewall-works-with-other-oracle-features.pdf
+│   │   ├── 06_ch04_oracle-sql-firewall-data-dictionary-views-and-example-queries.pdf
+│   │   ├── 07_app_sql-firewall-database-views-and-dbms-package.pdf
+│   │   ├── 08_glossary.pdf
+│   │   ├── 09_index.pdf
+│   │   ├── extract_oracle-database-sql-firewall-users-guide.sh
 │   │   ├── metadata.txt
-│   │   ├── oracle-database-sql-firewall-users-guide.pdf
-│   │   └── parts
+│   │   └── oracle-database-sql-firewall-users-guide.pdf
 │   ├── oracle-database-utilities-guide
 │   │   ├── 000_cover-title.pdf
 │   │   ├── 00a_table-of-contents.pdf
@@ -611,7 +1072,6 @@
 │   │   └── oracle-database-utilities-guide.pdf
 │   ├── reductions
 │   │   ├── reduction-database-administrators-guide.pdf
-│   │   ├── reduction_database-administrators-guide.pdf
 │   │   ├── reduction-database-concepts.pdf
 │   │   ├── reduction-database-development-guide.pdf
 │   │   ├── reduction-database-performance-tuning-guide.pdf
@@ -623,45 +1083,212 @@
 │   │   ├── reduction-get-started-oracle-database-development.pdf
 │   │   ├── reduction-java-developers-guide.pdf
 │   │   ├── reduction-jdbc-developers-guide.pdf
-│   │   ├── reduction_oracle-database-javascript-developers-guide.pdf
+│   │   ├── reduction-json-relational-duality-developers-guide.pdf
+│   │   ├── reduction-oracle-database-javascript-developers-guide.pdf
 │   │   ├── reduction-oracle-database-sql-firewall-users-guide.pdf
-│   │   ├── reduction_oracle-database-sql-firewall-users-guide.pdf
 │   │   ├── reduction-oracle-database-utilities-guide.pdf
 │   │   ├── reduction-securefiles-and-large-objects-developers-guide.pdf
 │   │   ├── reduction-sql-language-reference.pdf
 │   │   ├── reduction-sql-tuning-guide.pdf
 │   │   ├── reduction-universal-connection-pool-developers-guide.pdf
 │   │   └── reduction-xml-db-developers-guide.pdf
+│   ├── run_all_extractions.sh
 │   ├── securefiles-and-large-objects-developers-guide
+│   │   ├── 00_contents.pdf
+│   │   ├── 01_preface.pdf
+│   │   ├── 02_changes.pdf
+│   │   ├── 03_ch01_introduction-to-large-objects-and-securefiles.pdf
+│   │   ├── 04_ch02_persistent-lobs.pdf
+│   │   ├── 05_ch03_temporary-lobs.pdf
+│   │   ├── 06_ch04_value-lobs.pdf
+│   │   ├── 07_ch05_bfiles.pdf
+│   │   ├── 08_ch06_sql-semantics-for-lobs.pdf
+│   │   ├── 09_ch07_plsql-semantics-for-lobs.pdf
+│   │   ├── 10_ch08_data-interface-for-lobs.pdf
+│   │   ├── 11_ch09_locator-interface-for-lobs.pdf
+│   │   ├── 12_ch10_distributed-lobs.pdf
+│   │   ├── 13_ch11_performance-guidelines.pdf
+│   │   ├── 14_ch12_persistent-lobs-advanced-ddl.pdf
+│   │   ├── 15_ch13_advanced-design-considerations.pdf
+│   │   ├── 16_ch14_managing-lobs-database-administration.pdf
+│   │   ├── 17_ch15_migrating-columns-to-securefile-lobs.pdf
+│   │   ├── 18_ch16_automatic-securefiles-shrink.pdf
+│   │   ├── 19_ch17_introducing-the-database-file-system.pdf
+│   │   ├── 20_ch18_using-dbfs.pdf
+│   │   ├── 21_ch19_dbfs-securefiles-store.pdf
+│   │   ├── 22_ch20_dbfs-hierarchical-store.pdf
+│   │   ├── 23_ch21_database-file-system-links.pdf
+│   │   ├── 24_ch22_dbfs-content-api.pdf
+│   │   ├── 25_ch23_creating-your-own-dbfs-store.pdf
+│   │   ├── 26_ch24_dbfs-access-using-ofs.pdf
+│   │   ├── 27_app_a_comparing_the_lob_interfaces.pdf
+│   │   ├── extract_securefiles-and-large-objects-developers-guide.sh
 │   │   ├── metadata.txt
-│   │   ├── parts
 │   │   └── securefiles-and-large-objects-developers-guide.pdf
 │   ├── sql-language-reference
+│   │   ├── 00_contents.pdf
+│   │   ├── 01_preface.pdf
+│   │   ├── 02_changes.pdf
+│   │   ├── 03_ch01_introduction-to-oracle-sql.pdf
+│   │   ├── 04_ch02_basic-elements-of-oracle-sql.pdf
+│   │   ├── 05_ch03_pseudocolumns.pdf
+│   │   ├── 06_ch04_operators.pdf
+│   │   ├── 07_ch05_expressions.pdf
+│   │   ├── 08_ch06_conditions.pdf
+│   │   ├── 09_ch07_functions.pdf
+│   │   ├── 10_ch08_common-sql-ddl-clauses.pdf
+│   │   ├── 11_ch09_sql-queries-and-subqueries.pdf
+│   │   ├── 12_ch10_sql-statements-administer-key-management-to-alter-json-relational-duality-view.pdf
+│   │   ├── 13_ch11_sql-statements-alter-library-to-alter-session.pdf
+│   │   ├── 14_ch12_sql-statements-alter-synonym-to-comment.pdf
+│   │   ├── 15_ch13_sql-statements-commit-to-create-json-relational-duality-view.pdf
+│   │   ├── 16_ch14_sql-statements-create-library-to-create-schema.pdf
+│   │   ├── 17_ch15_sql-statements-create-sequence-to-drop-cluster.pdf
+│   │   ├── 18_ch16_sql-statements-drop-context-to-drop-java.pdf
+│   │   ├── 19_ch17_sql-statements-drop-library-to-drop-synonym.pdf
+│   │   ├── 20_ch18_sql-statements-drop-table-to-lock-table.pdf
+│   │   ├── 21_ch19_sql-statements-merge-to-update.pdf
+│   │   ├── 22_app_a_how_to_read_syntax_diagrams.pdf
+│   │   ├── 23_app_b_automatic_and_manual_locking_mechanisms_during_sql_operations.pdf
+│   │   ├── 24_app_c_oracle_and_standard_sql.pdf
+│   │   ├── 25_app_d_oracle_regular_expression_support.pdf
+│   │   ├── 26_app_e_oracle_sql_reserved_words_and_keywords.pdf
+│   │   ├── 27_app_f_extended_examples.pdf
+│   │   ├── 28_index.pdf
+│   │   ├── extract_sql-language-reference.sh
 │   │   ├── metadata.txt
-│   │   ├── parts
 │   │   └── sql-language-reference.pdf
 │   ├── sql-tuning-guide
+│   │   ├── 00a_contents.pdf
+│   │   ├── 00b_preface.pdf
+│   │   ├── ch01_10-optimizer-statistics-concepts.pdf
+│   │   ├── ch01_19-influencing-the-optimizer.pdf
+│   │   ├── ch01_1-introduction-to-sql-tuning.pdf
+│   │   ├── ch01_21-gathering-diagnostic-data-with-sql-test-case-builder.pdf
+│   │   ├── ch01_24-capturing-workloads-in-sql-tuning-sets.pdf
+│   │   ├── ch01_27-managing-sql-profiles.pdf
+│   │   ├── ch01_3-sql-processing.pdf
+│   │   ├── ch01_6-explaining-and-displaying-execution-plans.pdf
+│   │   ├── ch01_8-optimizer-access-paths.pdf
+│   │   ├── ch02_11-histograms.pdf
+│   │   ├── ch02_20-improving-real-world-performance-through-cursor-sharing.pdf
+│   │   ├── ch02_22-monitoring-database-operations.pdf
+│   │   ├── ch02_25-analyzing-sql-with-sql-tuning-advisor.pdf
+│   │   ├── ch02_28-overview-of-sql-plan-management.pdf
+│   │   ├── ch02_2-sql-performance-methodology.pdf
+│   │   ├── ch02_4-query-optimizer-concepts.pdf
+│   │   ├── ch02_7-plan-table-reference.pdf
+│   │   ├── ch02_9-joins.pdf
+│   │   ├── ch03_12-configuring-options-for-optimizer-statistics-gathering.pdf
+│   │   ├── ch03_23-performing-application-tracing.pdf
+│   │   ├── ch03_26-optimizing-access-paths-with-sql-access-advisor.pdf
+│   │   ├── ch03_29-managing-sql-plan-baselines.pdf
+│   │   ├── ch03_5-query-transformations.pdf
+│   │   ├── ch04_13-gathering-optimizer-statistics.pdf
+│   │   ├── ch04_30-migrating-stored-outlines-to-sql-plan-baselines.pdf
+│   │   ├── ch05_14-managing-extended-statistics.pdf
+│   │   ├── ch06_15-controlling-the-use-of-optimizer-statistics.pdf
+│   │   ├── ch07_16-managing-historical-optimizer-statistics.pdf
+│   │   ├── ch08_17-importing-and-exporting-optimizer-statistics.pdf
+│   │   ├── ch09_18-analyzing-statistics-using-optimizer-statistics-advisor.pdf
+│   │   ├── glossary.pdf
+│   │   ├── index.pdf
 │   │   ├── metadata.txt
-│   │   ├── parts
+│   │   ├── part01_part-i-sql-performance-fundamentals_title.pdf
+│   │   ├── part02_part-ii-query-optimizer-fundamentals_title.pdf
+│   │   ├── part03_part-iii-query-execution-plans_title.pdf
+│   │   ├── part04_part-iv-sql-operators-access-paths-and-joins_title.pdf
+│   │   ├── part05_part-v-optimizer-statistics_title.pdf
+│   │   ├── part06_part-vi-optimizer-controls_title.pdf
+│   │   ├── part07_part-vii-monitoring-and-tracing-sql_title.pdf
+│   │   ├── part08_part-viii-automatic-sql-tuning_title.pdf
+│   │   ├── part09_part-ix-sql-management-objects_title.pdf
 │   │   └── sql-tuning-guide.pdf
 │   ├── universal-connection-pool-developers-guide
+│   │   ├── 00_contents.pdf
+│   │   ├── 01_preface.pdf
+│   │   ├── 02_changes.pdf
+│   │   ├── 03_ch01_introduction-to-ucp.pdf
+│   │   ├── 04_ch02_getting-started.pdf
+│   │   ├── 05_ch03_getting-database-connections-in-ucp.pdf
+│   │   ├── 06_ch04_connection-creation-consumer.pdf
+│   │   ├── 07_ch05_optimizing-universal-connection-pool-behavior.pdf
+│   │   ├── 08_ch06_labeling-connections-in-ucp.pdf
+│   │   ├── 09_ch07_controlling-reclaimable-connection-behavior.pdf
+│   │   ├── 10_ch08_using-the-connection-pool-manager.pdf
+│   │   ├── 11_ch09_shared-pool-support-for-multitenant-data-sources.pdf
+│   │   ├── 12_ch10_using-oracle-rac-features.pdf
+│   │   ├── 13_ch11_ucp-asynchronous-extension.pdf
+│   │   ├── 14_ch12_ensuring-application-continuity.pdf
+│   │   ├── 15_ch13_shared-pool-for-sharded-databases.pdf
+│   │   ├── 16_ch14_diagnosing-a-connection-pool.pdf
+│   │   ├── 17_app_a_error_codes_reference.pdf
+│   │   ├── 18_app_b_ucp_exception_error_codes.pdf
+│   │   ├── 19_index.pdf
+│   │   ├── extract_universal-connection-pool-developers-guide.sh
 │   │   ├── metadata.txt
-│   │   ├── parts
 │   │   └── universal-connection-pool-developers-guide.pdf
 │   └── xml-db-developers-guide
+│       ├── 00a_contents.pdf
+│       ├── 00b_preface.pdf
+│       ├── ch01_11-plsql-apis-for-xmltype.pdf
+│       ├── ch01_16-choice-of-xmltype-storage-and-indexing.pdf
+│       ├── ch01_1-introduction-to-oracle-xml-db.pdf
+│       ├── ch01_21-access-to-oracle-xml-db-repository-data.pdf
+│       ├── ch01_34-administration-of-oracle-xml-db.pdf
+│       ├── ch01_4-xquery-and-oracle-xml-db.pdf
+│       ├── ch01_8-generation-of-xml-data-from-relational-data.pdf
+│       ├── ch01_a-oracle-supplied-xml-schemas-and-examples.pdf
+│       ├── ch02_12-plsql-package-dbms-xmlstore.pdf
+│       ├── ch02_17-xml-schema-storage-and-query-basic.pdf
+│       ├── ch02_22-configuration-of-oracle-xml-db-repository.pdf
+│       ├── ch02_2-getting-started-with-oracle-xml-db.pdf
+│       ├── ch02_35-how-to-load-xml-data.pdf
+│       ├── ch02_5-query-and-update-of-xml-data.pdf
+│       ├── ch02_9-relational-views-over-xml-data.pdf
+│       ├── ch02_b-oracle-xml-db-restrictions.pdf
+│       ├── ch03_10-xmltype-views.pdf
+│       ├── ch03_13-java-dom-api-for-xmltype.pdf
+│       ├── ch03_18-xml-schema-storage-and-query-object-relational-storage.pdf
+│       ├── ch03_23-use-of-xlink-and-xinclude-with-oracle-xml-db.pdf
+│       ├── ch03_36-export-and-import-of-oracle-xml-db-data.pdf
+│       ├── ch03_3-overview-of-how-to-use-oracle-xml-db.pdf
+│       ├── ch03_6-indexes-for-xmltype-data.pdf
+│       ├── ch03_c-xmlindex-unstructured-component.pdf
+│       ├── ch04_14-c-dom-api-for-xmltype.pdf
+│       ├── ch04_19-xpath-rewrite-for-object-relational-storage.pdf
+│       ├── ch04_24-repository-access-using-resource-view-and-path-view.pdf
+│       ├── ch04_37-xml-data-exchange-using-oracle-database-advanced-queuing.pdf
+│       ├── ch04_7-transformation-and-validation-of-xmltype-data.pdf
+│       ├── ch04_d-indexing-xml-data-for-full-text-queries-pre-23ai.pdf
+│       ├── ch05_15-oracle-xml-db-and-oracle-data-provider-for-net.pdf
+│       ├── ch05_20-xml-schema-evolution.pdf
+│       ├── ch05_25-resource-versions.pdf
+│       ├── ch06_26-plsql-access-to-oracle-xml-db-repository.pdf
+│       ├── ch07_27-repository-access-control.pdf
+│       ├── ch08_28-repository-access-using-protocols.pdf
+│       ├── ch09_29-user-defined-repository-metadata.pdf
+│       ├── ch10_30-oracle-xml-db-repository-events.pdf
+│       ├── ch11_31-guidelines-for-oracle-xml-db-applications-in-java.pdf
+│       ├── ch12_32-data-access-using-uris.pdf
+│       ├── ch13_33-native-oracle-xml-db-web-services.pdf
+│       ├── index.pdf
 │       ├── metadata.txt
-│       ├── parts
+│       ├── part01_part-i-oracle-xml-db-basics_title.pdf
+│       ├── part02_part-ii-manipulation-of-xml-data-in-oracle-xml-db_title.pdf
+│       ├── part03_part-iii-relational-data-to-and-from-xml-data_title.pdf
+│       ├── part04_part-iv-xmltype-apis_title.pdf
+│       ├── part05_part-v-xml-schema-and-object-relational-xmltype_title.pdf
+│       ├── part06_part-vi-oracle-xml-db-repository_title.pdf
+│       ├── part07_part-vii-oracle-tools-that-support-oracle-xml-db_title.pdf
+│       ├── part08_part-viii-appendixes_title.pdf
 │       └── xml-db-developers-guide.pdf
 ├── books.md
-├── chunk7_plSqlResilience.md
-├── chunk8_plSqlMastery.md
 ├── contents.md
-├── oracle-database_23
-│   └── oracle-database_23_20250424
-│       ├── content
-│       └── Readme.html
+├── generate_extraction_scripts.py
 ├── oracle-database_23.zip
 ├── README.md
+├── run_all_extractions.sh
 ├── setup.pdf
 ├── solutions
 │   ├── 1_fromPostgreSQLtoSQLOracle.pdf
@@ -670,11 +1297,26 @@
 │   ├── 4_conqueringComplexities.md
 │   ├── 5_plSqlAwakening.md
 │   ├── 6_plSqlPrecision.md
-│   └── 7_plSqlResilience.md
+│   ├── 7_plSqlResilience.md
+│   ├── 8_plSqlMastery.md
+│   └── 9_plSqlFusion.md
 ├── styles
 │   ├── exercises.css
 │   ├── lecture.css
 │   └── solutions.css
+├── syntax
+│   ├── 03_ch01_introduction-to-oracle-sql.pdf
+│   ├── 04_ch02_basic-elements-of-oracle-sql.pdf
+│   ├── 09_ch07_functions.pdf
+│   ├── 10_ch08_common-sql-ddl-clauses.pdf
+│   ├── 11_ch09_sql-queries-and-subqueries.pdf
+│   ├── 20_ch18_sql-statements-drop-table-to-lock-table.pdf
+│   ├── 22_app_a_how_to_read_syntax_diagrams.pdf
+│   ├── 26_app_e_oracle_sql_reserved_words_and_keywords.pdf
+│   ├── ch01_introduction-to-oracle-database.pdf
+│   ├── ch04_tables-and-table-clusters.pdf
+│   ├── get-started-guide_ch03_dml-statements-transactions.pdf
+│   └── get-started-guide_ch04_creating-managing-schema-objects.pdf
 └── tree.txt
 
-52 directories, 626 files
+44 directories, 1276 files

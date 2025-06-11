@@ -39,7 +39,7 @@ The course is shaped into 15 study chunks, each lighting up a specific path:
 
 ---
 
-**General Note:**
+**General Note:** 
 *   The **`Oracle Database 23ai New Features Guide`** is a core compass pointing to new Oracle 23ai wonders. 🧭
 *   For books bundled as single PDF files (e.g., "SQL Language Reference," "Database Administrator's Guide"), I'll link to the main PDF. Use the PDF's own table of contents or search to find your way to specific spots. 🔍
 
@@ -50,13 +50,13 @@ The course is shaped into 15 study chunks, each lighting up a specific path:
 **Parental/Core Category:** ORACLE SQL & BRIDGING FROM POSTGRESQL
 Here, we step across, finding Oracle's SQL voice for those who know PostgreSQL best.
 
-*Categories to be Studied:*
+*Categories to be Studied:* 
 - Key Differences & Core Syntax
 - Data Types *(Oracle Specific)* (VARCHAR2, NVARCHAR2, NUMBER, DATE, TIMESTAMP, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH LOCAL TIME ZONE)
-- DUAL Table *(Oracle Specific)*
+- DUAL Table *(Oracle Specific)* 
 - NULL Handling *(Practice in Oracle)* (NVL, NVL2, COALESCE)
 - Conditional Expressions *(Practice in Oracle)* (DECODE function, CASE)
-- ROWNUM Pseudo-column *(Oracle Specific)*
+- ROWNUM Pseudo-column *(Oracle Specific)* 
 - Comments
 
 ---
@@ -66,9 +66,9 @@ Here, we step across, finding Oracle's SQL voice for those who know PostgreSQL b
 **Parental/Core Category:** ORACLE SQL & BRIDGING FROM POSTGRESQL
 Unlock key Oracle functions and master the foundational dance of Data Manipulation Language (DML).
 
-*Categories to be Studied:*
+*Categories to be Studied:* 
 - Date Functions *(Oracle Specifics & Practice)* (SYSDATE, CURRENT_DATE, SYSTIMESTAMP, CURRENT_TIMESTAMP, TO_DATE, TO_CHAR, ADD_MONTHS, MONTHS_BETWEEN, LAST_DAY, NEXT_DAY, TRUNC, ROUND (for dates), Date Arithmetic)
-- String Functions *(Practice in Oracle)*
+- String Functions *(Practice in Oracle)* 
 - Set Operators *(Practice in Oracle)* (MINUS)
 - Data Manipulation Language (DML) & Transaction Control *(Practice in Oracle)* (INSERT, UPDATE, DELETE, SELECT, COMMIT, ROLLBACK, SAVEPOINT)
 
@@ -76,10 +76,10 @@ Unlock key Oracle functions and master the foundational dance of Data Manipulati
 
 ### Study Chunk 3: Advanced Oracle SQL Querying Techniques
 
-**Parental/Core Category:** *ORACLE SQL & BRIDGING FROM POSTGRESQL*
+**Parental/Core Category:** *ORACLE SQL & BRIDGING FROM POSTGRESQL* 
 Ascend to advanced querying heights, tackling complex data patterns with Oracle's unique tools. 🏔️
 
-*Categories to be Studied:*
+*Categories to be Studied:* 
 - Hierarchical Queries *(Oracle Specific - Very Important)* (CONNECT BY clause, LEVEL pseudo-column, PRIOR operator, START WITH clause)
 - Analytic (Window) Functions *(Practice in Oracle Syntax)* (Ranking: RANK, DENSE_RANK, ROW_NUMBER; Navigation: LAG, LEAD; Aggregates: SUM() OVER (...), AVG() OVER (...))
 - Data Manipulation Language (DML) & Transaction Control *(Practice in Oracle)* (MERGE statement (Oracle Specific))
@@ -88,16 +88,16 @@ Ascend to advanced querying heights, tackling complex data patterns with Oracle'
 
 ### Study Chunk 4: Conquering Complexity: Oracle’s XML, JSON, and More
 
-**Parental/Core Category:** *ORACLE SQL & BRIDGING FROM POSTGRESQL*
+**Parental/Core Category:** *ORACLE SQL & BRIDGING FROM POSTGRESQL* 
 Face the challenge of intricate data forms like XML and JSON, vital for systems like Flexcube, exploring Oracle's modern touch.
 
-*Categories to be Studied:*
+*Categories to be Studied:* 
 - Handling Complex Data Types (Essential for job tasks like XML/JSON handling in Flexcube)
 - Data Types Revisited: CLOB, BLOB (Contextual recap from Chunk 1)
 - XMLTYPE Data Type: Basic storage, querying (XMLTABLE, XMLELEMENT, XMLFOREST, XMLAGG), XPath expressions
 - JSON Data Type: Native storage, indexing, querying (JSON_TABLE, JSON_VALUE, JSON_QUERY, JSON_OBJECT, JSON_ARRAY)
 - Large Objects (CLOB, BLOB): Practical use and link to DBMS_LOB
-*Oracle 23ai Features:*
+- *Oracle 23ai Features:* 
   - JSON Relational Duality Views: Unified relational and JSON access ✨
   - JSON Binary Data Type: Optimized storage for JSON 💾
   - JSON Collection Tables: Document-style storage 📄
@@ -107,10 +107,10 @@ Face the challenge of intricate data forms like XML and JSON, vital for systems 
 
 ### Study Chunk 5: PL/SQL Awakening: Foundations of Oracle Programming
 
-**Parental/Core Category:** *PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE*
+**Parental/Core Category:** *PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE* 
 Awaken your inner Oracle programmer. This chunk lays the ground for PL/SQL, from block shape to basic flow, introducing a new 23ai speed boost.
 
-*Categories to be Studied:*
+*Categories to be Studied:* 
 - Fundamentals: Introduction to procedural logic in Oracle
 - PL/SQL Block Structure: DECLARE, BEGIN, EXCEPTION, END
 - Variables & Constants: Scalar types, %TYPE, %ROWTYPE attributes
@@ -118,7 +118,7 @@ Awaken your inner Oracle programmer. This chunk lays the ground for PL/SQL, from
 - Iterative Control: Basic LOOP, WHILE, FOR loops
 - SQL within PL/SQL: Implicit SELECT INTO, DML operations
 - DBMS_OUTPUT.PUT_LINE: Basic output for debugging
-- **Oracle 23ai Feature:**
+- **Oracle 23ai Feature:** 
   - SQL Transpiler: Automatic conversion of PL/SQL to SQL for optimization ⏩
 
 *   📚 [Oracle® Database PL/SQL Language Reference](books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf)
@@ -134,10 +134,10 @@ Awaken your inner Oracle programmer. This chunk lays the ground for PL/SQL, from
 
 ### Study Chunk 6: PL/SQL Precision: Cursors, Procedures, and Data Flow
 
-**Parental/Core Category:** *PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE*
+**Parental/Core Category:** *PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE* 
 Gain precision with PL/SQL cursors for fetching data and shaping reusable code blocks with procedures and functions.
 
-*Categories to be Studied:*
+*Categories to be Studied:* 
 - Cursors: Implicit cursors, explicit cursors, cursor FOR loops
 - Stored Procedures & Functions: Syntax, parameter modes (IN, OUT, IN OUT), execution, RETURN statement
 
@@ -151,10 +151,10 @@ Gain precision with PL/SQL cursors for fetching data and shaping reusable code b
 
 ### Study Chunk 7: PL/SQL Resilience: Packages, Errors, and Automation
 
-**Parental/Core Category:** *PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE*
+**Parental/Core Category:** *PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE* 
 Build resilience in your code! Organize with packages, handle errors surely, and automate actions with triggers.🛡️
 
-*Categories to be Studied:*
+*Categories to be Studied:* 
 - Packages: Specification, body, benefits, overloading
 - Exception Handling: Predefined exceptions, user-defined exceptions, SQLCODE, SQLERRM, PRAGMA EXCEPTION_INIT
 - Triggers: DML triggers, :NEW and :OLD qualifiers, conditional predicates
@@ -169,10 +169,10 @@ Build resilience in your code! Organize with packages, handle errors surely, and
 
 ### Study Chunk 8: PL/SQL Mastery: Power Moves with Collections and Dynamic SQL
 
-**Parental/Core Category:** *PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE*
+**Parental/Core Category:** *PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE* 
 Master powerful PL/SQL moves! Handle complex data bunches and make things fly with bulk actions and dynamic SQL, key for big systems like Flexcube. 💪
 
-*Categories to be Studied:*
+*Categories to be Studied:* 
 - Collections & Records: Associative arrays, nested tables, varrays, user-defined records
 - Bulk Operations for Performance: BULK COLLECT, FORALL
 - Dynamic SQL: EXECUTE IMMEDIATE, conceptual overview of DBMS_SQL
@@ -190,12 +190,12 @@ Master powerful PL/SQL moves! Handle complex data bunches and make things fly wi
 
 ### Study Chunk 9: PL/SQL Fusion: Built-ins and JavaScript Synergy
 
-**Parental/Core Category:** *PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE*
+**Parental/Core Category:** *PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE* 
 Experience PL/SQL fusion! Explore standard packages for common tasks and see JavaScript step in as a code buddy in Oracle 23ai. 🤝
 
-*Categories to be Studied:*
+*Categories to be Studied:* 
 - Built-in Packages: DBMS_LOB (LOB manipulation), DBMS_XMLGEN (XML generation), UTL_FILE (file handling, conceptual), DBMS_AQ (queuing, conceptual)
-*Oracle 23ai Feature:*
+*Oracle 23ai Feature:* 
   - JavaScript Stored Procedures: Invoke JavaScript from SQL/PL/SQL 🌐
 
 *   📚 [Oracle® Database PL/SQL Packages and Types Reference](books/database-pl-sql-packages-and-types-reference/database-pl-sql-packages-and-types-reference.pdf)
@@ -223,15 +223,15 @@ Experience PL/SQL fusion! Explore standard packages for common tasks and see Jav
 
 ### Study Chunk 10: Oracle Blueprint: Must-Know Concepts for Consultants
 
-**Parental/Core Category:** *ESSENTIAL ORACLE DATABASE CONCEPTS (FOR CONSULTING ROLE)*
+**Parental/Core Category:** *ESSENTIAL ORACLE DATABASE CONCEPTS (FOR CONSULTING ROLE)* 
 Get the Oracle blueprint in your mind! This chunk brings vital database ideas for a consulting path – structure, data map, handling many users at once, transaction flow, and fresh 23ai touches for schema and data. 🏛️
 
-*Categories to be Studied:*
+*Categories to be Studied:* 
 - Oracle Data Dictionary & Metadata Views: USER_, ALL_, DBA_ views (e.g., *_TABLES, *_INDEXES, *_OBJECTS, *_SOURCE)
 - Oracle Schema Objects Overview: Tables, views, indexes, sequences, synonyms (roles and basic DDL)
 - Concurrency Control & Locking: Multiversion concurrency control (MVCC), basic locking mechanisms
 - Transaction Management: Reinforce COMMIT, ROLLBACK, SAVEPOINT
-*Oracle 23ai Features:*
+- *Oracle 23ai Features:* 
   - Wide Tables: Room for up to 4,096 columns ↔️
   - Value LOBs: Read-only large data blocks for short use 📖
   - Usage Annotations: Your own notes for database items ✍️
@@ -259,12 +259,12 @@ Get the Oracle blueprint in your mind! This chunk brings vital database ideas fo
 
 ### Study Chunk 11: Guardians of Oracle: Security Features That Protect
 
-**Parental/Core Category:** *ESSENTIAL ORACLE DATABASE CONCEPTS (FOR CONSULTING ROLE)*
+**Parental/Core Category:** *ESSENTIAL ORACLE DATABASE CONCEPTS (FOR CONSULTING ROLE)* 
 Stand guardian over your data! This chunk highlights database safety rules and new Oracle 23ai security shields, crucial for keeping sensitive info and systems safe. 🔒🛡️
 
-*Categories to be Studied:*
+*Categories to be Studied:* 
 - Database Security: Core principles for secure design
-*Oracle 23ai Features:*
+- *Oracle 23ai Features:* 
   - SQL Firewall: Kernel-level protection against SQL injection 🔥
   - Column-Level Auditing: Watching specific data spots closely 🕵️
   - Data Redaction: Making sensitive data seem different dynamically 🎭
@@ -287,10 +287,10 @@ Stand guardian over your data! This chunk highlights database safety rules and n
 
 ### Study Chunk 12: Speed Unleashed: Oracle Indexing and Query Insights
 
-**Parental/Core Category:** *ORACLE PERFORMANCE & OPTIMIZATION BASICS*
+**Parental/Core Category:** *ORACLE PERFORMANCE & OPTIMIZATION BASICS* 
 Unleash speed! This chunk digs into Oracle indexing tactics and how to peek into query speed using `EXPLAIN PLAN`, vital for making database work flow fast. 🏎️💨
 
-*Categories to be Studied:*
+*Categories to be Studied:* 
 - Indexing in Oracle: B-Tree, bitmap, function-based, composite indexes (brief awareness of others)
 - Understanding Oracle’s EXPLAIN PLAN: Generating, reading, interpreting execution plans
 
@@ -310,14 +310,14 @@ Unleash speed! This chunk digs into Oracle indexing tactics and how to peek into
 
 ### Study Chunk 13: Performance Symphony: Tuning Oracle with Hints and Stats
 
-**Parental/Core Category:** *ORACLE PERFORMANCE & OPTIMIZATION BASICS*
+**Parental/Core Category:** *ORACLE PERFORMANCE & OPTIMIZATION BASICS* 
 Conduct a performance symphony! This chunk explores deeper query tuning, touching on optimizer hints and managing table stats, plus new 23ai speed gains. 🎼📈
 
-*Categories to be Studied:*
+*Categories to be Studied:* 
 - Basic Query Tuning Considerations: SARGable predicates, efficient joins, minimizing data
 - Optimizer Hints: Awareness and cautious use
 - Table Statistics & DBMS_STATS: Importance, basic usage
-*Oracle 23ai Features:*
+- *Oracle 23ai Features:* 
   - Real-Time SQL Plan Management: Handling plan issues right away 🚦
   - SQL Analysis Report: Spotting and fixing SQL problems 🩺
 
@@ -337,14 +337,14 @@ Conduct a performance symphony! This chunk explores deeper query tuning, touchin
 
 ### Study Chunk 14: Oracle Horizons: Connecting with Cutting-Edge Tech
 
-**Parental/Core Category:** *(CONCEPTUAL) ORACLE & INTERFACING TECHNOLOGIES*
+**Parental/Core Category:** *(CONCEPTUAL) ORACLE & INTERFACING TECHNOLOGIES* 
 Look to Oracle's horizons! This chunk explores how Oracle links with tech like Java and XML, message systems, and new 23ai bits making connections and visibility shine brighter, very key for your job role. ✨🔗
 
-*Categories to be Studied:*
+*Categories to be Studied:* 
 - Oracle & Java Connectivity: JDBC basics
 - Oracle & XML Processing: Conceptual overview
 - Oracle Advanced Queuing (AQ) & JMS: Messaging fundamentals
-*Oracle 23ai Features:*
+- *Oracle 23ai Features:* 
   - Enhanced Connection Management: Implicit pooling, multi-pool DRCP 🏊‍♂️
   - Database Driver Asynchronous Programming: Pipelining for efficiency 📊
   - Multicloud Configuration: Azure App Config, OCI Object Storage 🌍
@@ -375,10 +375,10 @@ Look to Oracle's horizons! This chunk explores how Oracle links with tech like J
 
 ### Study Chunk 15: Future of Oracle: SQL Innovations in 23ai
 
-**Parental/Core Category:** *ORACLE SQL & BRIDGING FROM POSTGRESQL*
+**Parental/Core Category:** *ORACLE SQL & BRIDGING FROM POSTGRESQL* 
 Peek into Oracle's future! This chunk shines solely on the vibrant new SQL features arriving in Oracle 23ai, showing Oracle's path towards modern, sharper SQL power. ⭐🔮
 
-*Categories to be Studied: New SQL Features in 23ai:*
+*Categories to be Studied: New SQL Features in 23ai:* 
   - Boolean Data Type: True/False live and breathe ✅❌
   - Direct Joins for UPDATE/DELETE: Making changes simpler ➡️
   - GROUP BY Column Alias: Easier reading for grouped data 🔡

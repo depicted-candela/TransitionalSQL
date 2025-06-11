@@ -1,0 +1,363 @@
+<head>
+  <link rel="stylesheet" href="../styles/lecture.css">
+  <link rel="stylesheet" href="../styles/exercises.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- Main Title -->
+<div class="title-card">
+  <h1>PL/SQL Fusion: Built-ins and JavaScript Synergy</h1>
+  <p>Harnessing Oracle's powerful libraries and the groundbreaking Multilingual Engine (MLE) of Oracle DB 23ai.</p>
+</div>
+
+<!-- Introduction and Learning Objectives -->
+<div class="section-container">
+  <h2><span class="section-icon">🎯</span>Introduction & Learning Objectives</h2>
+  <p>
+    Welcome to a pivotal set of exercises designed to bridge your PostgreSQL expertise with Oracle's powerful server-side programming capabilities. This module focuses on mastering Oracle's rich ecosystem of built-in packages and the revolutionary <strong>Oracle 23ai</strong> feature: JavaScript Stored Procedures.
+  </p>
+  <p>
+    These exercises will challenge you to move beyond standard SQL and leverage the tools Oracle provides for complex data handling, file I/O, enterprise messaging, and modern application logic. For a PostgreSQL user, this is where the Oracle platform truly begins to differentiate itself.
+  </p>
+  <div class="objectives-list">
+    <p>Upon completion, you will be able to:</p>
+    <ul>
+      <li>Manipulate Large Objects (<code>CLOB</code>, <code>BLOB</code>) efficiently using the <code>DBMS_LOB</code> package, understanding its advantages over simple string concatenation.</li>
+      <li>Recognize and use the (deprecated) <code>DBMS_XMLGEN</code> package to understand legacy code, while contrasting it with modern <code>SQL/XML</code> standards.</li>
+      <li>Perform secure server-side file operations using <code>UTL_FILE</code> and its directory-based security model, a key difference from PostgreSQL's approach.</li>
+      <li>Implement transactional, persistent messaging with Oracle Advanced Queuing (<code>DBMS_AQ</code>), appreciating its robustness compared to PostgreSQL's <code>NOTIFY/LISTEN</code>.</li>
+      <li><strong class="oracle-specific">Oracle 23ai Feature:</strong> Create, deploy, and invoke <strong>JavaScript Stored Procedures</strong> using the Multilingual Engine (MLE) to solve complex validation and data processing tasks directly within the database.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Prerequisites and Setup -->
+<div class="section-container">
+  <h2><span class="section-icon">🛠️</span>Prerequisites & Setup</h2>
+  <p>
+    Before you begin, ensure you are comfortable with the concepts from the preceding sections of this transitional course. A solid grasp of the following is essential:
+  </p>
+  <div class="prerequisites-grid">
+    <div class="prereq-card"><strong>PL/SQL Fundamentals</strong><br/>(Blocks, Variables, Loops, Cursors)</div>
+    <div class="prereq-card"><strong>PL/SQL Units</strong><br/>(Procedures, Functions, Packages)</div>
+    <div class="prereq-card"><strong>Advanced SQL</strong><br/>(Hierarchical Queries, Analytic Functions)</div>
+    <div class="prereq-card"><strong>Data Types</strong><br/>(<code>CLOB</code>, <code>BLOB</code>, <code>JSON</code>, <code>XMLTYPE</code>)</div>
+  </div>
+
+  <div class="info-box">
+    <h3>Dataset Setup: A Crucial First Step</h3>
+    <p>
+      The following exercises rely on a specific dataset. You must run the entire SQL script below in your Oracle 23ai environment to create the necessary tables, users, and permissions. The first part of the script requires <code>SYS</code> or <code>DBA</code> privileges, while the rest should be run as the newly created <code>plSqlFusion</code> user.
+    </p>
+  </div>
+
+```sql
+-- DDL and DML for plSqlFusion Schema
+-- Run this block to set up the environment for all exercises.
+
+-- Administrative setup (run as SYS or a user with DBA privileges)
+-- Note: Replace 'your_strong_password' with a secure password.
+CREATE USER plSqlFusion IDENTIFIED BY your_strong_password;
+GRANT CONNECT, RESOURCE, UNLIMITED TABLESPACE TO plSqlFusion;
+GRANT CREATE DIRECTORY, DROP DIRECTORY TO plSqlFusion;
+
+-- Grant privileges for specific packages
+GRANT EXECUTE ON DBMS_AQADM TO plSqlFusion;
+GRANT EXECUTE ON DBMS_AQ TO plSqlFusion;
+GRANT EXECUTE ON DBMS_LOB TO plSqlFusion;
+GRANT EXECUTE ON DBMS_XMLGEN TO plSqlFusion;
+
+-- Grant MLE privileges (Oracle 23ai+)
+GRANT CREATE MLE TO plSqlFusion;
+
+-- For UTL_FILE, a directory object must be created by a privileged user.
+-- IMPORTANT: This path must exist on your database server's file system,
+-- and the 'oracle' OS user must have read/write permissions to it.
+CREATE OR REPLACE DIRECTORY UTL_FILE_DIR AS '/tmp/oracle_files';
+GRANT READ, WRITE ON DIRECTORY UTL_FILE_DIR TO plSqlFusion;
+
+-- Connect as the plSqlFusion user to run the rest of the script
+CONNECT plSqlFusion/your_strong_password;
+
+-- Set session for output
+SET SERVEROUTPUT ON;
+
+-- Table for DBMS_LOB exercises
+CREATE TABLE productCatalogs (
+    catalogId NUMBER GENERATED BY DEFAULT ON NULL AS IDENTITY,
+    productLine VARCHAR2(100),
+    catalogPDF BLOB,
+    catalogDescription CLOB,
+    CONSTRAINT pk_productCatalogs PRIMARY KEY (catalogId)
+);
+
+-- Table for demonstrating the "inefficient" way of queuing (for DBMS_AQ contrast)
+CREATE TABLE processingQueue (
+    jobId NUMBER GENERATED BY DEFAULT ON NULL AS IDENTITY,
+    payload VARCHAR2(4000),
+    status VARCHAR2(20) DEFAULT 'NEW',
+    createTimestamp TIMESTAMP DEFAULT SYSTIMESTAMP,
+    processedBy VARCHAR2(100),
+    CONSTRAINT pk_processingQueue PRIMARY KEY (jobId)
+);
+
+-- Tables for JavaScript and Hardcore Problem exercises
+CREATE TABLE eventLogs (
+    eventId NUMBER GENERATED BY DEFAULT ON NULL AS IDENTITY,
+    device VARCHAR2(50),
+    eventTimestamp TIMESTAMP,
+    metrics JSON,
+    CONSTRAINT pk_eventLogs PRIMARY KEY (eventId)
+);
+
+CREATE TABLE departments (
+    departmentId NUMBER PRIMARY KEY,
+    departmentName VARCHAR2(100),
+    managerId NUMBER -- Self-referencing FK will be added after employees table
+);
+
+CREATE TABLE employees (
+    employeeId NUMBER PRIMARY KEY,
+    firstName VARCHAR2(50),
+    lastName VARCHAR2(50),
+    email VARCHAR2(100) UNIQUE,
+    hireDate DATE,
+    salary NUMBER(10, 2),
+    managerId NUMBER,
+    departmentId NUMBER,
+    CONSTRAINT fk_emp_dept FOREIGN KEY (departmentId) REFERENCES departments(departmentId),
+    CONSTRAINT fk_emp_mgr FOREIGN KEY (managerId) REFERENCES employees(employeeId)
+);
+
+-- Add the self-referencing constraint to departments
+ALTER TABLE departments ADD CONSTRAINT fk_dept_mgr FOREIGN KEY (managerId) REFERENCES employees(employeeId);
+
+-- Populate Data
+INSERT INTO departments (departmentId, departmentName, managerId) VALUES (10, 'Corporate', NULL);
+INSERT INTO departments (departmentId, departmentName, managerId) VALUES (20, 'Technology', 1);
+INSERT INTO departments (departmentId, departmentName, managerId) VALUES (30, 'Development', 2);
+INSERT INTO departments (departmentId, departmentName, managerId) VALUES (40, 'Operations', 1);
+
+INSERT INTO employees (employeeId, firstName, lastName, email, hireDate, salary, managerId, departmentId) VALUES (1, 'Jane', 'Doe', 'jane.doe@example.com', DATE '2022-01-15', 150000, NULL, 10);
+INSERT INTO employees (employeeId, firstName, lastName, email, hireDate, salary, managerId, departmentId) VALUES (2, 'John', 'Smith', 'john.smith@example.com', DATE '2023-03-10', 110000, 1, 20);
+INSERT INTO employees (employeeId, firstName, lastName, email, hireDate, salary, managerId, departmentId) VALUES (3, 'Emily', 'Jones', 'emily.jones@example.com', DATE '2023-05-20', 95000, 2, 30);
+
+-- Update department managers now that employees exist
+UPDATE departments SET managerId = 1 WHERE departmentId = 10;
+UPDATE departments SET managerId = 2 WHERE departmentId = 20;
+
+INSERT INTO eventLogs (device, eventTimestamp, metrics) VALUES ('Sensor-A1', SYSTIMESTAMP, '{"temperature": 25.5, "humidity": 60, "status": "active"}');
+INSERT INTO eventLogs (device, eventTimestamp, metrics) VALUES ('Sensor-B2', SYSTIMESTAMP, '{"temperature": -5.2, "pressure": 1012, "status": "active"}');
+
+COMMIT;
+```
+</div>
+
+<!-- Exercise Structure -->
+<div class="section-container">
+  <h2><span class="section-icon">📚</span>Exercise Structure</h2>
+  <p>The exercises are divided into four distinct types to ensure a comprehensive understanding:</p>
+  <ol>
+    <li><strong>Meanings, Values, and Advantages:</strong> Focus on the core syntax and benefits of each Oracle-specific feature.</li>
+    <li><strong>Disadvantages and Pitfalls:</strong> Expose common errors and limitations to build robust coding habits.</li>
+    <li><strong>Contrasting with Inefficient Solutions:</strong> Demonstrate why the Oracle-idiomatic approach is superior to simpler, less efficient alternatives you might be tempted to use.</li>
+    <li><strong>Hardcore Combined Problem:</strong> A final, complex challenge that integrates all concepts from this and previous sections, testing your cumulative knowledge.</li>
+  </ol>
+</div>
+
+<!-- ############# EXERCISES START ############# -->
+<div class="section-container exercises-section">
+  <h2><span class="section-icon">💻</span>Practical Exercises</h2>
+
+  <!-- DBMS_LOB -->
+  <div class="exercise-block">
+    <h3>1. DBMS_LOB: Handling Large Objects</h3>
+    <p>
+        The <code>DBMS_LOB</code> package is Oracle's primary tool for programmatic manipulation of Large Object (LOB) data types like <code>CLOB</code> (Character LOB) and <code>BLOB</code> (Binary LOB). While PostgreSQL handles large objects via its <code>oid</code> type and <code>lo_*</code> functions which require an <code>lo_open</code>/<code>lo_close</code> semantic, Oracle's <code>DBMS_LOB</code> is tightly integrated with PL/SQL and offers high-performance, chunk-based processing directly on LOB locators.
+    </p>
+    <div class="exercise-problem">
+      <h4>Exercise 1.1: Initializing and Writing to a CLOB</h4>
+      <p>
+        <strong>Problem:</strong> You need to add a new record for the 'High-Performance Servers' product line to the <code>productCatalogs</code> table. The <code>catalogDescription</code> (<code>CLOB</code>) column must first be initialized, then populated with an initial description, and finally, a marketing tagline must be appended.
+      </p>
+      <div class="reference-box">
+          <strong>Reference:</strong> For more details on LOB operations, see the <a href="../books/securefiles-and-large-objects-developers-guide/09_ch07_plsql-semantics-for-lobs.pdf">SecureFiles and Large Objects Developer's Guide (Chapter 7)</a> and the <a href="../books/database-pl-sql-packages-and-types-reference/ch120_dbms_lob.pdf">PL/SQL Packages and Types Reference for DBMS_LOB</a>.
+      </div>
+    </div>
+    <div class="exercise-problem">
+      <h4>Exercise 1.2: Reading a BLOB in Chunks</h4>
+      <p>
+        <strong>Problem:</strong> A 70-byte PDF document has been loaded into the <code>catalogPDF</code> (<code>BLOB</code>) for a new product line. Write a PL/SQL block to read the <code>BLOB</code> in 32-byte chunks and display the raw hex values of each chunk.
+      </p>
+    </div>
+    <div class="exercise-problem">
+      <h4>Exercise 1.3: The "Offset" Pitfall with Multi-Byte Characters</h4>
+      <p>
+        <strong>Problem:</strong> You need to replace the word "サーバー" (server) with "SYSTEM" in a Japanese <code>CLOB</code>. A developer incorrectly calculates the offset and amount in bytes instead of characters. Demonstrate the pitfall and the correct solution.
+      </p>
+    </div>
+    <div class="exercise-problem">
+      <h4>Exercise 1.4: Building a Large Report</h4>
+      <p>
+        <strong>Problem:</strong> Generate a 100KB report string by concatenating a small string 2,500 times. Contrast the inefficient PL/SQL string concatenation method with the efficient <code>DBMS_LOB.CREATETEMPORARY</code> method.
+      </p>
+    </div>
+  </div>
+
+  <!-- DBMS_XMLGEN -->
+  <div class="exercise-block">
+    <h3>2. DBMS_XMLGEN: Legacy XML Generation</h3>
+    <div class="info-box-warning">
+      <strong>Important:</strong> The <code>DBMS_XMLGEN</code> package is <strong>deprecated</strong> in Oracle Database 23ai. These exercises are for understanding legacy code. For new development, always use modern <code>SQL/XML</code> functions.
+    </div>
+    <div class="exercise-problem">
+      <h4>Exercise 2.1: Basic XML Generation</h4>
+      <p>
+        <strong>Problem:</strong> Use the deprecated <code>DBMS_XMLGEN</code> package to generate an XML document from the <code>departments</code> table for the 'Technology' department (ID 20).
+      </p>
+      <div class="reference-box">
+          <strong>Reference:</strong> <a href="../books/database-pl-sql-packages-and-types-reference/ch234_dbms_xmlgen.pdf">PL/SQL Packages and Types Reference for DBMS_XMLGEN</a>.
+      </div>
+    </div>
+    <div class="exercise-problem">
+      <h4>Exercise 2.2: The Pitfall of Forgetting to Close the Context</h4>
+      <p>
+        <strong>Problem:</strong> Explain the primary pitfall of using <code>DBMS_XMLGEN</code>. (This is a conceptual question, provide a textual explanation).
+      </p>
+    </div>
+    <div class="exercise-problem">
+      <h4>Exercise 2.3: Modern vs. Legacy XML Generation</h4>
+      <p>
+        <strong>Problem:</strong> Convert the task from Exercise 2.1 (generating XML for department 20) to use the modern, efficient, and standard <code>SQL/XML</code> functions.
+      </p>
+    </div>
+  </div>
+
+  <!-- UTL_FILE -->
+  <div class="exercise-block">
+    <h3>3. UTL_FILE: Server-Side File I/O</h3>
+    <p>
+        The <code>UTL_FILE</code> package provides a secure way for PL/SQL to read and write OS files on the database server, managed through Oracle's <code>DIRECTORY</code> objects.
+    </p>
+    <div class="exercise-problem">
+      <h4>Exercise 3.1: Writing a Log File</h4>
+      <p>
+        <strong>Problem:</strong> Create a PL/SQL procedure that takes a message string and appends it, prefixed with a timestamp, to a log file named <code>application.log</code> in the <code>UTL_FILE_DIR</code> directory.
+      </p>
+       <div class="reference-box">
+          <strong>Reference:</strong> <a href="../books/database-pl-sql-packages-and-types-reference/ch289_utl_file.pdf">PL/SQL Packages and Types Reference for UTL_FILE</a>.
+      </div>
+    </div>
+    <div class="exercise-problem">
+      <h4>Exercise 3.2: Handling `NO_DATA_FOUND` on Read</h4>
+      <p>
+        <strong>Problem:</strong> Write a PL/SQL block that reads the <code>application.log</code> file line by line until the end of the file is reached. Demonstrate how to properly handle the <code>NO_DATA_FOUND</code> exception, which is the expected way to detect the end of a file.
+      </p>
+    </div>
+  </div>
+
+  <!-- DBMS_AQ -->
+  <div class="exercise-block">
+    <h3>4. DBMS_AQ: Oracle Advanced Queuing</h3>
+    <p>
+        Oracle Advanced Queuing (AQ) is a database-integrated, transactional message queuing system.
+    </p>
+    <div class="exercise-problem">
+      <h4>Exercise 4.1: Enqueue and Dequeue a Transactional Message</h4>
+      <p>
+        <strong>Problem:</strong> Create a queue for processing new orders. Enqueue a message representing a new order payload. Then, create a separate block to dequeue the message. Demonstrate the transactional integrity by rolling back a dequeue operation, and then successfully dequeuing it in a new transaction.
+      </p>
+      <div class="reference-box">
+          <strong>Reference:</strong> <a href="../books/database-transactional-event-queues-and-advanced-queuing-users-guide/07_ch02_basic-components-of-oracle-transactional-event-queues-and-advanced-queuing.pdf">Transactional Event Queues and Advanced Queuing User's Guide</a>.
+      </div>
+    </div>
+    <div class="exercise-problem">
+      <h4>Exercise 4.2: The "Queue Table" Anti-Pattern</h4>
+      <p>
+        <strong>Problem:</strong> Implement a job processing mechanism using the <code>processingQueue</code> table. Write a PL/SQL block that attempts to find and process a 'NEW' job. Highlight the challenges with locking and race conditions inherent in this manual approach, then contrast it with the simplicity of <code>DBMS_AQ.DEQUEUE</code>.
+      </p>
+    </div>
+  </div>
+
+  <!-- JavaScript MLE -->
+  <div class="exercise-block oracle-specific">
+    <h3>5. JavaScript Stored Procedures (Oracle 23ai MLE)</h3>
+    <p>
+        The Multilingual Engine (MLE) in Oracle 23ai allows developers to define and execute JavaScript code directly within the database.
+    </p>
+    <div class="exercise-problem">
+      <h4>Exercise 5.1: Creating and Calling a Simple JavaScript Function</h4>
+      <p>
+        <strong>Problem:</strong> Create a JavaScript module that exports a function to format a username by combining a first and last name into a standard corporate email address. Then, create a SQL call specification for this function and execute it from a SQL query against the <code>employees</code> table.
+      </p>
+       <div class="reference-box">
+          <strong>Reference:</strong> <a href="../books/oracle-database-javascript-developers-guide/05_ch02_introduction-to-oracle-database-multilingual-engine-for-javascript.pdf">Oracle Database JavaScript Developer's Guide</a>.
+      </div>
+    </div>
+    <div class="exercise-problem">
+      <h4>Exercise 5.2: Complex JSON Validation</h4>
+      <p>
+        <strong>Problem:</strong> An event from a device is valid only if it has a <code>temperature</code> reading, a <code>status</code> of "active", and the <code>device</code> name matches the pattern <code>Sensor-[A-Z][0-9]</code>. Implement this validation first using only PL/SQL, and then contrast it with a more concise and readable JavaScript implementation using MLE.
+      </p>
+    </div>
+  </div>
+
+  <!-- Hardcore Problem -->
+  <div class="exercise-block hardcore-problem">
+    <h3>The Grand Finale: A Hardcore Combined Problem</h3>
+    <p>
+        This final challenge requires you to integrate all the concepts from this section—JavaScript MLE, DBMS_LOB, DBMS_AQ, UTL_FILE, and legacy packages—along with previous course knowledge like hierarchical queries and transaction control.
+    </p>
+    <div class="exercise-problem">
+      <h4>Problem: Automated Employee Onboarding & Auditing</h4>
+      <p>
+        You are tasked with building a new, automated employee onboarding and auditing system. The process involves multiple steps:
+      </p>
+      <ol>
+        <li><strong>JavaScript Validation & Processing:</strong> An HR system provides new employee data as a JSON object. Create a JavaScript function <code>processNewHire</code> that validates the JSON (must contain <code>firstName</code>, <code>lastName</code>, and a valid <code>email</code>) and calculates a <code>firstYearBonus</code> which is 10% of the <code>salary</code>. The function should return a new JSON object containing the original data plus the calculated bonus.</li>
+        <li><strong>PL/SQL Orchestration:</strong> Create a PL/SQL procedure <code>onboardEmployee</code> that accepts the new hire JSON as a <code>CLOB</code>.
+          <ul>
+            <li>It should first call the <code>processNewHire</code> JS function to validate and enrich the data.</li>
+            <li>If successful, it must insert the new employee into the <code>employees</code> table.</li>
+            <li>It must then generate a multi-line welcome letter as a <code>CLOB</code> using <code>DBMS_LOB</code>. The letter should include the employee's full name and their management chain, retrieved via a hierarchical query (<code>CONNECT BY</code>).</li>
+          </ul>
+        </li>
+        <li><strong>Legacy XML Archival:</strong> For compliance with a legacy system, the welcome letter <code>CLOB</code> must be converted to an XML document using the deprecated <code>DBMS_XMLGEN</code> package. The root element should be <code><WelcomePackage></code> and each line should be in a <code><ContentLine></code> element.</li>
+        <li><strong>Asynchronous Messaging:</strong> The generated XML <code>CLOB</code> must then be enqueued into an <code>onboardingArchiveQueue</code> using <code>DBMS_AQ</code> for a separate archival process to handle.</li>
+        <li><strong>Server-Side Logging:</strong> Finally, the <code>onboardEmployee</code> procedure must write a summary log message to the server file <code>onboarding.log</code> using <code>UTL_FILE</code>, recording the new employee's ID and the message ID of the enqueued AQ message.</li>
+      </ol>
+    </div>
+  </div>
+</div>
+<!-- ############# EXERCISES END ############# -->
+
+<!-- Tips for Success -->
+<div class="section-container">
+  <h2><span class="section-icon">💡</span>Tips for Success & Learning</h2>
+  <ul>
+    <li><strong>Experiment:</strong> Don't just run the solutions. Modify them. What happens if you change a parameter? What if you remove the <code>FOR UPDATE</code> clause? Active experimentation is the key to deep understanding.</li>
+    <li><strong>Read the Manuals:</strong> The provided links to the Oracle documentation are your best friend. When a concept seems tricky, reading the official explanation can provide immense clarity.</li>
+    <li><strong>Think "Why?":</strong> For the "Contrasting" exercises, focus on *why* the Oracle-idiomatic way is better. Understanding the performance and reliability implications is more important than just memorizing the syntax.</li>
+    <li><strong>Deconstruct the Hardcore Problem:</strong> Tackle the final problem piece by piece. Build and test each component (the JS function, the hierarchical query, the LOB generation, etc.) individually before combining them into the final procedure.</li>
+  </ul>
+</div>
+
+<!-- Conclusion and Next Steps -->
+<div class="section-container">
+  <h2><span class="section-icon">🚀</span>Conclusion & Next Steps</h2>
+  <p>
+    Congratulations on tackling this deep dive into Oracle's built-in packages and the future of database programming with JavaScript MLE! By mastering these tools, you have gained the ability to solve complex, real-world integration and data processing challenges with efficiency and reliability. You've seen the power of transactional messaging, the necessity of secure file I/O, and the flexibility of combining different programming paradigms within the database.
+  </p>
+  <p>
+    You are now equipped with skills that are highly valuable in enterprise environments. The journey continues. Your next step is to explore the foundational concepts that underpin the entire Oracle ecosystem:
+  </p>
+  <div class="next-steps">
+    <p><strong>Next Up:</strong> <a href="#">Essential Oracle Database Concepts</a></p>
+  </div>
+</div>
+
+</div>
+</body>
