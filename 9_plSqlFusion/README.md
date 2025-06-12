@@ -24,6 +24,7 @@
             <li><a href="#section3">Section 3: How to Use Them (Syntax & Structures)</a>
                 <ul>
                     <li><a href="#s3_lob">Using DBMS_LOB</a></li>
+                    <li><a href="#s3_xmlgen">Using DBMS_XMLGEN (Legacy)</a></li>
                     <li><a href="#s3_utlfile">Using UTL_FILE</a></li>
                     <li><a href="#s3_aq">Using DBMS_AQ</a></li>
                     <li><a href="#s3_mle">Using JavaScript MLE</a></li>
@@ -206,6 +207,89 @@ END;
 /
 ```
 
+<h3 id="s3_xmlgen">Using DBMS_XMLGEN (Legacy)</h3>
+<p>
+There are two primary ways to use this package: a simple "one-shot" function call, or a more complex, stateful process involving a context handle. Understanding both is key to reading legacy code.<sup><a href="#fn9_5" id="fnref9_5">5</a></sup>
+</p>
+<div class="oracle-specific">
+<p><strong>Common Pattern: The Simple "One-Shot" Method</strong></p>
+<p>This is the easiest approach. The <code>GETXML</code> function is overloaded to accept a SQL query string directly. It handles creating, using, and closing the context implicitly.</p>
+<ol>
+    <li>Declare a <code>CLOB</code> variable to hold the result.</li>
+    <li>Call <code>DBMS_XMLGEN.GETXML</code>, passing the SQL query as a string.</li>
+    <li>The function returns a <strong>temporary CLOB</strong>, which should be freed with <code>DBMS_LOB.FREETEMPORARY</code> after use to prevent memory leaks.</li>
+</ol>
+</div>
+
+```sql
+-- Example: Basic XML generation for a single department
+DECLARE
+  vXmlResult CLOB;
+BEGIN
+  vXmlResult := DBMS_XMLGEN.GETXML('SELECT * FROM departments WHERE department_id = 20');
+
+  -- You would typically process the CLOB here. For a demo, we print it.
+  DBMS_OUTPUT.PUT_LINE(vXmlResult);
+
+  -- Important: Free the temporary LOB created by the function call.
+  DBMS_LOB.FREETEMPORARY(vXmlResult);
+EXCEPTION
+  WHEN OTHERS THEN
+    IF vXmlResult IS NOT NULL THEN
+      DBMS_LOB.FREETEMPORARY(vXmlResult);
+    END IF;
+    RAISE;
+END;
+/
+```
+<div class="oracle-specific">
+<p><strong>Common Pattern: The Stateful Context Method</strong></p>
+<p>This pattern is used for more control, such as paginating results. It exposes the stateful nature of the package and its primary pitfall.</p>
+<ol>
+    <li>Declare a context handle variable of type <code>DBMS_XMLGEN.ctxHandle</code>.</li>
+    <li>Call <code>DBMS_XMLGEN.NEWCONTEXT </code> with a query to create the context and get a handle.</li>
+    <li>(Optional) Call <code>SET </code> procedures (e.g., <code>SETROWTAG</code>) to customize the output.</li>
+    <li>Call <code>DBMS_XMLGEN.GETXML </code> with the context handle to get the XML.</li>
+    <li><strong>Crucially, call <code>DBMS_XMLGEN.CLOSECONTEXT</code> with the handle to release the cursor and memory resources. Forgetting this step causes a resource leak in the database session.</strong></li>
+</ol>
+</div>
+
+```sql
+-- This code demonstrates the full lifecycle and the critical CLOSECONTEXT step.
+DECLARE
+  vCtx      DBMS_XMLGEN.ctxHandle;
+  vXmlResult CLOB;
+BEGIN
+  -- 1. Create the context from a query
+  vCtx := DBMS_XMLGEN.NEWCONTEXT('SELECT department_name FROM departments WHERE department_id = 20');
+
+  -- 2. (Optional) Customize the output
+  DBMS_XMLGEN.SETROWSETTAG(vCtx, 'DepartmentSet');
+  DBMS_XMLGEN.SETROWTAG(vCtx, 'Department');
+
+  -- 3. Get the XML
+  vXmlResult := DBMS_XMLGEN.GETXML(vCtx);
+  DBMS_OUTPUT.PUT_LINE(vXmlResult);
+
+  -- 4. THIS IS THE CRITICAL STEP: Close the context to release resources.
+  DBMS_XMLGEN.CLOSECONTEXT(vCtx);
+
+  -- The CLOB returned from this version is also temporary.
+  DBMS_LOB.FREETEMPORARY(vXmlResult);
+EXCEPTION
+  WHEN OTHERS THEN
+    -- Ensure context is closed and LOB is freed even on error
+    IF vCtx IS NOT NULL THEN
+      DBMS_XMLGEN.CLOSECONTEXT(vCtx);
+    END IF;
+    IF vXmlResult IS NOT NULL THEN
+      DBMS_LOB.FREETEMPORARY(vXmlResult);
+    END IF;
+    RAISE;
+END;
+/
+```
+
 <h3 id="s3_utlfile">Using UTL_FILE</h3>
 <p>
 File I/O is modeled on traditional file handle operations, an essential tool for integration operations.<sup><a href="#fn9_2" id="fnref9_2">2</a></sup>
@@ -357,6 +441,9 @@ SELECT jsGreeting('World') FROM DUAL;
     </li>
     <li id="fn9_4">
       <p><a href="/books/oracle-database-javascript-developers-guide/oracle-database-javascript-developers-guide.pdf" title="Oracle Database JavaScript Developer's Guide, 23ai">Oracle Database JavaScript Developer's Guide, 23ai</a>. The definitive guide for using the Multilingual Engine (MLE) with JavaScript. See Chapter 3 for creating modules and Chapter 6 for defining call specifications. <a href="#fnref9_4" title="Jump back to footnote 4 in the text">↩</a></p>
+    </li>
+    <li id="fn9_5">
+      <p><a href="../books/database-pl-sql-packages-and-types-reference/ch234_dbms_xmlgen.pdf" title="Oracle Database PL/SQL Packages and Types Reference, 23ai - DBMS_XMLGEN">Oracle Database PL/SQL Packages and Types Reference, 23ai, Chapter 234: DBMS_XMLGEN</a>. Describes the procedures, functions, and stateful context management of this deprecated package. <a href="#fnref9_5" title="Jump back to footnote 5 in the text">↩</a></p>
     </li>
   </ol>
 </div>

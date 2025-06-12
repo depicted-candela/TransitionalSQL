@@ -125,7 +125,7 @@ DECLARE
     optimalConcat CLOB;
 BEGIN
     startTime := DBMS_UTILITY.GET_CPU_TIME;
-    WHILE counter < cIterations + 1 LOOP
+    WHILE counter < cIterations * 10 + 1 LOOP
         concatenation := concatenation || smallString;
         counter := counter + 1;
     END LOOP;
@@ -138,7 +138,7 @@ BEGIN
     DBMS_LOB.CREATETEMPORARY(optimalConcat, TRUE);
     counter := 1;
     startTime := DBMS_UTILITY.GET_CPU_TIME;
-    WHILE counter < cIterations + 1 LOOP
+    WHILE counter < cIterations * 10 + 1 LOOP
         DBMS_LOB.WRITEAPPEND(optimalConcat, LENGTH(smallString), smallString);
         counter := counter + 1;
     END LOOP;
