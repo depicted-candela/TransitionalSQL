@@ -86,7 +86,7 @@ END;
   <h4>Solution Insight</h4>
     <ul>
       <li><span class="oracle-specific">Oracle Specific</span>: The <code>EMPTY_CLOB()</code> function is crucial. It creates a LOB locator in the table, which is a pointer to where the LOB data will be stored. You cannot write to a <code>NULL</code> LOB column; it must first be initialized.</li>
-      <li><strong>Advantage:</strong> The <code>DBMS_LOB.WRITEAPPEND</code> procedure is highly efficient for building large character objects. It directly appends data to the end of the LOB without the massive memory overhead of traditional string concatenation (`||`), which would create a new copy of the entire LOB in memory with each operation.</li>
+      <li><strong>Advantage:</strong> The <code>DBMS_LOB.WRITEAPPEND</code> procedure is highly efficient for building large character objects. It directly appends data to the end of the LOB without the massive memory overhead of traditional string concatenation (<code>||</code>), which would create a new copy of the entire LOB in memory with each operation.</li>
       <li><strong>Relation:</strong> This solution directly applies concepts from the <strong>Data Types</strong> category (<code>CLOB</code>) and the <strong>DML & Transaction Control</strong> category (<code>INSERT ... RETURNING</code>, <code>COMMIT</code>).</li>
       <li><strong>Reference:</strong> For a deep dive, consult the <a href="books/database-pl-sql-packages-and-types-reference/ch120_dbms_lob.pdf">DBMS_LOB Chapter</a> in the <i>PL/SQL Packages and Types Reference</i>.</li>
     </ul>
@@ -341,13 +341,13 @@ END writeAppLog;
 <ul>
     <li><span class="oracle-specific">Oracle Specific</span>: Security is managed via <code>DIRECTORY</code> objects, which are pointers to OS paths created by a DBA. The PL/SQL code refers to the directory object name, not the physical path. This provides a crucial layer of abstraction and security, preventing PL/SQL code from accessing arbitrary file system locations.</li>
     <li><div class="postgresql-bridge">PostgreSQL Bridge</div> This is a more secure and manageable model than PostgreSQL's <code>COPY ... TO PROGRAM</code> or using an untrusted language. The DBA controls exactly which directories the database user can access.</li>
-    <li><strong>Reference:</strong> *PL/SQL Packages and Types Reference* for `UTL_FILE` (`books/database-pl-sql-packages-and-types-reference/ch289_utl_file.pdf`).</li>
+    <li><strong>Reference:</strong> *PL/SQL Packages and Types Reference* for <code>UTL_FILE</code> (<code>books/database-pl-sql-packages-and-types-reference/ch289_utl_file.pdf</code>).</li>
 </ul>
 </div>
 </div>
 
 <div class="exercise-wrapper">
-<h4>Exercise 3.2: Handling `NO_DATA_FOUND` on Read</h4>
+<h4>Exercise 3.2: Handling <code>NO_DATA_FOUND</code> on Read</h4>
 <p><strong>Problem:</strong> Write a PL/SQL block that reads the <code>application.log</code> file line-by-line. Demonstrate how to properly handle the <code>NO_DATA_FOUND</code> exception, which is the expected way to detect the end of a file.</p>
 <strong>Solution:</strong>
 
@@ -379,7 +379,7 @@ END;
 <h4>Solution Insight</h4>
 <ul>
     <li><strong>Pitfall:</strong> A common mistake is to write a loop without handling <code>NO_DATA_FOUND</code>, causing the program to terminate with an unhandled exception error when it reaches the end of the file.</li>
-    <li><strong>Oracle Idiom:</strong> The correct pattern is to wrap the <code>GET_LINE</code> call within its own `BEGIN...EXCEPTION...END` block inside the loop. This allows you to catch the expected `NO_DATA_FOUND` exception, exit the loop gracefully, and continue with the program logic (such as closing the file).</li>
+    <li><strong>Oracle Idiom:</strong> The correct pattern is to wrap the <code>GET_LINE</code> call within its own <code>BEGIN...EXCEPTION...END</code> block inside the loop. This allows you to catch the expected <code>NO_DATA_FOUND</code> exception, exit the loop gracefully, and continue with the program logic (such as closing the file).</li>
 </ul>
 </div>
 </div>
@@ -446,14 +446,14 @@ END;
 <ul>
     <li><strong>Advantage:</strong> The core value of AQ is **transactional messaging**. When a message is dequeued, it is locked. It is only permanently removed from the queue when the dequeuing session issues a <code>COMMIT</code>. If a <code>ROLLBACK</code> occurs, the message automatically becomes visible again for another process to consume. This guarantees "once-and-only-once" processing and prevents message loss.</li>
     <li><div class="postgresql-bridge">PostgreSQL Bridge</div> This is the key differentiator from PostgreSQL's <code>NOTIFY/LISTEN</code>, which is a "fire-and-forget" mechanism with no delivery guarantee. AQ provides the reliability of a commercial Message-Oriented Middleware (MOM) product directly within the database.</li>
-    <li><strong>Reference:</strong> *Transactional Event Queues and Advanced Queuing User's Guide* (`books/database-transactional-event-queues-and-advanced-queuing-users-guide/07_ch02_basic-components-of-oracle-transactional-event-queues-and-advanced-queuing.pdf`).</li>
+    <li><strong>Reference:</strong> <a href="../books/database-transactional-event-queues-and-advanced-queuing-users-guide/07_ch02_basic-components-of-oracle-transactional-event-queues-and-advanced-queuing.pdf">Transactional Event Queues and Advanced Queuing User's Guide</a>.</li>
 </ul>
 </div>
 </div>
 
 <div class="exercise-wrapper">
 <h4>Exercise 4.2: The "Queue Table" Anti-Pattern</h4>
-<p><strong>Problem:</strong> Implement a job processing mechanism using the <code>processingQueue</code> table. Highlight the challenges with locking and race conditions, then contrast it with the simplicity of `DBMS_AQ.DEQUEUE`.</p>
+<p><strong>Problem:</strong> Implement a job processing mechanism using the <code>processingQueue</code> table. Highlight the challenges with locking and race conditions, then contrast it with the simplicity of  <code>DBMS_AQ.DEQUEUE</code> .</p>
 <strong>Solution:</strong>
 
 ```sql
@@ -488,7 +488,7 @@ END;
 <div class="solution-box pitfall-box">
 <h4>Solution Insight</h4>
 <ul>
-    <li><strong>Contrast:</strong> The "queue table" is a common but flawed pattern. It requires complex, error-prone application logic: manual state management (the <code>status</code> column), explicit row-level locking (`FOR UPDATE SKIP LOCKED`) to handle concurrency, and multiple commits which break atomicity. If the session crashes after marking the job as 'PROCESSING' but before marking it 'DONE', the job is lost forever without complex recovery logic.</li>
+    <li><strong>Contrast:</strong> The "queue table" is a common but flawed pattern. It requires complex, error-prone application logic: manual state management (the <code>status</code> column), explicit row-level locking (<code>FOR UPDATE SKIP LOCKED</code>) to handle concurrency, and multiple commits which break atomicity. If the session crashes after marking the job as 'PROCESSING' but before marking it 'DONE', the job is lost forever without complex recovery logic.</li>
     <li><strong>The Oracle AQ Way:</strong> A single <code>DBMS_AQ.DEQUEUE</code> call replaces all of that fragile logic. It atomically finds, locks, and delivers the next available message. The transactional nature, as shown in the previous exercise, provides built-in recovery and guaranteed delivery, making it vastly more robust and efficient.</li>
 </ul>
 </div>
@@ -540,7 +540,7 @@ FROM employees;
 <div class="solution-box advantage-box">
 <h4>Solution Insight</h4>
 <ul>
-    <li><div class="oracle-specific">Oracle 23ai Feature</div> This demonstrates the core workflow of Oracle's Multilingual Engine (MLE). You define your logic in a standard language (JavaScript) within a database object (`MLE MODULE`), then expose it to the SQL and PL/SQL world via a lightweight "call specification".</li>
+    <li><div class="oracle-specific">Oracle 23ai Feature</div> This demonstrates the core workflow of Oracle's Multilingual Engine (MLE). You define your logic in a standard language (JavaScript) within a database object (<code>MLE MODULE</code>), then expose it to the SQL and PL/SQL world via a lightweight "call specification".</li>
     <li><strong>Advantage:</strong> This allows you to leverage the strengths of JavaScript—its rich ecosystem of libraries and its suitability for tasks like JSON and string manipulation—directly within the database, without needing a separate application tier.</li>
     <li><strong>Reference:</strong> The foundational concepts are in the <a href="books/oracle-database-javascript-developers-guide/05_ch02_introduction-to-oracle-database-multilingual-engine-for-javascript.pdf">Introduction to MLE</a> and <a href="books/oracle-database-javascript-developers-guide/08_ch05_overview-of-importing-mle-javascript-modules.pdf">Importing Modules</a> chapters of the <i>JavaScript Developer's Guide</i>.</li>
 </ul>
@@ -586,7 +586,7 @@ END;
 <div class="solution-box pitfall-box">
 <h4>Solution Insight</h4>
 <ul>
-    <li><strong>Contrast:</strong> While the PL/SQL version is functional, the JavaScript solution is more idiomatic and concise for this specific problem. JavaScript's native handling of JSON, its direct syntax for regular expressions (`/.../`), and its property existence check (`!== undefined`) make the logic more natural and readable for developers with a web background.</li>
+    <li><strong>Contrast:</strong> While the PL/SQL version is functional, the JavaScript solution is more idiomatic and concise for this specific problem. JavaScript's native handling of JSON, its direct syntax for regular expressions (<code>/.../</code>), and its property existence check (<code>!== undefined</code>) make the logic more natural and readable for developers with a web background.</li>
     <li><strong>Advantage:</strong> This demonstrates the principle of polyglot programming: using the right language for the right task. MLE empowers developers to make this choice at a granular level within the database, which can lead to more maintainable and often more performant code for specific use cases like complex data validation.</li>
 </ul>
 </div>
@@ -742,9 +742,9 @@ END;
 <h4>Final Review and Best Practices</h4>
 <p>As you complete this section, internalize these core Oracle principles:</p>
 <ul>
-    <li><strong>Use the Right Tool for the Job:</strong> Oracle provides a rich set of tools. Use <code>DBMS_LOB</code> for large data, `DBMS_AQ` for reliable messaging, and `UTL_FILE` for secure file I/O. Use JavaScript MLE when its syntax and features provide a clearer, more maintainable solution than pure PL/SQL.</li>
-    <li><strong>Embrace Transactional Integrity:</strong> The power of placing messaging (`DBMS_AQ`) and file operations within a transactional language like PL/SQL is immense. Always consider the `COMMIT`/`ROLLBACK` behavior of your procedures.</li>
-    <li><strong>Manage Resources:</strong> While modern features are often stateless, be aware that older packages (`DBMS_XMLGEN`) and file handles (`UTL_FILE`) require explicit resource management (`CLOSECONTEXT`, `FCLOSE`) to prevent leaks.</li>
+    <li><strong>Use the Right Tool for the Job:</strong> Oracle provides a rich set of tools. Use <code>DBMS_LOB</code> for large data, `DBMS_AQ` for reliable messaging, and <code>UTL_FILE</code> for secure file I/O. Use JavaScript MLE when its syntax and features provide a clearer, more maintainable solution than pure PL/SQL.</li>
+    <li><strong>Embrace Transactional Integrity:</strong> The power of placing messaging (<code>DBMS_AQ</code>) and file operations within a transactional language like PL/SQL is immense. Always consider the `COMMIT`/`ROLLBACK` behavior of your procedures.</li>
+    <li><strong>Manage Resources:</strong> While modern features are often stateless, be aware that older packages (<code>DBMS_XMLGEN</code>) and file handles (<code>UTL_FILE</code>) require explicit resource management (<code>CLOSECONTEXT`, `FCLOSE</code>) to prevent leaks.</li>
     <li><strong>Prioritize Modern Standards:</strong> While it's important to understand deprecated packages like <code>DBMS_XMLGEN</code> for maintaining legacy code, always prefer the modern, standard-compliant `SQL/XML` functions for new development. They are more performant, flexible, and integrated with the optimizer.</li>
 </ul>
 </div>

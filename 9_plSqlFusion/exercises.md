@@ -252,7 +252,7 @@ COMMIT;
       </div>
     </div>
     <div class="exercise-problem">
-      <h4>Exercise 3.2: Handling `NO_DATA_FOUND` on Read</h4>
+      <h4>Exercise 3.2: Handling <code>NO_DATA_FOUND</code> on Read</h4>
       <p>
         <strong>Problem:</strong> Write a PL/SQL block that reads the <code>application.log</code> file line by line until the end of the file is reached. Demonstrate how to properly handle the <code>NO_DATA_FOUND</code> exception, which is the expected way to detect the end of a file.
       </p>
@@ -271,14 +271,45 @@ COMMIT;
         <strong>Problem:</strong> Create a queue for processing new orders. Enqueue a message representing a new order payload. Then, create a separate block to dequeue the message. Demonstrate the transactional integrity by rolling back a dequeue operation, and then successfully dequeuing it in a new transaction.
       </p>
       <div class="reference-box">
-          <strong>Reference:</strong> <a href="../books/database-transactional-event-queues-and-advanced-queuing-users-guide/07_ch02_basic-components-of-oracle-transactional-event-queues-and-advanced-queuing.pdf">Transactional Event Queues and Advanced Queuing User's Guide</a>.
+          <p><strong>To solve this, you will need to perform both administrative and operational tasks. Follow these references:</strong></p>
+          <ol>
+              <li>
+                  <strong>Administrative Setup:</strong> First, you must create the necessary queue structures. Refer to the <strong><a href="../books/database-transactional-event-queues-and-advanced-queuing-users-guide/17_ch12_oracle-database-advanced-queuing-administrative-interface.pdf" title="Chapter 12: AQ Administrative Interface">Administrative Interface Guide (Chapter 12)</a></strong> for the syntax to:
+                  <ul>
+                      <li><code>CREATE_QUEUE_TABLE</code> (p. 12-2)</li>
+                      <li><code>CREATE_QUEUE</code> (p. 12-14)</li>
+                      <li><code>START_QUEUE</code> (p. 12-17)</li>
+                  </ul>
+              </li>
+              <li>
+                  <strong>Operational Logic:</strong> Once the queue is created, you can perform messaging operations. See the <strong><a href="../books/database-transactional-event-queues-and-advanced-queuing-users-guide/12_ch07_oracle-database-advanced-queuing-operations-using-plsql.pdf" title="Chapter 7: AQ Operations Using PL/SQL">PL/SQL Operations Guide (Chapter 7)</a></strong> for:
+                  <ul>
+                      <li><code>DBMS_AQ.ENQUEUE</code> to add your message (p. 7-2).</li>
+                      <li><code>DBMS_AQ.DEQUEUE</code> to retrieve it (p. 7-13).</li>
+                  </ul>
+              </li>
+               <li>
+                  <strong>Transactional Behavior:</strong> The key to this exercise is the <code>visibility</code> parameter in the dequeue options. Understanding this is crucial for the rollback demonstration. Review the concept in the <strong><a href="../books/database-transactional-event-queues-and-advanced-queuing-users-guide/06_ch01_introduction-to-transactional-event-queues-and-advanced-queuing.pdf" title="Chapter 1: Introduction to AQ">Introduction (Chapter 1)</a></strong>, specifically the section on <em>Optional Transaction Protection</em> (p. 1-28).
+              </li>
+          </ol>
       </div>
     </div>
     <div class="exercise-problem">
       <h4>Exercise 4.2: The "Queue Table" Anti-Pattern</h4>
       <p>
-        <strong>Problem:</strong> Implement a job processing mechanism using the <code>processingQueue</code> table. Write a PL/SQL block that attempts to find and process a 'NEW' job. Highlight the challenges with locking and race conditions inherent in this manual approach, then contrast it with the simplicity of <code>DBMS_AQ.DEQUEUE</code>.
+        <strong>Problem:</strong> Implement a job processing mechanism using a simple table with a status column (e.g., <code>processing_queue</code>). Write a PL/SQL block using <code>SELECT ... FOR UPDATE SKIP LOCKED</code> to find and process a 'NEW' job. Highlight the challenges with locking and race conditions inherent in this manual approach, then contrast it with the simplicity and robustness of using <code>DBMS_AQ.DEQUEUE</code>.
       </p>
+      <div class="reference-box">
+          <p><strong>This is a conceptual exercise. Your goal is to understand <em>why</em> AQ is the superior solution.</strong></p>
+          <ul>
+              <li>
+                  <strong>The "Why":</strong> For a high-level understanding of the problems AQ is designed to solve (like decoupling and reliable messaging), review the <strong><a href="../books/database-transactional-event-queues-and-advanced-queuing-users-guide/06_ch01_introduction-to-transactional-event-queues-and-advanced-queuing.pdf" title="Chapter 1: Introduction to AQ">Introduction (Chapter 1)</a></strong>.
+              </li>
+              <li>
+                  <strong>The Contrast:</strong> To understand how AQ avoids the anti-pattern's pitfalls, read the <strong><a href="../books/database-transactional-event-queues-and-advanced-queuing-users-guide/13_ch08_oracle-transactional-event-queues-and-advanced-queuing-performance-and-scalability.pdf" title="Chapter 8: AQ Performance and Scalability">Performance and Scalability Guide (Chapter 8)</a></strong>. Pay close attention to the section on <em>"Running Enqueue and Dequeue Processes Concurrently"</em> (p. 8-10). This section explains how AQ is built to handle contention and concurrency, which is precisely where the manual <code>SELECT FOR UPDATE</code> approach becomes complex and inefficient.
+              </li>
+          </ul>
+      </div>
     </div>
   </div>
 

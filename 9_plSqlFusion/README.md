@@ -5,11 +5,10 @@
 <div class="toc-popup-container">
     <input type="checkbox" id="tocToggleChunk9" class="toc-toggle-checkbox">
     <label for="tocToggleChunk9" class="toc-toggle-label">
-        <span>PL/SQL Fusion: Contents</span>
         <span class="toc-icon-open"></span>
+        Contents
     </label>
     <div class="toc-content">
-        <h4>Table of Contents</h4>
         <ul>
             <li><a href="#section1">Section 1: What Are They? (Meanings & Values)</a>
                 <ul>
@@ -106,7 +105,7 @@ Oracle Advanced Queuing (AQ) is a robust, database-integrated messaging system. 
         <strong>Meaning:</strong> A framework for defining queues and enqueuing/dequeuing messages. It treats messages as database objects that participate in transactions. It's a system for ordered satisfaction.
     </li>
     <li>
-        <strong>Value:</strong> The primary value is <strong>guaranteed, transactional messaging</strong>. A message is not truly removed from a queue until the dequeuing transaction commits. If it rolls back, the message becomes available again, guaranteeing no lost messages. This prevents data-loss situations.
+        <strong>Value:</strong> The primary value is <strong>guaranteed, transactional messaging</strong>. An enqueue or dequeue operation is part of your database transaction. A message is not truly removed from a queue until the dequeuing transaction commits. If it rolls back, the message becomes available again, guaranteeing no lost messages. This is the cornerstone of reliable application design and prevents the data-loss situations that plague manual queue implementations.
     </li>
 </ul>
 
@@ -119,7 +118,7 @@ Oracle Advanced Queuing (AQ) is a robust, database-integrated messaging system. 
         <strong>Meaning:</strong> You can create a <code>MLE MODULE</code> containing standard JavaScript code (e.g., ES modules with <code>export</code>). Then, you create a PL/SQL "call specification" (a regular function or procedure) that links to and exposes a specific JavaScript function to the SQL and PL/SQL environment.
     </li>
     <li>
-        <strong>Value:</strong> This feature brings **synergy**. It allows you to use the best language for the job, right inside the database. For complex JSON parsing, regular expressions, or leveraging existing JavaScript business logic, you can now avoid moving data to an application tier, perform the logic with data locality, and reap massive performance gains. It's a true JavaScript inclusion for your database institution.
+        <strong>Value:</strong> This feature brings <strong>synergy</strong>. It allows you to use the best language for the job, right inside the database. For complex JSON parsing, regular expressions, or leveraging existing JavaScript business logic, you can now avoid moving data to an application tier, perform the logic with data locality, and reap massive performance gains. It's a true JavaScript inclusion for your database institution.
     </li>
 </ul>
 
@@ -247,9 +246,9 @@ END;
 <p>This pattern is used for more control, such as paginating results. It exposes the stateful nature of the package and its primary pitfall.</p>
 <ol>
     <li>Declare a context handle variable of type <code>DBMS_XMLGEN.ctxHandle</code>.</li>
-    <li>Call <code>DBMS_XMLGEN.NEWCONTEXT </code> with a query to create the context and get a handle.</li>
-    <li>(Optional) Call <code>SET </code> procedures (e.g., <code>SETROWTAG</code>) to customize the output.</li>
-    <li>Call <code>DBMS_XMLGEN.GETXML </code> with the context handle to get the XML.</li>
+    <li>Call <code>DBMS_XMLGEN.NEWCONTEXT</code> with a query to create the context and get a handle.</li>
+    <li>(Optional) Call <code>SET</code> procedures (e.g., <code>SETROWTAG</code>) to customize the output.</li>
+    <li>Call <code>DBMS_XMLGEN.GETXML</code> with the context handle to get the XML.</li>
     <li><strong>Crucially, call <code>DBMS_XMLGEN.CLOSECONTEXT</code> with the handle to release the cursor and memory resources. Forgetting this step causes a resource leak in the database session.</strong></li>
 </ol>
 </div>
@@ -321,41 +320,156 @@ END;
 
 <h3 id="s3_aq">Using DBMS_AQ</h3>
 <p>
-The process is split between administration (`DBMS_AQADM`) for setup and operations (`DBMS_AQ`) for messaging, a separation that brings processing satisfaction.<sup><a href="#fn9_3" id="fnref9_3">3</a></sup>
+The process is split between administration (<strong>DBMS_AQADM</strong>) for setup and operations (<strong>DBMS_AQ</strong>) for messaging. This separation of concerns ensures that the operational code is clean while the one-time setup is handled by an administrator, a separation that brings processing satisfaction.<sup><a href="#fn9_3" id="fnref9_3">3</a></sup>
 </p>
 <div class="oracle-specific">
 <p><strong>Common Pattern: Setup, Enqueue, Dequeue</strong></p>
-<ol>
-    <li><strong>Admin:</strong> Use <code>DBMS_AQADM.CREATE_QUEUE_TABLE</code> once per payload type.</li>
-    <li><strong>Admin:</strong> Use <code>DBMS_AQADM.CREATE_QUEUE</code> to create a logical queue within that table.</li>
-    <li><strong>Admin:</strong> Use <code>DBMS_AQADM.START_QUEUE</code> to enable enqueuing and dequeuing.</li>
-    <li><strong>Operational:</strong> Use <code>DBMS_AQ.ENQUEUE</code> to add a message. <code>COMMIT</code> to make it visible.</li>
-    <li><strong>Operational:</strong> Use <code>DBMS_AQ.DEQUEUE</code> to retrieve a message. The message is locked until you <code>COMMIT</code>.</li>
-</ol>
-</div>
-
+  <strong>Admin: Create a Queue Table.</strong> This is the physical storage for messages of a specific type. You only do this once per payload structure. For simple messages, <strong>RAW</strong> is efficient.
+  
 ```sql
--- Dequeue a message, waiting up to 10 seconds.
-DECLARE
-  vDequeueOptions DBMS_AQ.DEQUEUE_OPTIONS_T;
-  vMsgProps       DBMS_AQ.MESSAGE_PROPERTIES_T;
-  vMsgHandle      RAW(16);
-  vPayload        RAW(2000);
+-- Run as an administrative user with AQ privileges
 BEGIN
-  vDequeueOptions.wait := 10; -- Wait for 10 seconds
-  vDequeueOptions.visibility := DBMS_AQ.ON_COMMIT; -- Transactional behavior
-  DBMS_AQ.DEQUEUE(
-    queue_name => 'newOrderQueue',
-    dequeue_options => vDequeueOptions,
-    message_properties => vMsgProps,
-    payload => vPayload,
-    msgid => vMsgHandle
+  DBMS_AQADM.CREATE_QUEUE_TABLE(
+    queue_table        => 'order_queue_table',
+    queue_payload_type => 'RAW'
   );
-  -- Process the payload...
-  COMMIT;
 END;
 /
 ```
+
+  <strong>Admin: Create a Queue.</strong> This creates a logical endpoint within the queue table. You can have many queues in one table.
+
+```sql
+BEGIN
+  DBMS_AQADM.CREATE_QUEUE(
+    queue_name         => 'new_order_queue',
+    queue_table        => 'order_queue_table'
+  );
+END;
+/
+```
+  
+  <strong>Admin: Start the Queue.</strong> A queue must be explicitly enabled for use.
+
+```sql
+BEGIN
+  DBMS_AQADM.START_QUEUE(queue_name => 'new_order_queue');
+END;
+/
+```
+
+  <strong>Operational: Enqueue a Message.</strong> Use <strong>DBMS_AQ.ENQUEUE</strong> to add a message to the queue. The enqueue is part of the current transaction; it only becomes visible to other sessions after a <strong>COMMIT</strong>.
+
+```sql
+-- Run as an application user with ENQUEUE privilege
+DECLARE
+  enqueue_options      DBMS_AQ.ENQUEUE_OPTIONS_T;
+  message_properties   DBMS_AQ.MESSAGE_PROPERTIES_T;
+  message_handle       RAW(16);
+  payload              RAW(100);
+BEGIN
+  payload := UTL_RAW.CAST_TO_RAW('New Order: Product ID 123, Quantity 5');
+  DBMS_AQ.ENQUEUE(
+    queue_name         => 'new_order_queue',
+    enqueue_options    => enqueue_options,
+    message_properties => message_properties,
+    payload            => payload,
+    msgid              => message_handle
+  );
+  COMMIT; -- Make the message available
+END;
+/
+```
+  
+<strong>Operational: Dequeue a Message.</strong> Use <code>RODBMS_AQ.DEQUEUE</code> to retrieve a message. The message is locked until you <code>COMMIT</code>. If you <code>ROLLBACK</code>, it becomes available for dequeuing again.
+  
+```sql
+-- Run as an application user with DEQUEUE privilege
+DECLARE
+  dequeue_options      DBMS_AQ.DEQUEUE_OPTIONS_T;
+  message_properties   DBMS_AQ.MESSAGE_PROPERTIES_T;
+  message_handle       RAW(16);
+  payload              RAW(100);
+BEGIN
+  -- Wait forever until a message arrives. Set visibility to ON_COMMIT for transactional control.
+  dequeue_options.wait       := DBMS_AQ.FOREVER;
+  dequeue_options.visibility := DBMS_AQ.ON_COMMIT;
+
+  DBMS_AQ.DEQUEUE(
+    queue_name         => 'new_order_queue',
+    dequeue_options    => dequeue_options,
+    message_properties => message_properties,
+    payload            => payload,
+    msgid              => message_handle
+  );
+  -- Process payload...
+  DBMS_OUTPUT.PUT_LINE('Processed: ' || UTL_RAW.CAST_TO_VARCHAR2(payload));
+  COMMIT; -- Permanently remove the message
+END;
+/
+```
+
+</div>
+
+<div class="oracle-specific">
+<p><strong>Focus: Demonstrating Transactional Integrity</strong></p>
+<p>The core of AQ's power lies in its transactional guarantee. A dequeued message is not gone; it is merely locked by the current session. Only a <strong>COMMIT</strong> makes the removal permanent. A <strong>ROLLBACK</strong> releases the lock and makes the message immediately available for another session (or the same session) to dequeue. This is the key to demonstrating transactional integrity.</p>
+</div>
+
+```sql
+-- Block 1: Dequeue and Rollback
+DECLARE
+  dequeue_options DBMS_AQ.DEQUEUE_OPTIONS_T;
+  v_msg_props   DBMS_AQ.MESSAGE_PROPERTIES_T;
+  v_msgid       RAW(16);
+  v_payload     RAW(100);
+BEGIN
+  dequeue_options.wait := 5; -- Wait up to 5 seconds
+  DBMS_OUTPUT.PUT_LINE('Attempting to dequeue a message...');
+  DBMS_AQ.DEQUEUE('new_order_queue', dequeue_options, v_msg_props, v_payload, v_msgid);
+  DBMS_OUTPUT.PUT_LINE('Message dequeued. Rolling back...');
+  ROLLBACK; -- This returns the message to the queue
+EXCEPTION
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('No message found or error during dequeue.');
+END;
+/
+
+-- Block 2: Dequeue Successfully
+-- Running this block immediately after the first will succeed,
+-- because the ROLLBACK returned the message to the queue.
+DECLARE
+  dequeue_options DBMS_AQ.DEQUEUE_OPTIONS_T;
+  v_msg_props   DBMS_AQ.MESSAGE_PROPERTIES_T;
+  v_msgid       RAW(16);
+  v_payload     RAW(100);
+BEGIN
+  dequeue_options.wait := 5;
+  DBMS_OUTPUT.PUT_LINE('Attempting to dequeue again...');
+  DBMS_AQ.DEQUEUE('new_order_queue', dequeue_options, v_msg_props, v_payload, v_msgid);
+  DBMS_OUTPUT.PUT_LINE('Message successfully dequeued again!');
+  DBMS_OUTPUT.PUT_LINE('Payload: ' || UTL_RAW.CAST_TO_VARCHAR2(v_payload));
+  COMMIT; -- Now, the message is gone for good.
+EXCEPTION
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('Could not dequeue the second time.');
+END;
+/
+```
+
+<div class="oracle-specific">
+<p><strong>Focus: The "Queue Table" Anti-Pattern vs. DBMS_AQ</strong></p>
+<p>A common but flawed approach to job processing is to create a standard table (e.g., <strong>processing_queue</strong>) with columns like <strong>job_id</strong>, <strong>payload</strong>, and <strong>status</strong>. A PL/SQL procedure then tries to find and process jobs with a <strong>NEW</strong> status. This manual method is fraught with peril:</p>
+<ul>
+    <li><strong>Race Conditions:</strong> Multiple sessions might simultaneously query <strong>SELECT job_id FROM processing_queue WHERE status = 'NEW' FOR UPDATE SKIP LOCKED</strong>. They could all target the same row, leading to inefficient contention.</li>
+    <li><strong>Locking Complexity:</strong> <strong>FOR UPDATE</strong> is necessary to prevent two sessions from processing the same job. However, managing these locks, especially with <strong>SKIP LOCKED</strong> to find the next available job, adds significant logical complexity and can still lead to performance bottlenecks under high load.</li>
+    <li><strong>No Guaranteed Order:</strong> There is no built-in, guaranteed FIFO (First-In, First-Out) processing without complex <strong>ORDER BY</strong> and <strong>FETCH</strong> clauses, which further complicates the locking strategy.</li>
+    <li><strong>Manual State Management:</strong> Your code is responsible for updating the status from <strong>NEW</strong> to <strong>PROCESSING</strong> to <strong>DONE</strong> or <strong>ERROR</strong>. Every step is a potential point of failure that requires its own transactional handling.</li>
+</ul>
+<p>
+<strong>DBMS_AQ solves all these problems elegantly.</strong> The <strong>DBMS_AQ.DEQUEUE</strong> procedure encapsulates this entire complex dance of finding, locking, and removing a message into a single, atomic, and highly optimized call. It handles concurrency internally, manages message states (e.g., <strong>READY</strong>, <strong>WAITING</strong>, <strong>EXPIRED</strong>), and guarantees transactional integrity. By using AQ, you replace complex, error-prone manual code with a simple, robust, and scalable built-in framework.
+</p>
+</div>
 
 <h3 id="s3_mle">Using JavaScript MLE</h3>
 <p>
@@ -364,10 +478,10 @@ The flow involves defining the JS code in a module, exposing it via a PL/SQL wra
 <div class="oracle-specific">
 <p><strong>Common Pattern: Create, Expose, Call</strong></p>
 <ol>
-    <li>Write your JavaScript code, using <code>export</code> for functions you want to call from PL/SQL.</li>
-    <li>Use <code>CREATE MLE MODULE ... LANGUAGE JAVASCRIPT</code> to store the code in the database.</li>
-    <li>Use <code>CREATE FUNCTION ... AS MLE MODULE ... SIGNATURE '...';</code> to create the PL/SQL wrapper. The <code>SIGNATURE</code> string maps the PL/SQL parameters to the JS function signature.</li>
-    <li>Call the PL/SQL function from any SQL or PL/SQL context.</li>
+  <li>Write your JavaScript code, using <code>export</code> for functions you want to call from PL/SQL.</li>
+  <li>Use <code>CREATE MLE MODULE ... LANGUAGE JAVASCRIPT</code> to store the code in the database.</li>
+  <li>Use <code>CREATE FUNCTION ... AS MLE MODULE ... SIGNATURE '...';</code> to create the PL/SQL wrapper. The <code>SIGNATURE</code> string maps the PL/SQL parameters to the JS function signature.</li>
+  <li>Call the PL/SQL function from any SQL or PL/SQL context.</li>
 </ol>
 </div>
 
@@ -413,13 +527,13 @@ SELECT jsGreeting('World') FROM DUAL;
         <strong><code>DBMS_LOB</code> Pitfall:</strong> The most common error is confusing <strong>bytes and characters</strong>. For <code>CLOB</code>s, functions like <code>DBMS_LOB.WRITE</code> expect the <code>amount</code> and <code>offset</code> in characters. If you use <code>LENGTHB</code> on a multi-byte string and pass that to <code>WRITE</code>, you will corrupt your data. This pitfall is one to evade.
     </li>
     <li>
-        <strong><code>UTL_FILE</code> Pitfall:</strong> **Resource management is manual.** Forgetting to call <code>UTL_FILE.FCLOSE</code>, especially in an exception handler, will leak OS file handles, which are a limited resource. This common lapse can lead to a system collapse. Always use a robust exception block to ensure files are closed.
+        <strong><code>UTL_FILE</code> Pitfall:</strong> <strong>Resource management is manual.</strong> Forgetting to call <code>UTL_FILE.FCLOSE</code>, especially in an exception handler, will leak OS file handles, which are a limited resource. This common lapse can lead to a system collapse. Always use a robust exception block to ensure files are closed.
     </li>
     <li>
-        <strong><code>DBMS_AQ</code> Pitfall:</strong> **Transactional complexity.** While its greatest strength, the transactional nature can confuse newcomers. A message dequeued is not gone until <code>COMMIT</code>. A common mistake is dequeuing in a loop without committing, which can lead to the same message being processed repeatedly in case of a later rollback. It's a tricky situation.
+        <strong><code>DBMS_AQ</code> Pitfall:</strong> <strong>Transactional complexity.</strong> While its greatest strength, the transactional nature can confuse newcomers. A message dequeued is not gone until <code>COMMIT</code>. A common mistake is dequeuing in a loop without committing, which can lead to the same message being processed repeatedly in case of a later rollback. It's a tricky situation.
     </li>
     <li>
-        <strong>JavaScript MLE Pitfall:</strong> **Security and context.** MLE code runs with the privileges of the invoking user. Care must be taken to not introduce vulnerabilities. Furthermore, understanding the data marshalling between SQL and JS types is crucial; a lack of care can lead to an operational refusal.
+        <strong>JavaScript MLE Pitfall:</strong> <strong>Security and context.</strong> MLE code runs with the privileges of the invoking user. Care must be taken to not introduce vulnerabilities. Furthermore, understanding the data marshalling between SQL and JS types is crucial; a lack of care can lead to an operational refusal.
     </li>
     <li>
         <strong><code>DBMS_XMLGEN</code> Pitfall:</strong> The biggest pitfall is <strong>using it at all</strong> in new code. It is deprecated, inefficient, and stateful, leading to resource leaks if not handled with perfect discipline. Its usage should be a red flag during any code review; it's a true feature of a bygone-era review.
@@ -437,7 +551,7 @@ SELECT jsGreeting('World') FROM DUAL;
       <p><a href="/books/database-pl-sql-packages-and-types-reference/ch289_utl_file.pdf" title="Oracle Database PL/SQL Packages and Types Reference, 23ai - UTL_FILE">Oracle Database PL/SQL Packages and Types Reference, 23ai, Chapter 289: UTL_FILE</a>. Details the syntax and exceptions for server-side file operations. <a href="#fnref9_2" title="Jump back to footnote 2 in the text">↩</a></p>
     </li>
     <li id="fn9_3">
-      <p><a href="/books/database-transactional-event-queues-and-advanced-queuing-users-guide/database-transactional-event-queues-and-advanced-queuing-users-guide.pdf" title="Oracle Database Transactional Event Queues and Advanced Queuing User's Guide, 23ai">Oracle Database Transactional Event Queues and Advanced Queuing User's Guide, 23ai</a>. A comprehensive guide to the concepts, administration, and programmatic use of AQ. See Chapter 2 for basic components and Chapter 7 for PL/SQL operations. <a href="#fnref9_3" title="Jump back to footnote 3 in the text">↩</a></p>
+      <p><a href="/books/database-transactional-event-queues-and-advanced-queuing-users-guide/database-transactional-event-queues-and-advanced-queuing-users-guide.pdf" title="Oracle Database Transactional Event Queues and Advanced Queuing User's Guide, 23ai">Oracle Database Transactional Event Queues and Advanced Queuing User's Guide, 23ai</a>. A comprehensive guide to the concepts, administration, and programmatic use of AQ. See Chapter 1 for concepts, Chapter 12 for administrative setup (`DBMS_AQADM`), and Chapter 7 for PL/SQL messaging operations (`DBMS_AQ`). <a href="#fnref9_3" title="Jump back to footnote 3 in the text">↩</a></p>
     </li>
     <li id="fn9_4">
       <p><a href="/books/oracle-database-javascript-developers-guide/oracle-database-javascript-developers-guide.pdf" title="Oracle Database JavaScript Developer's Guide, 23ai">Oracle Database JavaScript Developer's Guide, 23ai</a>. The definitive guide for using the Multilingual Engine (MLE) with JavaScript. See Chapter 3 for creating modules and Chapter 6 for defining call specifications. <a href="#fnref9_4" title="Jump back to footnote 4 in the text">↩</a></p>
@@ -447,5 +561,4 @@ SELECT jsGreeting('World') FROM DUAL;
     </li>
   </ol>
 </div>
-
 </body>
