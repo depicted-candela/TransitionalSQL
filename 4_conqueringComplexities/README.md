@@ -1289,56 +1289,56 @@ By understanding these nuances, you'll be well-equipped to harness the full pote
 <div class="footnotes">
     <hr>
     <ol>
-    <li id="fn1">
-        <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/cncpt/introduction-to-oracle-database.html#GUID-45894630-203B-46FD-9973-21135B0578E4" title="Details on Oracle 23ai LOB Data Types, originally from Oracle Database 23c SQL Language Reference, 'Data Types' (CLOB/BLOB sections)">Overview of LOBs</a>.
-        <a href="#fnref1">↩</a>
+        <li id="fn1">
+            <p><a href="../books/securefiles-and-large-objects-developers-guide/03_ch01_introduction-to-large-objects-and-securefiles.pdf" title="Introduction to Large Objects - from Oracle Database 23ai SecureFiles and Large Objects Developer's Guide">Overview of LOBs</a>.
+            <a href="#fnref1">↩</a>
+            </p>
+        </li>
+        <li id="fn2">
+        <p><a href="../books/xml-db-developers-guide/ch01_16-choice-of-xmltype-storage-and-indexing.pdf" title="XMLType Storage Options - from Oracle Database 23ai XML DB Developer's Guide">Overview of XML in Oracle Database</a>.
+        <a href="#fnref2">↩</a>
         </p>
-    </li>
-    <li id="fn2">
-    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/adxdb/overview-of-xml-in-oracle-database.html#GUID-199C5878-8321-497C-940F-6C91E9C06A3D" title="Oracle 23ai XMLType & TBX Documentation, originally from Oracle Database 23c XML DB Developer's Guide, 'XMLType Storage and Transportable Binary XML'">Overview of XML in Oracle Database</a>.
-    <a href="#fnref2">↩</a>
-    </p>
-    </li>
-    <li id="fn3">
-    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/overview-of-json-in-oracle-database.html#GUID-E9C08A61-9A4D-417F-9A7E-95A82C0A5DE3" title="Oracle 23ai JSON Data Type, originally from Oracle Database 23c JSON Developer's Guide, 'JSON Data Type in Oracle Database'">Overview of JSON in Oracle Database</a>.
-    <a href="#fnref3">↩</a>
-    </p>
-    </li>
-    <li id="fn4">
-    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/json-relational-duality-views.html#GUID-4093D6A6-2987-459F-9F6B-17A45E017355" title="Oracle 23ai JSON Relational Duality, originally from Oracle Database 23c JSON Developer's Guide, 'JSON Relational Duality Views'">JSON Relational Duality Views (Main Doc)</a>.
-    <a href="#fnref4">↩</a>
-    </p>
-    </li>
-    <li id="fn5">
-    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/arpls/DBMS_LOB.html#TITLE_DBMS_LOB" title="Oracle 23ai DBMS_LOB Package, originally from Oracle Database 23c PL/SQL Packages and Types Reference, 'DBMS_LOB Package'">DBMS_LOB Package Reference</a>.
-    <a href="#fnref5">↩</a>
-    </p>
-    </li>
-    <li id="fn6">
-    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/SQL-XML-Query-Functions.html#GUID-5C183384-91A3-452E-9D2E-436A307CE2E2" title="Oracle 23ai XML Query Functions, originally from Oracle Database 23c SQL Language Reference, 'SQL/XML Query Functions'">SQL/XML Query Functions</a>.
-    <a href="#fnref6">↩</a>
-    </p>
-    </li>
-    <li id="fn7">
-    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/SQL-XML-Generation-Functions.html#GUID-9B76227A-200B-4D0A-BD4D-829254F80D26" title="Oracle 23ai XML Generation Functions, originally from Oracle Database 23c SQL Language Reference, 'SQL/XML Generation Functions'">SQL/XML Generation Functions</a>.
-    <a href="#fnref7">↩</a>
-    </p>
-    </li>
-    <li id="fn8">
-    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/SQL-JSON-Query-Functions.html#GUID-0798597C-4798-499C-A21C-3D7A2E93A07B" title="Oracle 23ai JSON Query Functions, originally from Oracle Database 23c SQL Language Reference, 'SQL/JSON Query Functions'">SQL/JSON Query Functions</a>.
-    <a href="#fnref8">↩</a>
-    </p>
-    </li>
-    <li id="fn9">
-    <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/SQL-JSON-Generation-Functions.html#GUID-D58D962E-C107-496B-808C-E85A257DE287" title="Oracle 23ai JSON Construction Functions, originally from Oracle Database 23c SQL Language Reference, 'SQL/JSON Generation Functions'">SQL/JSON Generation Functions</a>.
-    <a href="#fnref9">↩</a>
-    </p>
-    </li>
-    <li id="fn10">
-      <p><a href="https://github.com/depicted-candela/TransitionalSQL/blob/main/json-relational-duality-developers-guide.pdf" title="Oracle Database JSON-Relational Duality Developer's Guide, 23ai.">Oracle Database JSON-Relational Duality Developer's Guide, 23ai. This guide provides comprehensive details on creating, using, and managing JSON Relational Duality Views. For example, see <em>Chapter 1: Overview of JSON-Relational Duality Views</em> and <em>Chapter 3: Creating Duality Views</em>.</a> <a href="#fnref10" title="Jump back to footnote 10 in the text">↩</a></p>
-    </li>
-    <li id="fn11">
-      <p><a href="https://github.com/depicted-candela/TransitionalSQL/blob/main/json-relational-duality-developers-guide.pdf" title="Oracle Database JSON-Relational Duality Developer's Guide, 23ai.">Oracle Database JSON-Relational Duality Developer's Guide, 23ai, <em>Chapter 5: Using JSON-Relational Duality Views</em>, covers inserting, updating, and deleting documents through duality views, including examples of using ETAGs for optimistic concurrency.</a ><a href="#fnref11" title="Jump back to footnote 11 in the text">↩</a></p>
-    </li>
+        </li>
+        <li id="fn3">
+        <p><a href="../books/oracle-database-23ai-new-features-guide.pdf" title="Oracle Database 23ai New Features Guide (covers native JSON type enhancements)">Overview of JSON in Oracle Database</a>.
+        <a href="#fnref3">↩</a>
+        </p>
+        </li>
+        <li id="fn4">
+        <p><a href="../books/json-relational-duality-developers-guide/json-relational-duality-developers-guide.pdf" title="Oracle Database 23ai JSON-Relational Duality Developer's Guide">JSON Relational Duality Views (Main Doc)</a>.
+        <a href="#fnref4">↩</a>
+        </p>
+        </li>
+        <li id="fn5">
+        <p><a href="../books/database-pl-sql-packages-and-types-reference/ch120_dbms_lob.pdf" title="DBMS_LOB Package - from Oracle Database 23ai PL/SQL Packages and Types Reference">DBMS_LOB Package Reference</a>.
+        <a href="#fnref5">↩</a>
+        </p>
+        </li>
+        <li id="fn6">
+        <p><a href="../books/xml-db-developers-guide/ch02_5-query-and-update-of-xml-data.pdf" title="Query and Update of XML Data - from Oracle Database 23ai XML DB Developer's Guide">SQL/XML Query Functions</a>.
+        <a href="#fnref6">↩</a>
+        </p>
+        </li>
+        <li id="fn7">
+        <p><a href="../books/xml-db-developers-guide/ch01_8-generation-of-xml-data-from-relational-data.pdf" title="Generation of XML Data - from Oracle Database 23ai XML DB Developer's Guide">SQL/XML Generation Functions</a>.
+        <a href="#fnref7">↩</a>
+        </p>
+        </li>
+        <li id="fn8">
+        <p><a href="../books/sql-language-reference/09_ch07_functions.pdf" title="Functions Chapter - from Oracle Database 23ai SQL Language Reference (includes SQL/JSON functions)">SQL/JSON Query Functions</a>.
+        <a href="#fnref8">↩</a>
+        </p>
+        </li>
+        <li id="fn9">
+        <p><a href="../books/sql-language-reference/09_ch07_functions.pdf" title="Functions Chapter - from Oracle Database 23ai SQL Language Reference (includes SQL/JSON functions)">SQL/JSON Generation Functions</a>.
+        <a href="#fnref9">↩</a>
+        </p>
+        </li>
+        <li id="fn10">
+        <p><a href="../books/json-relational-duality-developers-guide/json-relational-duality-developers-guide.pdf" title="Oracle Database JSON-Relational Duality Developer's Guide, 23ai.">Oracle Database JSON-Relational Duality Developer's Guide, 23ai. This guide provides comprehensive details on creating, using, and managing JSON Relational Duality Views. For example, see <em>Chapter 1: Overview of JSON-Relational Duality Views</em> and <em>Chapter 3: Creating Duality Views</em>.</a> <a href="#fnref10" title="Jump back to footnote 10 in the text">↩</a></p>
+        </li>
+        <li id="fn11">
+        <p><a href="../books/json-relational-duality-developers-guide/09_ch05_using-json-relational-duality-views.pdf" title="Using JSON-Relational Duality Views - from Oracle Database JSON-Relational Duality Developer's Guide, 23ai.">Oracle Database JSON-Relational Duality Developer's Guide, 23ai, <em>Chapter 5: Using JSON-Relational Duality Views</em>, covers inserting, updating, and deleting documents through duality views, including examples of using ETAGs for optimistic concurrency.</a ><a href="#fnref11" title="Jump back to footnote 11 in the text">↩</a></p>
+        </li>
     </ol>
 </div>

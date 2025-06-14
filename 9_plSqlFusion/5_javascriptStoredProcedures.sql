@@ -65,32 +65,24 @@ BEGIN
 END;
 /
 
-CREATE OR REPLACE MLE MODULE PLSQLFUSION.EVENT_VALIDATOR
-LANGUAGE JAVASCRIPT AS
-    function isValidEvent(temperature, status, device) {
+CREATE OR REPLACE MLE MODULE PLSQLFUSION.VALIDATION_LOGIC_MOD LANGUAGE JAVASCRIPT AS
+    function isValidEvent(metrics, device) {
         const deviceRegex = /^Sensor-[A-Z][0-9]$/;
-        if (!deviceRegex.test(device)) {
-            return 'INVALID';
-        }
-        if (!temperature) {
-            return 'INVALID';
-        }
-        if (status !== "active") {
-            return 'INVALID';
-        }
-        return 'VALID';
+        if (!deviceRegex.test(device)) return false;
+        if (metrics === null) return false;
+        if (!("temperature" in metrics)) return false;
+        if (!("active" in metrics) || metrics.active !== "active") return false;
+        return true;
     }
     export { isValidEvent }
 /
 
--- Create the PL/SQL function that calls the JS function
-CREATE OR REPLACE FUNCTION PLSQLFUSION.isValidEventJS(temperature IN NUMBER, STATUS IN VARCHAR2, device IN VARCHAR2)
-RETURN VARCHAR2
-AS MLE MODULE PLSQLFUSION.EVENT_VALIDATOR
-SIGNATURE 'isValidEvent(number, string, string)';
+CREATE OR REPLACE FUNCTION PLSQLFUSION.isValidEventJS("metrics" JSON, device IN VARCHAR2) RETURN BOOLEAN
+AS MLE MODULE PLSQLFUSION.VALIDATION_LOGIC_MOD
+SIGNATURE 'isValidEvent(any, string)';
 /
 
-SELECT PLSQLFUSION.isValidEventJS(JSON_VALUE(METRICS, '$.temperature'), JSON_VALUE(METRICS, '$.status'), DEVICE) CURRENT_STATE
+SELECT PLSQLFUSION.isValidEventJS(METRICS, DEVICE) isValidEvent
 FROM PLSQLFUSION.EVENTLOGS;
 
 -- Implement this validation first using only PL/SQL, and then contrast it with a more concise and readable JavaScript implementation using MLE.

@@ -488,10 +488,11 @@ The flow involves defining the JS code in a module, exposing it via a PL/SQL wra
 ```sql
 -- Example: A JS function to create a simple greeting
 CREATE OR REPLACE MLE MODULE greeter
-LANGUAGE JAVASCRIPT {
-  export function createGreeting(name) {
+LANGUAGE JAVASCRIPT AS {
+  function createGreeting(name) {
     return `Hello, ${name}! Welcome to Oracle 23ai.`;
   }
+  export { createGreeting }
 };
 /
 
