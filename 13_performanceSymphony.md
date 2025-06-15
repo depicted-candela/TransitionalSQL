@@ -1,59 +1,57 @@
-# 🎼 Study Chunk 13: Performance Symphony: Tuning Oracle with Hints and Stats
-**Parental/Core Category:** ORACLE PERFORMANCE & OPTIMIZATION BASICS
+# 🎼 `Study Chunk 13: Performance Symphony: Tuning Oracle with Hints and Stats`
 
-Welcome to the conductor's podium. This chunk is about mastering the art of SQL performance tuning. You will learn how to read the Oracle Optimizer's mind through execution plans, guide its decisions with hints, and ensure it has the best information (statistics) to work with. The goal is to transform slow, dissonant queries into a fast, harmonious performance.
-
----
-
-## 📚 Core Reading Materials
-
-This study chunk draws heavily from the following key manuals. They provide the foundational knowledge and detailed procedures for every topic covered.
-
-| Book Icon | Title | Relevance |
-| :---: | :--- | :--- |
-| 튜닝 | **Oracle® Database SQL Tuning Guide, 23ai** | The primary manual for this chunk. It details everything from query optimization and execution plans to using hints and managing statistics. |
-| 🚀 | **Oracle® Database Performance Tuning Guide, 23ai** | Provides the broader context for performance, including methodology and instance-level tuning that complements SQL-specific efforts. |
-| 📦 | **Oracle® Database PL/SQL Packages and Types Reference, 23ai** | The definitive reference for the `DBMS_STATS` package, which is the primary tool for managing optimizer statistics. |
-| ✨ | **Oracle Database® Oracle Database New Features, 23ai** | Highlights the latest 23ai enhancements like Real-Time SQL Plan Management and the SQL Analysis Report, which are crucial for modern performance tuning. |
+**Parental/Core Category:** `ORACLE PERFORMANCE & OPTIMIZATION BASICS`  
+**Description:** Conduct a performance symphony! This chunk delves into the art and science of Oracle query tuning. You will learn the core principles of writing performant code, understand how to guide the Oracle optimizer with statistics and hints, and discover the powerful, automated performance features introduced in Oracle 23ai. This is a critical module for any consultant tasked with ensuring application efficiency.
 
 ---
 
-## 🎹 Core Concepts & Techniques
+## 🎹 **1. Basic Query Tuning Considerations**
 
-Here are the essential topics for this chunk, linked directly to the most relevant chapters in your documentation.
+**Focus:** Learn the foundational principles of designing applications and writing SQL for optimal performance in an Oracle environment. This section moves beyond just syntax to the strategic thinking required for efficient data access.
 
-### 🧠 Basic Query Tuning Considerations
-Understanding the "why" behind query performance is the first step. This involves adopting a structured methodology and recognizing how application design impacts SQL execution.
+**📚 Core Reading Materials:**
 
-*   *Oracle® Database Performance Tuning Guide, 23ai* [Chapter 2: Designing and Developing for Performance](./reduction-of-Oracle®-Database-Database-Performance-Tuning-Guide,-23ai.md#page=3)
-*   *Oracle® Database Performance Tuning Guide, 23ai* [Chapter 3: Performance Improvement Methods](./reduction-of-Oracle®-Database-Database-Performance-Tuning-Guide,-23ai.md#page=4)
-*   *Oracle® Database SQL Tuning Guide, 23ai* [Chapter 2: SQL Performance Methodology](./reduction-of-Oracle®-Database-SQL-Tuning-Guide,-23ai.md#page=3)
+*   *Oracle® Database Performance Tuning Guide* [`ch02_2-designing-and-developing-for-performance.pdf`](./books/database-performance-tuning-guide/ch02_2-designing-and-developing-for-performance.pdf)
+    *   **Why it's essential:** This chapter is the perfect starting point. It covers the philosophy of performance tuning, including crucial topics like Data Modeling, Table and Index Design, and Application Design Principles. It provides the "why" behind the tuning techniques you'll learn later.
 
-#### 👉 Optimizer Hints
-Hints are directives you embed in SQL to influence the optimizer's execution plan. While powerful, they should be used judiciously when you have more information than the optimizer.
+*   *Oracle® Database SQL Tuning Guide* [`ch02_2-sql-performance-methodology.pdf`](./books/sql-tuning-guide/ch02_2-sql-performance-methodology.pdf)
+    *   **Why it's essential:** This chapter provides a structured, repeatable process for identifying and resolving SQL performance issues. It establishes a professional methodology, moving you from ad-hoc fixes to systematic tuning.
 
-*   *Oracle® Database SQL Tuning Guide, 23ai* [Chapter 19: Influencing the Optimizer](./reduction-of-Oracle®-Database-SQL-Tuning-Guide,-23ai.md#page=15)
+---
 
-### 📊 Table Statistics & DBMS_STATS
-The Cost-Based Optimizer (CBO) is only as good as the data it has. Statistics provide the CBO with critical information about your data's size and distribution. `DBMS_STATS` is your toolkit for managing them.
+## 📊 **2. Table Statistics & DBMS_STATS**
 
-*   **Conceptual Foundation:**
-    *   *Oracle® Database SQL Tuning Guide, 23ai* [Chapter 10: Optimizer Statistics Concepts](./reduction-of-Oracle®-Database-SQL-Tuning-Guide,-23ai.md#page=10)
-    *   *Oracle® Database SQL Tuning Guide, 23ai* [Chapter 11: Histograms](./reduction-of-Oracle®-Database-SQL-Tuning-Guide,-23ai.md#page=11)
-*   **Practical Application & Management:**
-    *   *Oracle® Database SQL Tuning Guide, 23ai* [Chapter 12: Configuring Options for Optimizer Statistics Gathering](./reduction-of-Oracle®-Database-SQL-Tuning-Guide,-23ai.md#page=12)
-    *   *Oracle® Database SQL Tuning Guide, 23ai* [Chapter 13: Gathering Optimizer Statistics](./reduction-of-Oracle®-Database-SQL-Tuning-Guide,-23ai.md#page=13)
-*   **Package Reference (The "How-To"):**
-    *   *Oracle® Database PL/SQL Packages and Types Reference, 23ai* [Chapter 197: DBMS_STATS](./reduction-of-Oracle®-Database-PL-SQL-Packages-and-Types-Reference,-23ai.md#page=86)
+**Focus:** Understand why statistics are the lifeblood of Oracle's Cost-Based Optimizer (CBO). Learn about the different types of statistics and the importance of keeping them up-to-date to ensure Oracle chooses the most efficient execution plan for your queries.
 
-### ✨ Oracle 23ai Performance Features
-Oracle 23ai introduces powerful, automated features to prevent and fix performance regressions, making the tuning process more proactive.
+**📚 Core Reading Materials:**
 
-*   **Real-Time SQL Plan Management:** Automatically detects and repairs SQL performance regressions, ensuring stability.
-    *   *Oracle Database® Oracle Database New Features, 23ai* [Section: Enhanced Automatic SQL Plan Management](./reduction-of-Oracle-Database®-Oracle-Database-New-Features,-23ai.md#page=54)
-    *   *Oracle® Database SQL Tuning Guide, 23ai* [Chapter 28: Overview of SQL Plan Management](./reduction-of-Oracle®-Database-SQL-Tuning-Guide,-23ai.md#page=22)
-    *   *Oracle® Database SQL Tuning Guide, 23ai* [Chapter 29: Managing SQL Plan Baselines](./reduction-of-Oracle®-Database-SQL-Tuning-Guide,-23ai.md#page=22)
+*   *Oracle® Database SQL Tuning Guide* [`ch01_10-optimizer-statistics-concepts.pdf`](./books/sql-tuning-guide/ch01_10-optimizer-statistics-concepts.pdf)
+    *   **Why it's essential:** This is the definitive chapter on the theory and concepts of optimizer statistics. It explains what they are, why they are critical, and how the optimizer uses them to make decisions about execution plans. A deep understanding of this material is non-negotiable for serious performance tuning.
 
-*   **SQL Analysis Report:** A new diagnostic tool to help identify and resolve common SQL performance problems.
-    *   *Oracle® Database SQL Tuning Guide, 23ai* [Section: SQL Analysis Report](./reduction-of-Oracle®-Database-SQL-Tuning-Guide,-23ai.md#page=16) (within Chapter 19)
-    *   *Oracle Database® Oracle Database New Features, 23ai* [Section: Reduce Time to Resolve](./reduction-of-Oracle-Database®-Oracle-Database-New-Features,-23ai.md#page=122)
+*   *Database Performance Tuning Guide* [`ch02_6-gathering-database-statistics.pdf`](./books/database-performance-tuning-guide/ch02_6-gathering-database-statistics.pdf)
+    *   **Why it's essential:** This chapter transitions from theory to practice, introducing the Automatic Workload Repository (AWR) and the automated mechanisms Oracle uses to gather statistics. It provides the context for how `DBMS_STATS` is used in a modern database environment.
+
+---
+
+## 📌 **3. Optimizer Hints**
+
+**Focus:** Learn how to manually influence the Oracle optimizer's decisions. While the CBO is highly sophisticated, there are cases where providing "hints" can force a better execution plan. This section emphasizes awareness and cautious, deliberate use.
+
+**📚 Core Reading Materials:**
+
+*   *Oracle® Database SQL Tuning Guide* [`ch01_19-influencing-the-optimizer.pdf`](./books/sql-tuning-guide/ch01_19-influencing-the-optimizer.pdf)
+    *   **Why it's essential:** This is the primary and most authoritative chapter on influencing the optimizer. It covers not only the syntax and application of various hints but also the other levers you can pull, like initialization parameters. It's a comprehensive guide to taking control when you need to.
+
+---
+
+## ✨ **4. Oracle 23ai Performance Features**
+
+**Focus:** Get up to speed with the latest intelligent, automated performance and diagnostic features in Oracle 23ai. These tools represent the future of Oracle tuning, automating tasks that were previously manual and complex.
+
+**📚 Core Reading Materials:**
+
+*   *Oracle Database 23ai New Features Guide* [`10_OLTP_and_Core_Database.pdf`](./books/oracle-database-23ai-new-features-guide/10_OLTP_and_Core_Database.pdf)
+    *   **Why it's essential:** This chapter details **Real-Time SQL Plan Management**, a game-changing feature that automatically detects and corrects performance regressions caused by execution plan changes. It's a key selling point and a powerful tool for maintaining application stability.
+
+*   *Oracle Database 23ai New Features Guide* [`11_Diagnosability.pdf`](./books/oracle-database-23ai-new-features-guide/11_Diagnosability.pdf)
+    *   **Why it's essential:** This chapter introduces the **SQL Analysis Report**, a new diagnostic tool that helps developers and DBAs quickly identify and resolve common SQL performance problems. It's a practical, hands-on feature that accelerates the tuning process.

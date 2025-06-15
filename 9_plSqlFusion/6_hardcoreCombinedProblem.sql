@@ -288,8 +288,7 @@ CREATE OR REPLACE PACKAGE BODY PLSQLFUSION.EMPLOYEE_ONBOARDING_PKG AS
         WHEN OTHERS THEN 
             DBMS_OUTPUT.PUT_LINE('Error type: '||SQLERRM); 
             -- <<<<<<<<< CHANGE: ADDED LOB CLEANUP TO THE MAIN EXCEPTION HANDLER >>>>>>>>>
-            IF DBMS_LOB.ISTEMPORARY(v_welcome_letter) = 1 THEN 
-                DBMS_LOB.FREETEMPORARY(v_welcome_letter); 
+            IF DBMS_LOB.ISTEMPORARY(v_welcome_letter) = 1 THEN DBMS_LOB.FREETEMPORARY(v_welcome_letter); 
             END IF;
             ROLLBACK; 
             RAISE;

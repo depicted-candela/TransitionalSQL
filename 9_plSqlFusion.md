@@ -50,7 +50,7 @@ This is where the new JavaScript Stored Procedures feature lives.
     *   ➡️ [*MLE JavaScript Functions*](books/oracle-database-javascript-developers-guide/09_ch06_mle-javascript-functions.pdf) - Explains Call Specifications, the mechanism to call JS functions from PL/SQL.
     *   ➡️ [*Calling PL/SQL and SQL from the MLE JavaScript SQL Driver*](books/oracle-database-javascript-developers-guide/10_ch07_calling-plsql-and-sql-from-the-mle-javascript-sql-driver.pdf) - How JS code *within* the database can interact *back* with SQL/PL/SQL.
     *   ➡️ [*Post-Execution Debugging of MLE JavaScript Modules*](books/oracle-database-javascript-developers-guide/12_ch09_post-execution-debugging-of-mle-javascript-modules.pdf) - How to troubleshoot your JS code running in the database.
-*   ✨ [*Oracle Database 23ai New Features Guide*](books/oracle-database-23ai-new-features-guide.pdf) - See "JavaScript Stored Procedures" (p. 39). Confirms the feature and provides a high-level summary.
+*   ✨ [*Oracle Database 23ai New Features Guide*](books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf) - See "JavaScript Stored Procedures" (p. 39). Confirms the feature and provides a high-level summary.
 
 ### Broader Java/JDBC Context 🔗
 

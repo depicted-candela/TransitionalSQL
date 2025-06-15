@@ -127,7 +127,7 @@ Awaken your inner Oracle programmer. This chunk lays the ground for PL/SQL, from
 *   📚 [Oracle® Database Get Started with Oracle Database Development](books/get-started-oracle-database-development/get-started-oracle-database-development.pdf)
     *   _Relevance:_ Offers a hands-on start to PL/SQL basics and using `DBMS_OUTPUT.PUT_LINE` for checks.
 
-*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide.pdf)
+*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf)
     *   _Relevance:_ Details Oracle 23ai novelties like the SQL Transpiler, making PL/SQL run faster by turning it into SQL.
 
 ---
@@ -216,12 +216,12 @@ Experience PL/SQL fusion! Explore standard packages for common tasks and see Jav
 *   📚 [Oracle Database JavaScript Developer's Guide](books/oracle-database-javascript-developers-guide/oracle-database-javascript-developers-guide.pdf)
     *   _Relevance:_ The key guide for blending JavaScript as stored steps in Oracle Database, a cool Oracle 23ai trait.
 
-*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide.pdf)
+*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf)
     *   _Relevance:_ Spells out the new JavaScript Stored Procedures feature in Oracle 23ai.
 
 ---
 
-### Study Chunk 10: Oracle Blueprint: Must-Know Concepts for Consultants
+### Study Chunk 10: Blueprint: Must-Know Concepts for Consultants
 
 **Parental/Core Category:** *ESSENTIAL ORACLE DATABASE CONCEPTS (FOR CONSULTING ROLE)* 
 Get the Oracle blueprint in your mind! This chunk brings vital database ideas for a consulting path – structure, data map, handling many users at once, transaction flow, and fresh 23ai touches for schema and data. 🏛️
@@ -249,7 +249,7 @@ Get the Oracle blueprint in your mind! This chunk brings vital database ideas fo
 *   📚 [Oracle® Database Administrator's Guide](books/database-administrators-guide/database-administrators-guide.pdf)
     *   _Relevance:_ Offers an admin's look at managing database shapes and items, useful for a consultant to see how things work day-to-day.
 
-*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide.pdf)
+*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf)
     *   _Relevance:_ Details new 23ai items related to database shape and data neatness, such as Wide Tables, Value LOBs, Usage Annotations, and Usage Domains.
 
 *   📚 [Oracle Database SecureFiles and Large Objects Developer's Guide](books/securefiles-and-large-objects-developers-guide/securefiles-and-large-objects-developers-guide.pdf)
@@ -280,7 +280,7 @@ Stand guardian over your data! This chunk highlights database safety rules and n
 *   📚 [Oracle® Database PL/SQL Packages and Types Reference](books/database-pl-sql-packages-and-types-reference/database-pl-sql-packages-and-types-reference.pdf)
     *   _Relevance:_ Holds specifics on PL/SQL packages used for safety tools like hiding data (`DBMS_REDACT`) and the SQL Firewall (`DBMS_SQL_FIREWALL`).
 
-*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide.pdf)
+*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf)
     *   _Relevance:_ Essential for grasping all the fresh 23ai safety features, including better watching, data hiding boosts, connecting across clouds, and schema rights.
 
 ---
@@ -330,7 +330,7 @@ Conduct a performance symphony! This chunk explores deeper query tuning, touchin
 *   📚 [Oracle® Database PL/SQL Packages and Types Reference](books/database-pl-sql-packages-and-types-reference/database-pl-sql-packages-and-types-reference.pdf)
     *   _Relevance:_ Details the `DBMS_STATS` package, key for gathering and managing optimizer stats to ensure query plans sing perfectly.
 
-*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide.pdf)
+*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf)
     *   _Relevance:_ Lights up new 23ai speed features like Real-Time SQL Plan Management, True Cache, Fast Ingest boosts, and SQL Analysis Report.
 
 ---
@@ -368,7 +368,7 @@ Look to Oracle's horizons! This chunk explores how Oracle links with tech like J
 *   📚 [Oracle® Universal Connection Pool Developer's Guide](books/universal-connection-pool-developers-guide/universal-connection-pool-developers-guide.pdf)
     *   _Relevance:_ Matters for knowing connection pools in Java apps, including ideas like Implicit Connection Pooling and Multi-Pool DRCP noted in 23ai parts.
 
-*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide.pdf)
+*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf)
     *   _Relevance:_ Crucial for grasping all the bleeding-edge 23ai features tied to better connection care, async coding, multicloud shapes, and watching with OpenTelemetry.
 
 ---
@@ -389,7 +389,7 @@ Peek into Oracle's future! This chunk shines solely on the vibrant new SQL featu
   - SQL Time Buckets: Putting time data into neat bins 🧺
   - Table Value Constructor: Building rows right there in the query 🛠️
 
-*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide.pdf)
+*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf)
     *   _Relevance:_ This is the **first and most vital** source for deep dives, how-to examples, and use cases for all the fresh SQL power born in Oracle 23ai.
 
 *   📚 [Oracle® Database SQL Language Reference](books/sql-language-reference/sql-language-reference.pdf)

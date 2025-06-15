@@ -1300,7 +1300,7 @@ By understanding these nuances, you'll be well-equipped to harness the full pote
         </p>
         </li>
         <li id="fn3">
-        <p><a href="../books/oracle-database-23ai-new-features-guide.pdf" title="Oracle Database 23ai New Features Guide (covers native JSON type enhancements)">Overview of JSON in Oracle Database</a>.
+        <p><a href="../books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf" title="Oracle Database 23ai New Features Guide (covers native JSON type enhancements)">Overview of JSON in Oracle Database</a>.
         <a href="#fnref3">↩</a>
         </p>
         </li>

@@ -1,6 +1,12 @@
 .
-├── 10_plSqlMastery.md
+├── 10_blueprint.md
+├── 10_blueprint_paretto.md
 ├── 10_plSqlOracleBluePrint
+├── 11_guardians.md
+├── 12_speedUnleash.md
+├── 13_performanceSymphony.md
+├── 14_oracleHorizons.md
+├── 15_future.md
 ├── 1_fromPostgreSQLtoSQLOracle
 │   ├── 1_meaningsValuesRelationsAdvantages.sql
 │   ├── 2_disadvantagesAndPitfalls.sql
@@ -88,8 +94,15 @@
 │   └── README.md
 ├── 8_plSqlMastery.md
 ├── 9_plSqlFusion
+│   ├── 1_handlingLargeObjects.sql
+│   ├── 2_dbms_xmlgen.sql
+│   ├── 3_utl_file.sql
+│   ├── 4_dbmsAQ.sql
+│   ├── 5_javascriptStoredProcedures.sql
+│   ├── 6_hardcoreCombinedProblem.sql
 │   ├── exercises.md
-│   └── README.md
+│   ├── README.md
+│   └── setup.sql
 ├── 9_plSqlFusion.md
 ├── books
 │   ├── database-administrators-guide
@@ -146,61 +159,7 @@
 │   │   ├── part04_part-iv-database-resource-management-and-task-scheduling_title.pdf
 │   │   ├── part05_part-v-distributed-database-management_title.pdf
 │   │   ├── part06_part-vi-managing-read-only-materialized-views_title.pdf
-│   │   ├── part07_part-vii-appendixes_title.pdf
-│   │   └── parts
-│   │       ├── 00a_contents.pdf
-│   │       ├── 00b_preface.pdf
-│   │       ├── ch01_17-managing-schema-objects.pdf
-│   │       ├── ch01_1-getting-started-with-database-administration.pdf
-│   │       ├── ch01_25-managing-automated-database-maintenance-tasks.pdf
-│   │       ├── ch01_31-distributed-database-concepts.pdf
-│   │       ├── ch01_36-read-only-materialized-view-concepts.pdf
-│   │       ├── ch01_8-managing-control-files.pdf
-│   │       ├── ch01_a-support-for-dbms-job.pdf
-│   │       ├── ch02_18-managing-space-for-schema-objects.pdf
-│   │       ├── ch02_26-managing-resources-with-oracle-database-resource-manager.pdf
-│   │       ├── ch02_2-configuring-automatic-restart-of-an-oracle-database.pdf
-│   │       ├── ch02_32-managing-a-distributed-database.pdf
-│   │       ├── ch02_37-read-only-materialized-view-architecture.pdf
-│   │       ├── ch02_9-managing-the-redo-log.pdf
-│   │       ├── ch02_b-blockchain-tables-reference.pdf
-│   │       ├── ch03_10-managing-archived-redo-log-files.pdf
-│   │       ├── ch03_19-managing-tables.pdf
-│   │       ├── ch03_27-oracle-scheduler-concepts.pdf
-│   │       ├── ch03_33-developing-applications-for-a-distributed-database-system.pdf
-│   │       ├── ch03_38-planning-for-read-only-materialized-views.pdf
-│   │       ├── ch03_3-managing-processes.pdf
-│   │       ├── ch04_11-managing-tablespaces.pdf
-│   │       ├── ch04_20-managing-indexes.pdf
-│   │       ├── ch04_28-scheduling-jobs-with-oracle-scheduler.pdf
-│   │       ├── ch04_34-distributed-transactions-concepts.pdf
-│   │       ├── ch04_39-creating-and-managing-read-only-materialized-views.pdf
-│   │       ├── ch04_4-managing-memory.pdf
-│   │       ├── ch05_12-managing-data-files-and-temp-files.pdf
-│   │       ├── ch05_21-managing-clusters.pdf
-│   │       ├── ch05_29-administering-oracle-scheduler.pdf
-│   │       ├── ch05_35-managing-distributed-transactions.pdf
-│   │       ├── ch05_40-troubleshooting-problems-with-read-only-materialized-views.pdf
-│   │       ├── ch05_5-managing-users-and-securing-the-database.pdf
-│   │       ├── ch06_13-transporting-data.pdf
-│   │       ├── ch06_22-managing-hash-clusters.pdf
-│   │       ├── ch06_30-managing-transactions.pdf
-│   │       ├── ch06_6-monitoring-the-database.pdf
-│   │       ├── ch07_14-managing-undo.pdf
-│   │       ├── ch07_23-managing-views-sequences-and-synonyms.pdf
-│   │       ├── ch07_7-diagnosing-and-resolving-problems.pdf
-│   │       ├── ch08_15-using-oracle-managed-files.pdf
-│   │       ├── ch08_24-repairing-corrupted-data.pdf
-│   │       ├── ch09_16-using-persistent-memory-database.pdf
-│   │       ├── index.pdf
-│   │       ├── metadata.txt
-│   │       ├── part01_part-i-basic-database-administration_title.pdf
-│   │       ├── part02_part-ii-oracle-database-structure-and-storage_title.pdf
-│   │       ├── part03_part-iii-schema-objects_title.pdf
-│   │       ├── part04_part-iv-database-resource-management-and-task-scheduling_title.pdf
-│   │       ├── part05_part-v-distributed-database-management_title.pdf
-│   │       ├── part06_part-vi-managing-read-only-materialized-views_title.pdf
-│   │       └── part07_part-vii-appendixes_title.pdf
+│   │   └── part07_part-vii-appendixes_title.pdf
 │   ├── database_advanced_queuing_java_api_reference
 │   │   └── jajms
 │   │       ├── allclasses-frame.html
@@ -764,22 +723,23 @@
 │   │   ├── index.pdf
 │   │   └── metadata.txt
 │   ├── database-reference
-│   │   ├── 00_contents.pdf
-│   │   ├── 01_preface.pdf
-│   │   ├── 02_ch01_changes.pdf
-│   │   ├── 03_part01_initialization-parameters_title.pdf
-│   │   ├── 04_part02_static-data-dictionary-views_title.pdf
-│   │   ├── 05_part03_dynamic-performance-views_title.pdf
-│   │   ├── 06_part04_appendixes_title.pdf
-│   │   ├── 07_app_a_database_limits.pdf
-│   │   ├── 08_app_b_sql_scripts.pdf
-│   │   ├── 09_app_c_oracle_wait_events.pdf
-│   │   ├── 10_app_d_oracle_enqueue_names.pdf
-│   │   ├── 11_app_e_statistics_descriptions.pdf
-│   │   ├── 12_app_f_background_processes.pdf
-│   │   ├── 13_index.pdf
+│   │   ├── 01_1_Changes_in_This_Release_for_Oracle_Database_Reference.pdf
+│   │   ├── 02_2_Initialization_Parameters.pdf
+│   │   ├── 03_3_Static_Data_Dictionary_Views__ALL_ALL_TABLES_to_ALL_OUTLINES.pdf
+│   │   ├── 04_4_Static_Data_Dictionary_Views__ALL_PART_COL_STATISTICS_to_DATABASE_PROPERTIES.pdf
+│   │   ├── 05_5_Static_Data_Dictionary_Views__DBA_2PC_NEIGHBORS_to_DBA_HIST_JAVA_POOL_ADVICE.pdf
+│   │   ├── 06_6_Static_Data_Dictionary_Views__DBA_HIST_LATCH_to_DBA_STORED_SETTINGS.pdf
+│   │   ├── 07_7_Static_Data_Dictionary_Views__DBA_STREAMS_ADD_COLUMN_to_USER_ZONEMAPS.pdf
+│   │   ├── 08_8_Dynamic_Performance__V____Views__V__ACCESS_to_V__HVMASTER_INFO.pdf
+│   │   ├── 09_9_Dynamic_Performance__V____Views__V__IM_COLUMN_LEVEL_to_V__RULE_SET_AGGREGATE_STATS.pdf
+│   │   ├── 10_10_Dynamic_Performance__V____Views__V__SCHEDULER_IN_MEMORY_TRACE_to_V__ZONEMAP_USAGE_STATS.pdf
+│   │   ├── 11_A_Database_Limits.pdf
+│   │   ├── 12_B_SQL_Scripts.pdf
+│   │   ├── 13_C_Oracle_Wait_Events.pdf
+│   │   ├── 14_D_Oracle_Enqueue_Names.pdf
+│   │   ├── 15_E_Statistics_Descriptions.pdf
+│   │   ├── 16_F_Background_Processes.pdf
 │   │   ├── database-reference.pdf
-│   │   ├── extract_database-reference.sh
 │   │   └── metadata.txt
 │   ├── database-security-guide
 │   │   ├── 00a_contents.pdf
@@ -858,6 +818,7 @@
 │   │   ├── database-transactional-event-queues-and-advanced-queuing-users-guide.pdf
 │   │   ├── extract_database-transactional-event-queues-and-advanced-queuing-users-guide.sh
 │   │   └── metadata.txt
+│   ├── extract_chapters.sh
 │   ├── generate_extraction_scripts.py
 │   ├── get-started-oracle-database-development
 │   │   ├── get-started-guide_00b_preface.pdf
@@ -976,7 +937,21 @@
 │   │   ├── extract_json-relational-duality-developers-guide.sh
 │   │   ├── json-relational-duality-developers-guide.pdf
 │   │   └── metadata.txt
-│   ├── oracle-database-23ai-new-features-guide.pdf
+│   ├── oracle-database-23ai-new-features-guide
+│   │   ├── 01_Introduction.pdf
+│   │   ├── 02_AI_Vector_Search.pdf
+│   │   ├── 03_Application_Development.pdf
+│   │   ├── 04_Data_Analytics.pdf
+│   │   ├── 05_Data_Warehousing_Big_Data.pdf
+│   │   ├── 06_Cloud_Migration.pdf
+│   │   ├── 07_Cloud_Operations.pdf
+│   │   ├── 08_High_Availability.pdf
+│   │   ├── 09_Security.pdf
+│   │   ├── 10_OLTP_and_Core_Database.pdf
+│   │   ├── 11_Diagnosability.pdf
+│   │   ├── 12_Installation_Upgrade_and_Patching.pdf
+│   │   ├── 13_New_Features_in_23ai_Release_Updates.pdf
+│   │   └── oracle-database-23ai-new-features-guide.pdf
 │   ├── oracle-database-javascript-developers-guide
 │   │   ├── 00_contents.pdf
 │   │   ├── 01_list_of_examples.pdf
@@ -1084,6 +1059,7 @@
 │   │   ├── reduction-java-developers-guide.pdf
 │   │   ├── reduction-jdbc-developers-guide.pdf
 │   │   ├── reduction-json-relational-duality-developers-guide.pdf
+│   │   ├── reduction-oracle-database-23ai-new-features-guide.pdf
 │   │   ├── reduction-oracle-database-javascript-developers-guide.pdf
 │   │   ├── reduction-oracle-database-sql-firewall-users-guide.pdf
 │   │   ├── reduction-oracle-database-utilities-guide.pdf
@@ -1287,6 +1263,7 @@
 ├── contents.md
 ├── generate_extraction_scripts.py
 ├── oracle-database_23.zip
+├── pdf_sizes.txt
 ├── README.md
 ├── run_all_extractions.sh
 ├── setup.pdf
@@ -1319,4 +1296,4 @@
 │   └── get-started-guide_ch04_creating-managing-schema-objects.pdf
 └── tree.txt
 
-44 directories, 1276 files
+44 directories, 1253 files
