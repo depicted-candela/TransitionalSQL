@@ -1,38 +1,37 @@
 <head>
     <link rel="stylesheet" href="../styles/lecture.css">
 </head>
-
 <body>
-    <div class="toc-popup-container">
-        <input type="checkbox" id="tocToggleChunk10" class="toc-toggle-checkbox">
-        <label for="tocToggleChunk10" class="toc-toggle-label">
-            Contents
-            <span class="toc-icon-open"></span>
-        </label>
-        <div class="toc-content">
-            <ul>
-                <li><a href="#section1">Section 1: What Are They? (Meanings & Values)</a>
-                    <ul>
-                        <li><a href="#section1sub1">Oracle Schemas & The Data Dictionary</a></li>
-                        <li><a href="#section1sub2">Core Schema Objects</a></li>
-                        <li><a href="#section1sub3">Concurrency, Locking, & Transactions</a></li>
-                        <li><a href="#section1sub4">Oracle 23ai: New Structural Enhancements</a></li>
-                    </ul>
-                </li>
-                <li><a href="#section2">Section 2: Relations: How They Play with Others</a></li>
-                <li><a href="#section3">Section 3: How to Use Them: Structures & Syntax</a>
-                    <ul>
-                        <li><a href="#section3sub1">Querying the Data Dictionary</a></li>
-                        <li><a href="#section3sub2">Basic DDL for Schema Objects</a></li>
-                        <li><a href="#section3sub3">Controlling Transactions</a></li>
-                    </ul>
-                </li>
-                <li><a href="#section4">Section 4: Why Use Them? (Advantages)</a></li>
-                <li><a href="#section5">Section 5: Watch Out! (Disadvantages & Pitfalls)</a></li>
-                <li><a href="#bridging">Section 6: Bridging from PostgreSQL to Oracle</a></li>
-            </ul>
-        </div>
+<div class="toc-popup-container">
+    <input type="checkbox" id="tocToggleChunk10" class="toc-toggle-checkbox">
+    <label for="tocToggleChunk10" class="toc-toggle-label">
+        Contents
+        <span class="toc-icon-open"></span>
+    </label>
+    <div class="toc-content">
+        <ul>
+            <li><a href="#section1">Section 1: What Are They? (Meanings & Values)</a>
+                <ul>
+                    <li><a href="#section1sub1">Oracle Schemas & The Data Dictionary</a></li>
+                    <li><a href="#section1sub2">Core Schema Objects</a></li>
+                    <li><a href="#section1sub3">Concurrency, Locking, & Transactions</a></li>
+                    <li><a href="#section1sub4">Oracle 23ai: New Structural Enhancements</a></li>
+                </ul>
+            </li>
+            <li><a href="#section2">Section 2: Relations: How They Play with Others</a></li>
+            <li><a href="#section3">Section 3: How to Use Them: Structures & Syntax</a>
+                <ul>
+                    <li><a href="#section3sub1">Querying the Data Dictionary</a></li>
+                    <li><a href="#section3sub2">Basic DDL for Schema Objects</a></li>
+                    <li><a href="#section3sub3">Controlling Transactions</a></li>
+                </ul>
+            </li>
+            <li><a href="#section4">Section 4: Why Use Them? (Advantages)</a></li>
+            <li><a href="#section5">Section 5: Watch Out! (Disadvantages & Pitfalls)</a></li>
+            <li><a href="#bridging">Section 6: Bridging from PostgreSQL to Oracle</a></li>
+        </ul>
     </div>
+</div>
 
 <div class="container">
 

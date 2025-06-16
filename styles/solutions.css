@@ -591,20 +591,6 @@ html {
     scroll-behavior: smooth;
 }
 
-.sql-keyword {
-    color: var(--accent-color);
-    font-weight: bold;
-}
-
-.sql-function {
-    color: var(--secondary-color);
-}
-
-.sql-comment {
-    color: #7f7f9f;
-    font-style: italic;
-}
-
 @media (max-width: 768px) {
     .container {
         padding: 20px;

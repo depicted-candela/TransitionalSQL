@@ -51,3 +51,25 @@ For a comprehensive yet focused study path that covers over 80% of the essential
 | :--- | :--- | :--- |
 | **Oracle® Database Concepts** | [*ch05_indexes-and-index-organized-tables.pdf*](./books/database-concepts/ch05_indexes-and-index-organized-tables.pdf) | **Foundation:** Provides the critical "what" and "why" for all major Oracle index types. |
 | **Oracle® Database SQL Tuning Guide** | [*ch01_6-explaining-and-displaying-execution-plans.pdf*](./books/sql-tuning-guide/ch01_6-explaining-and-displaying-execution-plans.pdf) | **Application:** Teaches the essential, hands-on skill of generating and reading execution plans. |
+
+---
+
+## 📚 Supplementary Reading for Deeper Insights
+
+The chapters above are the necessary minimum. The following readings provide crucial context on *how* to manage indexes and *why* the optimizer makes the decisions it does.
+
+### Deeper Dive into Indexing
+
+| Book | Chapter Link | Relevance |
+| :--- | :--- | :--- |
+| **Database Administrator's Guide** | [*ch04_20-managing-indexes.pdf*](./books/database-administrators-guide/ch04_20-managing-indexes.pdf) | **The "How":** Moves from theory to practice, explaining how to create, alter, and monitor indexes, including when to rebuild them or drop them if unused. |
+| **SQL Tuning Guide** | [*ch01_10-optimizer-statistics-concepts.pdf*](./books/sql-tuning-guide/ch01_10-optimizer-statistics-concepts.pdf) | **The "Why":** Explains the vital role of optimizer statistics. Without accurate statistics, the optimizer cannot make effective use of indexes. |
+| **Database Development Guide** | [*ch12_using_indexes_in_database_applications.pdf*](./books/database-development-guide/ch12_using_indexes_in_database_applications.pdf) | **Developer's View:** Provides practical examples and guidance for developers, such as using function-based indexes for case-insensitive searches. |
+
+### Deeper Dive into EXPLAIN PLAN and the Optimizer
+
+| Book | Chapter Link | Relevance |
+| :--- | :--- | :--- |
+| **SQL Tuning Guide** | [*ch01_8-optimizer-access-paths.pdf*](./books/sql-tuning-guide/ch01_8-optimizer-access-paths.pdf) and [*ch02_9-joins.pdf*](./books/sql-tuning-guide/ch02_9-joins.pdf) | **Plan Components:** Provides an in-depth breakdown of the most common plan operations—access paths and join methods—which are the building blocks of any execution plan. |
+| **SQL Tuning Guide**| [*ch02_4-query-optimizer-concepts.pdf*](./books/sql-tuning-guide/ch02_4-query-optimizer-concepts.pdf) | **The Optimizer's "Brain":** Details the fundamentals of the Cost-Based Optimizer (CBO), explaining how it uses cardinality and cost to choose an execution plan. |
+| **Database Concepts** | [*ch10_sql.pdf*](./books/database-concepts/ch10_sql.pdf) | **The Big Picture:** Puts the EXPLAIN PLAN into the broader context of how Oracle processes SQL statements from start to finish, including parsing and the role of the Shared Pool. |

@@ -525,17 +525,6 @@ p > small {
 html {
     scroll-behavior: smooth;
 }
-.sql-keyword {
-    color: var(--accent-color);
-    font-weight: bold;
-}
-.sql-function {
-    color: var(--secondary-color);
-}
-.sql-comment {
-    color: #7f7f9f;
-    font-style: italic;
-}
 .footnotes {
     margin-top: 40px;
     padding-top: 20px;
