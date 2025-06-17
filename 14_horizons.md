@@ -76,3 +76,67 @@ These selections introduce the concepts of connection pooling and database pipel
 The chapters selected above provide the most critical 80% of the knowledge for this chunk. For detailed information on the newest multicloud and observability features, you can refer to the full *Oracle Database 23ai New Features Guide*. The concepts to be aware of include:
 - **Multicloud Configuration:** How Oracle integrates with services like Azure App Configuration and OCI Object Storage for more flexible deployments.
 - **Observability with OpenTelemetry:** How Oracle is embracing open standards for tracing and metrics, making it easier to monitor and debug applications in a distributed environment.
+
+---
+
+# 📖 Supplementary Reading for Deeper Insights
+
+## **Tier 1: Essential Practical Knowledge**
+*   **Java, JDBC & Connection Pooling**
+    *   *Oracle® Universal Connection Pool Developer's Guide*
+        *   [04_ch02_getting-started.pdf](./books/universal-connection-pool-developers-guide/04_ch02_getting-started.pdf)
+        *   [05_ch03_getting-database-connections-in-ucp.pdf](./books/universal-connection-pool-developers-guide/05_ch03_getting-database-connections-in-ucp.pdf)
+        *   [07_ch05_optimizing-universal-connection-pool-behavior.pdf](./books/universal-connection-pool-developers-guide/07_ch05_optimizing-universal-connection-pool-behavior.pdf)
+    *   *Oracle® Database JDBC Developer's Guide*
+        *   [ch02_2-getting-started.pdf](./books/jdbc-developers-guide/ch02_2-getting-started.pdf)
+        *   [ch02_9-jdbc-client-side-security-features.pdf](./books/jdbc-developers-guide/ch02_9-jdbc-client-side-security-features.pdf)
+    *   *Oracle® Database Java Developer's Guide*
+        *   [04_ch01_introduction-to-java-in-oracle-database.pdf](./books/java-developers-guide/04_ch01_introduction-to-java-in-oracle-database.pdf)
+        *   [05_ch02_java-applications-on-oracle-database.pdf](./books/java-developers-guide/05_ch02_java-applications-on-oracle-database.pdf)
+*   **XML DB in Practice**
+    *   *Oracle XML DB Developer's Guide*
+        *   [ch02_2-getting-started-with-oracle-xml-db.pdf](./books/xml-db-developers-guide/ch02_2-getting-started-with-oracle-xml-db.pdf)
+        *   [ch03_3-overview-of-how-to-use-oracle-xml-db.pdf](./books/xml-db-developers-guide/ch03_3-overview-of-how-to-use-oracle-xml-db.pdf)
+        *   [ch02_5-query-and-update-of-xml-data.pdf](./books/xml-db-developers-guide/ch02_5-query-and-update-of-xml-data.pdf)
+        *   [ch03_13-java-dom-api-for-xmltype.pdf](./books/xml-db-developers-guide/ch03_13-java-dom-api-for-xmltype.pdf)
+*   **Advanced Queuing (AQ) & JMS**
+    *   *Oracle Database Transactional Event Queues and Advanced Queuing User's Guide*
+        *   [08_ch03_oracle-transactional-event-queues-and-advanced-queuing-programmatic-interfaces.pdf](./books/database-transactional-event-queues-and-advanced-queuing-users-guide/08_ch03_oracle-transactional-event-queues-and-advanced-queuing-programmatic-interfaces.pdf)
+        *   [13_ch08_oracle-transactional-event-queues-and-advanced-queuing-performance-and-scalability.pdf](./books/database-transactional-event-queues-and-advanced-queuing-users-guide/13_ch08_oracle-transactional-event-queues-and-advanced-queuing-performance-and-scalability.pdf)
+
+## **Tier 2: Advanced & High Availability Topics**
+*   **Java, JDBC & High Availability**
+    *   *Oracle® Database JDBC Developer's Guide*
+        *   [ch02_33-application-continuity-for-java.pdf](./books/jdbc-developers-guide/ch02_33-application-continuity-for-java.pdf)
+        *   [ch02_b-oracle-rac-fast-application-notification.pdf](./books/jdbc-developers-guide/ch02_b-oracle-rac-fast-application-notification.pdf)
+        *   [ch03_24-jdbc-reactive-extensions.pdf](./books/jdbc-developers-guide/ch03_24-jdbc-reactive-extensions.pdf)
+    *   *Oracle® Universal Connection Pool Developer's Guide*
+        *   [12_ch10_using-oracle-rac-features.pdf](./books/universal-connection-pool-developers-guide/12_ch10_using-oracle-rac-features.pdf)
+        *   [14_ch12_ensuring-application-continuity.pdf](./books/universal-connection-pool-developers-guide/14_ch12_ensuring-application-continuity.pdf)
+    *   *Oracle® Database Java Developer's Guide*
+        *   [08_ch05_developing-java-stored-procedures.pdf](./books/java-developers-guide/08_ch05_developing-java-stored-procedures.pdf)
+        *   [13_ch10_security-for-oracle-database-java-applications.pdf](./books/java-developers-guide/13_ch10_security-for-oracle-database-java-applications.pdf)
+*   **XML Performance and Advanced Features**
+    *   *Oracle XML DB Developer's Guide*
+        *   [ch01_4-xquery-and-oracle-xml-db.pdf](./books/xml-db-developers-guide/ch01_4-xquery-and-oracle-xml-db.pdf)
+        *   [ch03_6-indexes-for-xmltype-data.pdf](./books/xml-db-developers-guide/ch03_6-indexes-for-xmltype-data.pdf)
+        *   [ch04_7-transformation-and-validation-of-xmltype-data.pdf](./books/xml-db-developers-guide/ch04_7-transformation-and-validation-of-xmltype-data.pdf)
+*   **AQ & Interoperability**
+    *   *Oracle Database Transactional Event Queues and Advanced Queuing User's Guide*
+        *   [09_ch04_managing-oracle-transactional-event-queues-and-advanced-queuing.pdf](./books/database-transactional-event-queues-and-advanced-queuing-users-guide/09_ch04_managing-oracle-transactional-event-queues-and-advanced-queuing.pdf)
+        *   [16_ch11_internet-access-to-oracle-database-advanced-queuing.pdf](./books/database-transactional-event-queues-and-advanced-queuing-users-guide/16_ch11_internet-access-to-oracle-database-advanced-queuing.pdf)
+
+## **Tier 3: Broadening Context**
+*   **Oracle 23ai New Features**
+    *   *Oracle Database 23ai New Features Guide*
+        *   [03_Application_Development.pdf](./books/oracle-database-23ai-new-features-guide/03_Application_Development.pdf)
+        *   [07_Cloud_Operations.pdf](./books/oracle-database-23ai-new-features-guide/07_Cloud_Operations.pdf)
+*   **JDBC, Java & Broader Oracle Features**
+    *   *Oracle® Database JDBC Developer's Guide*
+        *   [ch01_37-distributed-transactions.pdf](./books/jdbc-developers-guide/ch01_37-distributed-transactions.pdf)
+        *   [ch02_40-diagnosability-in-jdbc.pdf](./books/jdbc-developers-guide/ch02_40-diagnosability-in-jdbc.pdf)
+    *   *Oracle® Database Java Developer's Guide*
+        *   [06_ch03_calling-java-methods-in-oracle-database.pdf](./books/java-developers-guide/06_ch03_calling-java-methods-in-oracle-database.pdf)
+        *   [12_ch09_oracle-database-java-application-performance.pdf](./books/java-developers-guide/12_ch09_oracle-database-java-application-performance.pdf)
+    *   *Oracle XML DB Developer's Guide*
+        *   [ch04_37-xml-data-exchange-using-oracle-database-advanced-queuing.pdf](./books/xml-db-developers-guide/ch04_37-xml-data-exchange-using-oracle-database-advanced-queuing.pdf)
