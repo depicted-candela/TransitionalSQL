@@ -2,12 +2,9 @@
     <link rel="stylesheet" href="../styles/lecture.css">
     <link rel="stylesheet" href="../styles/exercises.css">
 </head>
-
 <body>
 <div class="container">
-
 <h1>Oracle Blueprint: Must-Know Concepts for Consultants</h1>
-
 <h2>Introduction & Learning Objectives</h2>
 <p>
     Welcome to the practical exercises for <strong>Essential Oracle Database Concepts</strong>. This module is designed to solidify your understanding of the foundational pillars of the Oracle database architecture. For consultants transitioning from PostgreSQL, these exercises will not only reinforce familiar concepts but also illuminate the unique syntax, tools, and philosophies that define the Oracle environment.
@@ -29,21 +26,17 @@
         Implement robust <strong>Transaction Management</strong> using <code>COMMIT</code>, <code>ROLLBACK</code>, and <code>SAVEPOINT</code> to ensure data integrity.
     </li>
 </ul>
-
 <div class="postgresql-bridge">
     <h5>Bridging from PostgreSQL</h5>
     <p>
         While you are familiar with the <code>information_schema</code>, identity columns, and transactional blocks in PostgreSQL, these exercises will focus on Oracle's counterparts: the powerful Data Dictionary views, the explicit use of <code>SEQUENCE</code> objects, the nuances of row-level locking, and the implementation of transactional control within PL/SQL contexts.
     </p>
 </div>
-
 <hr>
-
 <h2>Prerequisites & Dataset Setup</h2>
 <p>
     Before you begin, ensure you have a foundational understanding of basic SQL DML (<code>SELECT</code>, <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>) and DDL (<code>CREATE TABLE</code>) from your PostgreSQL experience. This module builds upon those fundamentals within the Oracle 23ai ecosystem.
 </p>
-
 <h3>Dataset Guidance</h3>
 <p>
     The following script, <code>NewSchema.sql</code>, will create all necessary users, tables, sequences, and procedures for this entire exercise module. It is crucial to run this script in your Oracle environment before proceeding.
@@ -56,9 +49,9 @@
         Execute the entire script below. It will create two users, <code>NewSchema</code> (your primary workspace) and <code>anotherSchema</code> (for cross-schema tests), and populate them with the required objects and data.
     </li>
 </ol>
-<pre><code class="language-sql">
--- Connect as a privileged user (e.g., SYS as SYSDBA) to run this script.
 
+```sql
+-- Connect as a privileged user (e.g., SYS as SYSDBA) to run this script.
 -- Drop users if they exist, to ensure a clean setup
 BEGIN
    EXECUTE IMMEDIATE 'DROP USER NewSchema CASCADE';
@@ -69,7 +62,6 @@ EXCEPTION
       END IF;
 END;
 /
-
 BEGIN
    EXECUTE IMMEDIATE 'DROP USER anotherSchema CASCADE';
 EXCEPTION
@@ -79,29 +71,23 @@ EXCEPTION
       END IF;
 END;
 /
-
 -- Create the primary user for our exercises
 CREATE USER NewSchema IDENTIFIED BY Pa_s_sw_rd_1;
 ALTER USER NewSchema QUOTA UNLIMITED ON users;
 GRANT CONNECT, RESOURCE, CREATE VIEW, CREATE SYNONYM, UNLIMITED TABLESPACE TO NewSchema;
-
 -- Create a second user for demonstrating cross-schema concepts
 CREATE USER anotherSchema IDENTIFIED BY Pa_s_sw_rd_2;
 ALTER USER anotherSchema QUOTA UNLIMITED ON users;
 GRANT CONNECT, RESOURCE TO anotherSchema;
-
 -- Grant DBA privileges to NewSchema to query DBA views and manage transactions.
 -- In a real-world scenario, you would grant more granular privileges.
 GRANT DBA TO NewSchema;
-
 -- Connect as the NewSchema user to create the objects
 CONNECT NewSchema/Pa_s_sw_rd_1;
-
 -- Sequences for Primary Keys
 CREATE SEQUENCE productSeq START WITH 100 INCREMENT BY 1 NOCACHE;
 CREATE SEQUENCE warehouseSeq START WITH 1 INCREMENT BY 1 NOCACHE;
 CREATE SEQUENCE inventoryLogSeq START WITH 1 INCREMENT BY 1 NOCACHE;
-
 -- Tables
 CREATE TABLE products (
     productId          NUMBER(10) PRIMARY KEY,
@@ -110,13 +96,11 @@ CREATE TABLE products (
     category           VARCHAR2(50),
     unitPrice          NUMBER(8, 2) CHECK (unitPrice > 0)
 );
-
 CREATE TABLE warehouses (
     warehouseId        NUMBER(5) PRIMARY KEY,
     warehouseName      VARCHAR2(100) UNIQUE NOT NULL,
     location           VARCHAR2(200)
 );
-
 -- This table is central for concurrency and transaction exercises
 CREATE TABLE inventory (
     warehouseId        NUMBER(5) NOT NULL,
@@ -127,7 +111,6 @@ CREATE TABLE inventory (
     CONSTRAINT fkInvWarehouse FOREIGN KEY (warehouseId) REFERENCES warehouses(warehouseId),
     CONSTRAINT fkInvProduct FOREIGN KEY (productId) REFERENCES products(productId)
 );
-
 CREATE TABLE inventoryLog (
     logId              NUMBER PRIMARY KEY,
     productId          NUMBER(10),
@@ -135,36 +118,26 @@ CREATE TABLE inventoryLog (
     quantityChange     NUMBER(8),
     logTimestamp       DATE
 );
-
 -- Populate with data
 INSERT INTO warehouses (warehouseId, warehouseName, location) VALUES (warehouseSeq.NEXTVAL, 'Main Warehouse', 'New York');
 INSERT INTO warehouses (warehouseId, warehouseName, location) VALUES (warehouseSeq.NEXTVAL, 'West Coast Depot', 'Los Angeles');
-
 INSERT INTO products (productId, productName, description, category, unitPrice) VALUES (productSeq.NEXTVAL, 'Oracle DB License', '1-year enterprise license', 'Software', 4500.00);
 INSERT INTO products (productId, productName, description, category, unitPrice) VALUES (productSeq.NEXTVAL, 'PL/SQL Stored Procedure Guide', 'Advanced PL/SQL programming book', 'Books', 75.50);
 INSERT INTO products (productId, productName, description, category, unitPrice) VALUES (productSeq.NEXTVAL, 'High-Performance Keyboard', 'Mechanical keyboard for developers', 'Hardware', 150.00);
-
 INSERT INTO inventory (warehouseId, productId, quantityOnHand) VALUES (1, 100, 50);
 INSERT INTO inventory (warehouseId, productId, quantityOnHand) VALUES (1, 101, 200);
 INSERT INTO inventory (warehouseId, productId, quantityOnHand) VALUES (2, 102, 150);
-
 -- Create objects in the second schema for synonym/privilege examples
 CONNECT anotherSchema/Pa_s_sw_rd_2;
-
 CREATE TABLE confidentialData (
     dataId             NUMBER PRIMARY KEY,
     secretInfo         VARCHAR2(100)
 );
-
 INSERT INTO confidentialData (dataId, secretInfo) VALUES (1, 'Project Phoenix Details');
-
 GRANT SELECT ON confidentialData TO NewSchema;
-
 -- Switch back to the main user
 CONNECT NewSchema/Pa_s_sw_rd_1;
-
 COMMIT;
-
 -- Create a procedure for a Data Dictionary example
 CREATE OR REPLACE PROCEDURE getProductCount(p_category IN VARCHAR2, p_count OUT NUMBER) IS
 BEGIN
@@ -174,15 +147,13 @@ BEGIN
     WHERE category = p_category;
 END;
 /
-</code></pre>
-<hr>
+```
 
+<hr>
 <h2>Exercises</h2>
 <p>This section is divided into four types of exercises, each designed to test a different aspect of your understanding. Please attempt to solve each problem before reviewing the provided solutions.</p>
-
 <h3>Type (i): Meanings, Values, Relations, and Advantages</h3>
 <p>These exercises focus on exploring the "what" and "why" of Oracle's schema objects and metadata views, emphasizing the syntax and advantages, especially when compared to a PostgreSQL background.</p>
-
 <div class="exercise">
   <h4>Exercise 1: Exploring Your Schema with the Data Dictionary</h4>
   <p class="problem-label">Problem:</p>
@@ -197,7 +168,6 @@ END;
     <p><strong>Bridging from PostgreSQL:</strong> In PostgreSQL, you would query the <code>information_schema</code> views (like <code>information_schema.tables</code>, <code>information_schema.columns</code>) or use psql's backslash commands (<code>\d</code>, <code>\dt</code>, <code>\df</code>). This exercise practices the Oracle way of retrieving this metadata using its powerful set of <code>USER_*</code>, <code>ALL_*</code>, and <code>DBA_*</code> views.</p>
   </div>
 </div>
-
 <div class="exercise">
   <h4>Exercise 2: Creating and Using Core Schema Objects</h4>
   <p class="problem-label">Problem:</p>
@@ -213,7 +183,6 @@ END;
     <p><strong>Bridging from PostgreSQL:</strong> This exercise contrasts Oracle's explicit <code>CREATE SEQUENCE</code> and <code>.NEXTVAL</code> usage with PostgreSQL's <code>SERIAL</code> or <code>IDENTITY</code> column types. It also introduces the concept of synonyms, which provide a powerful layer of abstraction not commonly used in PostgreSQL.</p>
   </div>
 </div>
-
 <div class="exercise">
   <h4>Exercise 3: Understanding Oracle's Concurrency (MVCC) and Transaction Control</h4>
   <p class="problem-label">Problem:</p>
@@ -229,10 +198,8 @@ END;
     <li><strong>In Session 2:</strong> Query the <code>inventory</code> table again. What quantity do you see now and why?</li>
   </ol>
 </div>
-
 <h3>Type (ii): Disadvantages and Pitfalls</h3>
 <p>These exercises highlight potential issues and limitations to be aware of when working with these concepts in Oracle.</p>
-
 <div class="exercise">
     <h4>Exercise 1: The Danger of Cascading Drops</h4>
     <p class="problem-label">Problem:</p>
@@ -241,7 +208,6 @@ END;
         <p><strong>Caution:</strong> This is a destructive operation. The purpose is to understand the risk. The provided setup script can be used to recreate the user and their objects afterward.</p>
     </div>
 </div>
-
 <div class="exercise">
     <h4>Exercise 2: The Blocked Update (Row-Level Locking)</h4>
     <p class="problem-label">Problem:</p>
@@ -253,10 +219,8 @@ END;
         <li>What happens in Session 2 after you issue a <code>ROLLBACK</code> in Session 1?</li>
     </ol>
 </div>
-
 <h3>Type (iii): Contrasting with Inefficient Common Solutions</h3>
 <p>These exercises contrast a common but less efficient approach with the idiomatic, high-performance Oracle way.</p>
-
 <div class="exercise">
     <h4>Exercise 1: Mass Deletion - <code>DELETE</code> vs. <code>TRUNCATE</code></h4>
     <p class="problem-label">Problem:</p>
@@ -271,10 +235,8 @@ END;
         </li>
     </ol>
 </div>
-
 <h3>Type (iv): Hardcore Combined Problem</h3>
 <p>This exercise integrates concepts from this module and assumes knowledge of basic DDL/DML. It is designed to be challenging and to test your ability to synthesize information.</p>
-
 <div class="exercise">
     <h4>Exercise: The Robust Archival Process</h4>
     <p class="problem-label">Problem:</p>
@@ -298,9 +260,7 @@ END;
         </li>
     </ul>
 </div>
-
 <hr>
-
 <h2>Tips for Success & Learning</h2>
 <ul>
     <li>
@@ -316,7 +276,6 @@ END;
         <strong>Use Two Sessions:</strong> For the concurrency and locking exercises, having two separate sessions (like two worksheet tabs in SQL Developer) is essential to see the concepts in action.
     </li>
 </ul>
-
 <h2>Conclusion & Next Steps</h2>
 <p>
     Mastering these foundational concepts—how the database describes itself, how its objects relate, and how it ensures data integrity through transactions and concurrency control—is non-negotiable for any Oracle professional. You have now practiced the core principles that underpin almost every interaction with an Oracle database.
@@ -324,6 +283,5 @@ END;
 <p>
     With this foundation, you are now prepared to explore the next essential area for a consultant: **Oracle Performance & Optimization Basics**.
 </p>
-
 </div>
 </body>

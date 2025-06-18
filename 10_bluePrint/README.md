@@ -54,7 +54,7 @@ Why do Oracle DBAs always carry a dictionary? To look up the meanings of their o
 </div>
 <ul>
     <li><p><strong><code>Schema Objects</code></strong>: The logical structures you create, from tables that store data to views that give it a new face. They always belong to a specific schema, in a specific place.</p></li>
-    <li><p><strong><code>Data Dictionary</code></strong>: This is Oracle's **digital ledger**<sup id="fnref1_1"><a href="#fn1_1" class="footnote-ref">1</a></sup>—a read-only set of internal tables and views containing all metadata about your database. It's how the database keeps its own affairs in order, crossing every 't' and dotting every 'i'. Instead of one `information_schema`, Oracle provides a powerful, three-tiered system to spy:</p>
+    <li><p><strong><code>Data Dictionary</code></strong>: This is Oracle's **digital ledger**<sup id="fnref1_1"><a href="#fn1_1" class="footnote-ref">1</a></sup>—a read-only set of internal tables and views containing all metadata about your database. It's how the database keeps its own affairs in order, crossing every 't' and dotting every 'i'. Instead of one <code>information_schema</code>, Oracle provides a powerful, three-tiered system to spy:</p>
         <ul>
             <li><code>USER_*</code>: Shows everything in your schema; your personal domain where you reign.</li>
             <li><code>ALL_*</code>: Shows everything you can access; your own objects plus what others deign to explain.</li>
@@ -69,7 +69,7 @@ Why do Oracle DBAs always carry a dictionary? To look up the meanings of their o
     <li><strong><code>Table</code></strong>: The fundamental home where all your data will reside. (Concept Known).</li>
     <li><strong><code>View</code></strong>: A stored query, a virtual table, with nothing to hide; it simplifies access and keeps complex logic inside. (Concept Known).</li>
     <li><strong><code>Index</code></strong>: A performance roadmap, a database guide, helping queries find data where it does abide. (Concept Known).</li>
-    <li><strong><code>Sequence</code></strong>: An object that generates numbers in turn, a primary key solution you'll be happy to learn. It's Oracle's answer to the `SERIAL` key's churn.</li>
+    <li><strong><code>Sequence</code></strong>: An object that generates numbers in turn, a primary key solution you'll be happy to learn. It's Oracle's answer to the <code>SERIAL</code> key's churn.</li>
     <li><strong><code>Synonym</code></strong>: An alias, a nickname, a clever disguise; it points to another object, a welcome surprise. It provides a level of abstraction that simplifies your enterprise.</li>
     <li><strong><code>Role</code></strong>: A named group of privileges, compact and precise; grant it to a user to make them authorized in a trice.</li>
 </ul>
@@ -77,13 +77,13 @@ Why do Oracle DBAs always carry a dictionary? To look up the meanings of their o
 <h3 id="section1sub3">Concurrency, Locking, & Transactions</h3>
 <p>Here we see how Oracle prevents data collisions, by managing multiple users and their database missions.</p>
 <ul>
-    <li><p><strong><code>Multiversion Concurrency Control (MVCC)</code></strong>: At its core, Oracle provides each query a **consistent read**—a "time-traveling snapshot" of data from the moment the query began. It uses `UNDO` data to show you the past, creating a version of data that's guaranteed to last. The profound outcome is a developer's dream and a user's delight: **readers do not block writers, and writers do not block readers**.<sup id="fnref1_2"><a href="#fn1_2" class="footnote-ref">2</a></sup></p></li>
+    <li><p><strong><code>Multiversion Concurrency Control (MVCC)</code></strong>: At its core, Oracle provides each query a **consistent read**—a "time-traveling snapshot" of data from the moment the query began. It uses <code>UNDO</code> data to show you the past, creating a version of data that's guaranteed to last. The profound outcome is a developer's dream and a user's delight: **readers do not block writers, and writers do not block readers**.<sup id="fnref1_2"><a href="#fn1_2" class="footnote-ref">2</a></sup></p></li>
     <li><p><strong><code>Locking</code></strong>: When a transaction writes, it's not a big fight; it places an exclusive **row-level lock**, specific and tight. This lock is a whisper, not a shout from a tower, giving Oracle its concurrent processing power.</p></li>
     <li><p><strong><code>Transaction Management</code></strong>: You are the master of your data's fate, with three commands to control its state.</p>
         <ul>
             <li><code>COMMIT</code>: Makes your changes a permanent fixture, sealing them into the bigger picture.</li>
             <li><code>ROLLBACK</code>: Undoes your work, a transactional eraser, reverting data to a state that is safer.</li>
-            <li><code>SAVEPOINT</code>: A bookmark in your transactional tale, letting you `ROLLBACK` to a point without a complete fail.</li>
+            <li><code>SAVEPOINT</code>: A bookmark in your transactional tale, letting you <code>ROLLBACK</code> to a point without a complete fail.</li>
         </ul>
     </li>
 </ul>
@@ -91,18 +91,18 @@ Why do Oracle DBAs always carry a dictionary? To look up the meanings of their o
 <h3 id="section1sub4">Oracle 23ai: New Structural Enhancements</h3>
 <p>Oracle 23ai brings new tools to the game, giving familiar structures a brand new name.</p>
 <ul>
-    <li><p><strong><code>Value LOBs</code></strong>: Imagine an **ephemeral scroll** you can read and let go, without losing control. A `Value LOB` is a read-only Large Object that's auto-freed after each fetch, perfect for temporary data, a truly clever catch.<sup id="fnref1_3"><a href="#fn1_3" class="footnote-ref">3</a></sup></p></li>
+    <li><p><strong><code>Value LOBs</code></strong>: Imagine an **ephemeral scroll** you can read and let go, without losing control. A <code>Value LOB</code> is a read-only Large Object that's auto-freed after each fetch, perfect for temporary data, a truly clever catch.<sup id="fnref1_3"><a href="#fn1_3" class="footnote-ref">3</a></sup></p></li>
 </ul>
 
 ---
 <h2 id="section2">Section 2: Relations: How They Play with Others (in Oracle)</h2>
 <p>No concept is an island, entire of itself; each object relates to another on the database shelf. Understanding these connections is how a consultant truly excels.</p>
 <ul>
-    <li><p><strong>Dictionary and Objects</strong>: The Data Dictionary is the DNA of your design. A <code>CREATE TABLE</code> command is an `INSERT` in disguise, writing new rows to Oracle's internal `TAB$` and `COL$` that your `USER_TABLES` view then puts before your eyes.</p></li>
+    <li><p><strong>Dictionary and Objects</strong>: The Data Dictionary is the DNA of your design. A <code>CREATE TABLE</code> command is an <code>INSERT</code> in disguise, writing new rows to Oracle's internal <code>TAB$</code> and <code>COL$</code> that your <code>USER_TABLES</code> view then puts before your eyes.</p></li>
     <li><p><strong>PL/SQL and the Dictionary</strong>: The art you create with a function or procedure's call, is stored in <code>USER_SOURCE</code>, standing proud and tall, ready for the database to recompile should a dependency fall.</p></li>
     <li><p><strong>Transactions and Locking</strong>: An uncommitted transaction is a promise on hold, keeping rows in its lock, a story untold. With a <code>COMMIT</code> or <code>ROLLBACK</code>, the locks are released and the story is sold.</p></li>
     <li><p><strong>Sequences and Tables</strong>: A sequence is not part of a table's own decree, but its <code>.NEXTVAL</code> is the perfect primary key, generating unique IDs for all the world to see.</p></li>
-    <li><p><strong>Synonyms and Privileges</strong>: A synonym is just a pointer, a friendly name to appoint; it grants no access on its own. You must first `GRANT` the privilege, to make your security point.</p></li>
+    <li><p><strong>Synonyms and Privileges</strong>: A synonym is just a pointer, a friendly name to appoint; it grants no access on its own. You must first <code>GRANT</code> the privilege, to make your security point.</p></li>
 </ul>
 
 ---
@@ -111,75 +111,79 @@ Why do Oracle DBAs always carry a dictionary? To look up the meanings of their o
 
 <h3 id="section3sub1">Querying the Data Dictionary</h3>
 <p>To know your own kingdom, you must learn how to ask. These queries make metadata inspection a simple task.</p>
-<pre><code class="language-sql"><span class="sql-comment">-- Find tables you own with more than 100 rows</span>
+
+
+```sql
+-- Find tables you own with more than 100 rows
 SELECT tableName, numRows 
 FROM   user_tables
 WHERE  numRows > 100;
 
-<span class="sql-comment">-- Find all indexes on a specific table</span>
+-- Find all indexes on a specific table
 SELECT indexName, indexType 
 FROM   user_indexes 
 WHERE  tableName = 'INVENTORY';
 
-<span class="sql-comment">-- See what privileges you've granted on your objects</span>
+-- See what privileges you've granted on your objects
 SELECT grantee, tableName, privilege 
 FROM   user_tab_privs;
-</code></pre>
+```
 
 <h3 id="section3sub2">Basic DDL for Schema Objects</h3>
 <p>This is the syntax for creating the foundational elements of your schema.<sup id="fnref1_4"><a href="#fn1_4" class="footnote-ref">4</a></sup></p>
-<pre><code class="language-sql"><span class="sql-comment">-- Creating a Sequence for your application</span>
+
+
+```sql
+-- Creating a Sequence for your application
 CREATE SEQUENCE myAppSeq
   START WITH 1000
   INCREMENT BY 10
   CACHE 20;
-
-<span class="sql-comment">-- Creating a Synonym for an object in another schema</span>
-<span class="sql-comment">-- (Prerequisite: GRANT SELECT ON anotherSchema.confidentialData TO NewSchema;)</span>
+-- Creating a Synonym for an object in another schema
+-- (Prerequisite: GRANT SELECT ON anotherSchema.confidentialData TO NewSchema;)
 CREATE SYNONYM externalData FOR anotherSchema.confidentialData;
-
-<span class="sql-comment">-- Creating and using a Role</span>
+-- Creating and using a Role
 CREATE ROLE app_read_only;
 GRANT SELECT ON products TO app_read_only;
 GRANT SELECT ON warehouses TO app_read_only;
-</code></pre>
+```
 
 <h3 id="section3sub3">Controlling Transactions</h3>
 <p>Managing the transaction lifecycle is critical for data integrity. A single session can demonstrate the flow.</p>
 
 <div class="caution">
-    <h4>The Immersion Joke: A Parodic Tutorial on "Advanced" Schema Modification</h4>
-    <p>Welcome, power users, to this exclusive guide on schema evolution! Today, we'll bypass Oracle's "best practices" to directly engineer our database metadata. This technique is for those who find `ALTER TABLE` too bureaucratic. Success will grant you unparalleled control. Failure will grant you a deep, personal relationship with your backup tapes.</p>
+    <h4>A Parodic Tutorial on "Advanced" Schema Modification</h4>
+    <p>Welcome, power users, to this exclusive guide on schema evolution! Today, we'll bypass Oracle's "best practices" to directly engineer our database metadata. This technique is for those who find <code>ALTER TABLE</code> too bureaucratic. Success will grant you unparalleled control. Failure will grant you a deep, personal relationship with your backup tapes.</p>
     <ol>
-        <li><strong>Step 1: The 'SYS' Handshake.</strong> Connect as `SYS AS SYSDBA`. This is like borrowing the keys to the universe. Don't worry about what they open; just enjoy the jingle.</li>
-        <li><strong>Step 2: The Invisibility Cloak.</strong> We must work unseen. Run `NOAUDIT ALL;` This tells the database, "Nothing to see here, move along." If it complains, it's merely testing your resolve.</li>
-        <li><strong>Step 3: Direct `UPDATE` on `TAB$`.</strong> Why bother with `ADD COLUMN`? That's for beginners. We'll simply `INSERT` a new row into the `COL$` table, pointing it to our `EMPLOYEES` table's `OBJ#`. This is not so much a data modification as it is a "conceptual realignment."</li>
-        <li><strong>Step 4: The Point of No Return.</strong> `COMMIT;` Feel the power as you rewrite the very definition of your data reality.</li>
-        <li><strong>Step 5: The "Re-initialization".</strong> A quick `SHUTDOWN ABORT` followed by a `STARTUP` will surely cement our glorious changes.</li>
+        <li><strong>Step 1: The 'SYS' Handshake.</strong> Connect as <code>SYS AS SYSDBA</code>. This is like borrowing the keys to the universe. Don't worry about what they open; just enjoy the jingle.</li>
+        <li><strong>Step 2: The Invisibility Cloak.</strong> We must work unseen. Run <code>NOAUDIT ALL;</code> This tells the database, "Nothing to see here, move along." If it complains, it's merely testing your resolve.</li>
+        <li><strong>Step 3: Direct <code>UPDATE</code> on <code>TAB$</code>.</strong> Why bother with <code>ADD COLUMN</code>? That's for beginners. We'll simply <code>INSERT</code> a new row into the <code>COL$</code> table, pointing it to our <code>EMPLOYEES</code> table's <code>OBJ#</code>. This is not so much a data modification as it is a "conceptual realignment."</li>
+        <li><strong>Step 4: The Point of No Return.</strong> <code>COMMIT;</code> Feel the power as you rewrite the very definition of your data reality.</li>
+        <li><strong>Step 5: The "Re-initialization".</strong> A quick <code>SHUTDOWN ABORT</code> followed by a <code>STARTUP</code> will surely cement our glorious changes.</li>
     </ol>
-    <p>If you now find the database greeting you with an `ORA-00600` error, a **frozen flame** of digital despair, do not panic. You have successfully discovered the **Hidden Semantic Bridge** of this lesson: **never directly modify objects owned by `SYS`**. The Data Dictionary is the database's central nervous system; performing amateur neurosurgery upon it is the fastest way to achieve a state of "unstructured data liberation," also known as a full restore from backup. The joke is a **time carpet**; once you step on it, you're woven into a schedule of late-night calls with Oracle Support.</p>
+    <p>If you now find the database greeting you with an <code>ORA-00600</code> error, a **frozen flame** of digital despair, do not panic. You have successfully discovered the **Hidden Semantic Bridge** of this lesson: **never directly modify objects owned by <code>SYS</code>**. The Data Dictionary is the database's central nervous system; performing amateur neurosurgery upon it is the fastest way to achieve a state of "unstructured data liberation," also known as a full restore from backup. The joke is a **time carpet**; once you step on it, you're woven into a schedule of late-night calls with Oracle Support.</p>
 </div>
 
 ---
 
 <h2 id="section4">Section 4: Why Use Them? (Advantages in Oracle)</h2>
 
-*   <strong>A Clearer Scope with Dictionary Views:</strong> The `USER_`/`ALL_`/`DBA_` views provide a clear, permission-based hierarchy for all your database queries. It's a system designed for security that's easy to see.
-*   <strong>Abstraction and Freedom with Synonyms:</strong> Synonyms grant you freedom from the chains of hardcoded names. If a table's owner or location is changed, a quick `CREATE OR REPLACE SYNONYM` is all you proclaim; dozens of applications continue to function, completely unaware of the change.
+*   <strong>A Clearer Scope with Dictionary Views:</strong> The <code>USER_</code>/<code>ALL_</code>/<code>DBA_</code> views provide a clear, permission-based hierarchy for all your database queries. It's a system designed for security that's easy to see.
+*   <strong>Abstraction and Freedom with Synonyms:</strong> Synonyms grant you freedom from the chains of hardcoded names. If a table's owner or location is changed, a quick <code>CREATE OR REPLACE SYNONYM</code> is all you proclaim; dozens of applications continue to function, completely unaware of the change.
 *   <strong>Unparalleled Concurrency with MVCC:</strong> Oracle's "readers don't block writers" model is a key to high-throughput schemes. It allows reports to run free while OLTP transactions proceed with glee, avoiding the lock contention that can bring other systems to their knees.
-*   <strong>Fine-Grained Transactional Control:</strong> Beyond a simple `COMMIT` or `ROLLBACK` to erase, a `SAVEPOINT` lets you mark a specific place. You can undo a small part of a transaction's race, without losing all your work and leaving an empty space.
+*   <strong>Fine-Grained Transactional Control:</strong> Beyond a simple <code>COMMIT</code> or <code>ROLLBACK</code> to erase, a <code>SAVEPOINT</code> lets you mark a specific place. You can undo a small part of a transaction's race, without losing all your work and leaving an empty space.
 
 ---
 
 <h2 id="section5">Section 5: Watch Out! (Disadvantages & Pitfalls in Oracle)</h2>
 <div class="caution">
-    <p>A programmer walks into a bar and orders a drink. The bartender asks, "So, what's the difference between a `COMMIT` and a `ROLLBACK`?" The programmer thinks for a moment and replies, "About eight hours of debugging at 3 AM."</p>
+    <p>A programmer walks into a bar and orders a drink. The bartender asks, "So, what's the difference between a <code>COMMIT</code> and a <code>ROLLBACK</code>?" The programmer thinks for a moment and replies, "About eight hours of debugging at 3 AM."</p>
 </div>
 <ul>
-    <li><p><strong>The Waiting Game (Lock Contention):</strong> A long-running, uncommitted `UPDATE` on a "hot" row can become a **sleeping rock** in your application's stream. It looks inert, but it blocks all other sessions that need that same data, causing a system-wide jam.</p></li>
-    <li><p><strong>The Vanishing Act (Forgetting to <code>COMMIT</code>):</strong> A classic pitfall. Your DML changes are phantoms, visible only to your session's sight. If you exit without a `COMMIT`, your work is rolled back by the night, leaving you to wonder what didn't go right.</p></li>
-    <li><p><strong><code>TRUNCATE</code> vs. <code>DELETE</code>:</strong> Using `DELETE` to empty a massive table is like trying to empty an ocean with a spoon. `TRUNCATE` is the tsunami—it's a DDL operation that's faster and cleaner, but it's also a permanent action, so your choice must be keener.</p></li>
-    <li><p><strong>The Privilege Puzzle:</strong> Writing code that queries `DBA_*` views is a common temptation, leading to a failed-privilege situation. Application code should almost always use `USER_*` or `ALL_*` views for proper encapsulation.</p></li>
+    <li><p><strong>The Waiting Game (Lock Contention):</strong> A long-running, uncommitted <code>UPDATE</code> on a "hot" row can become a **sleeping rock** in your application's stream. It looks inert, but it blocks all other sessions that need that same data, causing a system-wide jam.</p></li>
+    <li><p><strong>The Vanishing Act (Forgetting to <code>COMMIT</code>):</strong> A classic pitfall. Your DML changes are phantoms, visible only to your session's sight. If you exit without a <code>COMMIT</code>, your work is rolled back by the night, leaving you to wonder what didn't go right.</p></li>
+    <li><p><strong><code>TRUNCATE</code> vs. <code>DELETE</code>:</strong> Using <code>DELETE</code> to empty a massive table is like trying to empty an ocean with a spoon. <code>TRUNCATE</code> is the tsunami—it's a DDL operation that's faster and cleaner, but it's also a permanent action, so your choice must be keener.</p></li>
+    <li><p><strong>The Privilege Puzzle:</strong> Writing code that queries <code>DBA_*</code> views is a common temptation, leading to a failed-privilege situation. Application code should almost always use <code>USER_*</code> or <code>ALL_*</code> views for proper encapsulation.</p></li>
 </ul>
 
 ---
@@ -199,7 +203,7 @@ GRANT SELECT ON warehouses TO app_read_only;
         <tbody>
             <tr>
                 <td><code>information_schema</code>, <code>pg_catalog</code></td>
-                <td><code>USER_*</code>, <code>ALL_*</code>, <code>DBA_*</code> views. The Oracle hierarchy is more role-based and integrated with the security model from the start. You begin with what's yours (`USER_`), see what's shared (`ALL_`), and leave the rest to the DBA's all-seeing eye.</td>
+                <td><code>USER_*</code>, <code>ALL_*</code>, <code>DBA_*</code> views. The Oracle hierarchy is more role-based and integrated with the security model from the start. You begin with what's yours (<code>USER_</code>), see what's shared (<code>ALL_</code>), and leave the rest to the DBA's all-seeing eye.</td>
             </tr>
             <tr>
                 <td><code>CREATE SCHEMA myapp;</code></td>
@@ -221,8 +225,8 @@ GRANT SELECT ON warehouses TO app_read_only;
         </thead>
         <tbody>
             <tr>
-                <td><code>SERIAL</code>, `BIGSERIAL`, `IDENTITY`</td>
-                <td><code>CREATE SEQUENCE ...;</code> and using the <code>sequenceName.NEXTVAL</code> pseudocolumn in `INSERT` statements. Oracle's approach decouples the number generator from the table, offering more flexibility but requiring more explicit code.</td>
+                <td><code>SERIAL</code>, <code>BIGSERIAL</code>, <code>IDENTITY</code></td>
+                <td><code>CREATE SEQUENCE ...;</code> and using the <code>sequenceName.NEXTVAL</code> pseudocolumn in <code>INSERT</code> statements. Oracle's approach decouples the number generator from the table, offering more flexibility but requiring more explicit code.</td>
             </tr>
              <tr>
                 <td><code>EXCEPT</code> Operator</td>
