@@ -39,14 +39,14 @@
 </p>
 <h3>Dataset Guidance</h3>
 <p>
-    The following script, <code>NewSchema.sql</code>, will create all necessary users, tables, sequences, and procedures for this entire exercise module. It is crucial to run this script in your Oracle environment before proceeding.
+    The following script, <code>blueprint.sql</code>, will create all necessary users, tables, sequences, and procedures for this entire exercise module. It is crucial to run this script in your Oracle environment before proceeding.
 </p>
 <ol>
     <li>
         Connect to your Oracle database as a user with administrative privileges (for example, <code>SYS</code> as <code>SYSDBA</code>).
     </li>
     <li>
-        Execute the entire script below. It will create two users, <code>NewSchema</code> (your primary workspace) and <code>anotherSchema</code> (for cross-schema tests), and populate them with the required objects and data.
+        Execute the entire script below. It will create two users, <code>blueprint</code> (your primary workspace) and <code>anotherSchema</code> (for cross-schema tests), and populate them with the required objects and data.
     </li>
 </ol>
 
@@ -54,7 +54,7 @@
 -- Connect as a privileged user (e.g., SYS as SYSDBA) to run this script.
 -- Drop users if they exist, to ensure a clean setup
 BEGIN
-   EXECUTE IMMEDIATE 'DROP USER NewSchema CASCADE';
+   EXECUTE IMMEDIATE 'DROP USER blueprint CASCADE';
 EXCEPTION
    WHEN OTHERS THEN
       IF SQLCODE != -1918 THEN
@@ -72,18 +72,18 @@ EXCEPTION
 END;
 /
 -- Create the primary user for our exercises
-CREATE USER NewSchema IDENTIFIED BY Pa_s_sw_rd_1;
-ALTER USER NewSchema QUOTA UNLIMITED ON users;
-GRANT CONNECT, RESOURCE, CREATE VIEW, CREATE SYNONYM, UNLIMITED TABLESPACE TO NewSchema;
+CREATE USER blueprint IDENTIFIED BY Pa_s_sw_rd_1;
+ALTER USER blueprint QUOTA UNLIMITED ON users;
+GRANT CONNECT, RESOURCE, CREATE VIEW, CREATE SYNONYM, UNLIMITED TABLESPACE TO blueprint;
 -- Create a second user for demonstrating cross-schema concepts
 CREATE USER anotherSchema IDENTIFIED BY Pa_s_sw_rd_2;
 ALTER USER anotherSchema QUOTA UNLIMITED ON users;
 GRANT CONNECT, RESOURCE TO anotherSchema;
--- Grant DBA privileges to NewSchema to query DBA views and manage transactions.
+-- Grant DBA privileges to blueprint to query DBA views and manage transactions.
 -- In a real-world scenario, you would grant more granular privileges.
-GRANT DBA TO NewSchema;
--- Connect as the NewSchema user to create the objects
-CONNECT NewSchema/Pa_s_sw_rd_1;
+GRANT DBA TO blueprint;
+-- Connect as the blueprint user to create the objects
+CONNECT blueprint/Pa_s_sw_rd_1;
 -- Sequences for Primary Keys
 CREATE SEQUENCE productSeq START WITH 100 INCREMENT BY 1 NOCACHE;
 CREATE SEQUENCE warehouseSeq START WITH 1 INCREMENT BY 1 NOCACHE;
@@ -134,9 +134,9 @@ CREATE TABLE confidentialData (
     secretInfo         VARCHAR2(100)
 );
 INSERT INTO confidentialData (dataId, secretInfo) VALUES (1, 'Project Phoenix Details');
-GRANT SELECT ON confidentialData TO NewSchema;
+GRANT SELECT ON confidentialData TO blueprint;
 -- Switch back to the main user
-CONNECT NewSchema/Pa_s_sw_rd_1;
+CONNECT blueprint/Pa_s_sw_rd_1;
 COMMIT;
 -- Create a procedure for a Data Dictionary example
 CREATE OR REPLACE PROCEDURE getProductCount(p_category IN VARCHAR2, p_count OUT NUMBER) IS
@@ -157,7 +157,7 @@ END;
 <div class="exercise">
   <h4>Exercise 1: Exploring Your Schema with the Data Dictionary</h4>
   <p class="problem-label">Problem:</p>
-  <p>You have just created several objects in your <code>NewSchema</code> schema. Your task is to use Oracle's Data Dictionary views to answer the following questions. For deeper understanding of the Data Dictionary, consult the <a href="../books/database-concepts/ch09_data-dictionary-dynamic-performance-views.pdf">Oracle® Database Concepts guide on Data Dictionary and Dynamic Performance Views</a>.</p>
+  <p>You have just created several objects in your <code>blueprint</code> schema. Your task is to use Oracle's Data Dictionary views to answer the following questions. For deeper understanding of the Data Dictionary, consult the <a href="../books/database-concepts/ch09_data-dictionary-dynamic-performance-views.pdf">Oracle® Database Concepts guide on Data Dictionary and Dynamic Performance Views</a>.</p>
   <ol>
     <li>List all objects (and their types) that you own in your current schema.</li>
     <li>Find the names and data types of all columns in the <code>inventory</code> table.</li>
@@ -177,7 +177,7 @@ END;
     <li>Create a table named <code>employees</code> with columns for <code>employeeId</code> (PK), <code>employeeName</code>, and <code>managesWarehouseId</code> (FK to <code>warehouses</code>).</li>
     <li>Insert two employees, using the <code>employeeSeq</code> sequence for their IDs.</li>
     <li>Create a view named <code>warehouseManagers</code> that shows the employee name and the name of the warehouse they manage.</li>
-    <li>As <code>anotherSchema</code>, you need frequent access to <code>NewSchema.products</code>. Create a private synonym named <code>prodList</code> in <code>anotherSchema</code>'s schema that points to <code>NewSchema.products</code>. Then, query your synonym.</li>
+    <li>As <code>anotherSchema</code>, you need frequent access to <code>blueprint.products</code>. Create a private synonym named <code>prodList</code> in <code>anotherSchema</code>'s schema that points to <code>blueprint.products</code>. Then, query your synonym.</li>
   </ol>
   <div class="postgresql-bridge">
     <p><strong>Bridging from PostgreSQL:</strong> This exercise contrasts Oracle's explicit <code>CREATE SEQUENCE</code> and <code>.NEXTVAL</code> usage with PostgreSQL's <code>SERIAL</code> or <code>IDENTITY</code> column types. It also introduces the concept of synonyms, which provide a powerful layer of abstraction not commonly used in PostgreSQL.</p>
@@ -186,7 +186,7 @@ END;
 <div class="exercise">
   <h4>Exercise 3: Understanding Oracle's Concurrency (MVCC) and Transaction Control</h4>
   <p class="problem-label">Problem:</p>
-  <p>This exercise demonstrates Oracle's Multi-Version Concurrency Control (MVCC) and transaction lifecycle. You will need two separate database connections/sessions (for example, two SQL Developer worksheets) connected as <code>NewSchema</code>. For detailed concepts, review the <a href="../books/database-concepts/ch12_data-concurrency-and-consistency.pdf">Data Concurrency and Consistency</a> and <a href="../books/database-concepts/ch13_transactions.pdf">Transactions</a> chapters from the Oracle Concepts guide.</p>
+  <p>This exercise demonstrates Oracle's Multi-Version Concurrency Control (MVCC) and transaction lifecycle. You will need two separate database connections/sessions (for example, two SQL Developer worksheets) connected as <code>blueprint</code>. For detailed concepts, review the <a href="../books/database-concepts/ch12_data-concurrency-and-consistency.pdf">Data Concurrency and Consistency</a> and <a href="../books/database-concepts/ch13_transactions.pdf">Transactions</a> chapters from the Oracle Concepts guide.</p>
   <ol>
     <li><strong>In Session 1:</strong> Start a transaction by reducing the quantity of 'PL/SQL Stored Procedure Guide' (productId 101) by 10. <strong>Do not commit.</strong></li>
     <li><strong>In Session 1:</strong> Query the <code>inventory</code> table to see the new quantity. You should see the updated value.</li>
@@ -245,7 +245,7 @@ END;
     <h5>Requirements:</h5>
     <ul>
         <li>
-            <strong>Metadata-Driven:</strong> The procedure should not have hardcoded table names for the child table. Instead, it should be designed to work on a base table (for example, `orders`) and find its child table (`orderItems`) by querying the Data Dictionary views.
+            <strong>Metadata-Driven:</strong> The procedure should not have hardcoded table names for the child table. Instead, it should be designed to work on a base table (for example, <code>orders</code>) and find its child table (<code>orderItems</code>) by querying the Data Dictionary views.
             <small>Hint: Use <code>USER_CONSTRAINTS</code> to find foreign key relationships.</small>
         </li>
         <li>
@@ -281,7 +281,7 @@ END;
     Mastering these foundational concepts—how the database describes itself, how its objects relate, and how it ensures data integrity through transactions and concurrency control—is non-negotiable for any Oracle professional. You have now practiced the core principles that underpin almost every interaction with an Oracle database.
 </p>
 <p>
-    With this foundation, you are now prepared to explore the next essential area for a consultant: **Oracle Performance & Optimization Basics**.
+    With this foundation, you are now prepared to explore the next essential area for a consultant: <strong>Oracle Performance & Optimization Basics</strong>.
 </p>
 </div>
 </body>

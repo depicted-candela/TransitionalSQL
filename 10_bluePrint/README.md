@@ -54,7 +54,7 @@ Why do Oracle DBAs always carry a dictionary? To look up the meanings of their o
 </div>
 <ul>
     <li><p><strong><code>Schema Objects</code></strong>: The logical structures you create, from tables that store data to views that give it a new face. They always belong to a specific schema, in a specific place.</p></li>
-    <li><p><strong><code>Data Dictionary</code></strong>: This is Oracle's **digital ledger**<sup id="fnref1_1"><a href="#fn1_1" class="footnote-ref">1</a></sup>—a read-only set of internal tables and views containing all metadata about your database. It's how the database keeps its own affairs in order, crossing every 't' and dotting every 'i'. Instead of one <code>information_schema</code>, Oracle provides a powerful, three-tiered system to spy:</p>
+    <li><p><strong><code>Data Dictionary</code></strong>: This is Oracle's <strong>digital ledger</strong><sup id="fnref1_1"><a href="#fn1_1" class="footnote-ref">1</a></sup>—a read-only set of internal tables and views containing all metadata about your database. It's how the database keeps its own affairs in order, crossing every 't' and dotting every 'i'. Instead of one <code>information_schema</code>, Oracle provides a powerful, three-tiered system to spy:</p>
         <ul>
             <li><code>USER_*</code>: Shows everything in your schema; your personal domain where you reign.</li>
             <li><code>ALL_*</code>: Shows everything you can access; your own objects plus what others deign to explain.</li>
@@ -77,8 +77,8 @@ Why do Oracle DBAs always carry a dictionary? To look up the meanings of their o
 <h3 id="section1sub3">Concurrency, Locking, & Transactions</h3>
 <p>Here we see how Oracle prevents data collisions, by managing multiple users and their database missions.</p>
 <ul>
-    <li><p><strong><code>Multiversion Concurrency Control (MVCC)</code></strong>: At its core, Oracle provides each query a **consistent read**—a "time-traveling snapshot" of data from the moment the query began. It uses <code>UNDO</code> data to show you the past, creating a version of data that's guaranteed to last. The profound outcome is a developer's dream and a user's delight: **readers do not block writers, and writers do not block readers**.<sup id="fnref1_2"><a href="#fn1_2" class="footnote-ref">2</a></sup></p></li>
-    <li><p><strong><code>Locking</code></strong>: When a transaction writes, it's not a big fight; it places an exclusive **row-level lock**, specific and tight. This lock is a whisper, not a shout from a tower, giving Oracle its concurrent processing power.</p></li>
+    <li><p><strong><code>Multiversion Concurrency Control (MVCC)</code></strong>: At its core, Oracle provides each query a <strong>consistent read</strong>—a "time-traveling snapshot" of data from the moment the query began. It uses <code>UNDO</code> data to show you the past, creating a version of data that's guaranteed to last. The profound outcome is a developer's dream and a user's delight: <strong>readers do not block writers, and writers do not block readers</strong>.<sup id="fnref1_2"><a href="#fn1_2" class="footnote-ref">2</a></sup></p></li>
+    <li><p><strong><code>Locking</code></strong>: When a transaction writes, it's not a big fight; it places an exclusive <strong>row-level lock</strong>, specific and tight. This lock is a whisper, not a shout from a tower, giving Oracle its concurrent processing power.</p></li>
     <li><p><strong><code>Transaction Management</code></strong>: You are the master of your data's fate, with three commands to control its state.</p>
         <ul>
             <li><code>COMMIT</code>: Makes your changes a permanent fixture, sealing them into the bigger picture.</li>
@@ -161,7 +161,7 @@ GRANT SELECT ON warehouses TO app_read_only;
         <li><strong>Step 4: The Point of No Return.</strong> <code>COMMIT;</code> Feel the power as you rewrite the very definition of your data reality.</li>
         <li><strong>Step 5: The "Re-initialization".</strong> A quick <code>SHUTDOWN ABORT</code> followed by a <code>STARTUP</code> will surely cement our glorious changes.</li>
     </ol>
-    <p>If you now find the database greeting you with an <code>ORA-00600</code> error, a **frozen flame** of digital despair, do not panic. You have successfully discovered the **Hidden Semantic Bridge** of this lesson: **never directly modify objects owned by <code>SYS</code>**. The Data Dictionary is the database's central nervous system; performing amateur neurosurgery upon it is the fastest way to achieve a state of "unstructured data liberation," also known as a full restore from backup. The joke is a **time carpet**; once you step on it, you're woven into a schedule of late-night calls with Oracle Support.</p>
+    <p>If you now find the database greeting you with an <code>ORA-00600</code> error, a <strong>frozen flame</strong> of digital despair, do not panic. You have successfully discovered the <strong>Hidden Semantic Bridge</strong> of this lesson: <strong>never directly modify objects owned by <code>SYS</code></strong>. The Data Dictionary is the database's central nervous system; performing amateur neurosurgery upon it is the fastest way to achieve a state of <em>unstructured data liberation</em>, also known as a full restore from backup. The joke is a <strong>time carpet</strong>; once you step on it, you're woven into a schedule of late-night calls with Oracle Support.</p>
 </div>
 
 ---
