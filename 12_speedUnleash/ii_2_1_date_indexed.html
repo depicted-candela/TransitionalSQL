@@ -134,12 +134,12 @@
             font-family: 'Roboto Mono', monospace;
         }
 
-        /* --- Predicate Information --- */
-        .predicate-info {
+        /* --- Information Sections (Predicates & Analysis) --- */
+        .info-section {
             margin-top: 25px;
         }
 
-        .predicate-info ul {
+        .info-section ul {
             list-style: none;
             padding: 0;
             margin: 0;
@@ -147,15 +147,25 @@
             font-size: 0.9em;
         }
 
-        .predicate-info li {
-            background-color: #fdfaf2;
-            border-left: 4px solid #f1c40f;
+        .info-section li {
             padding: 10px 15px;
             margin-bottom: 8px;
             border-radius: 0 4px 4px 0;
             line-height: 1.5;
-            white-space: pre-wrap; /* Allow long predicates to wrap */
+            white-space: pre-wrap;
             word-break: break-all;
+        }
+        
+        /* Specific styling for Predicate info */
+        .predicate-info li {
+             background-color: #fdfaf2;
+             border-left: 4px solid #f1c40f;
+        }
+        
+        /* Specific styling for Analysis info */
+        .analysis-info li {
+             background-color: #f2f8fc;
+             border-left: 4px solid #3498db;
         }
     </style>
 </head>
@@ -172,7 +182,7 @@
         </div>
 
         <div class="plan-summary">
-            <strong>Plan hash value:</strong> 3547394800
+            <strong>Plan hash value:</strong> 1803463639
         </div>
         
         <h2>Execution Steps</h2>
@@ -196,7 +206,7 @@
                         <td></td>
                         <td class="numeric">1</td>
                         <td class="numeric">8</td>
-                        <td class="numeric">6 (0)</td>
+                        <td class="numeric">76 (3)</td>
                         <td class="numeric">00:00:01</td>
                     </tr>
                     <tr>
@@ -210,21 +220,32 @@
                     </tr>
                     <tr>
                         <td class="numeric">* 2</td>
-                        <td>TABLE ACCESS FULL</td>
-                        <td>CUSTOMERORDERS</td>
-                        <td class="numeric">25</td>
-                        <td class="numeric">200</td>
-                        <td class="numeric">6 (0)</td>
+                        <td>INDEX FAST FULL SCAN</td>
+                        <td>IDX_FORORDEREDDATE</td>
+                        <td class="numeric">1000</td>
+                        <td class="numeric">8000</td>
+                        <td class="numeric">76 (3)</td>
                         <td class="numeric">00:00:01</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div class="predicate-info">
+        <div class="info-section predicate-info">
             <h2>Predicate Information</h2>
             <ul>
                 <li><strong>2</strong> - filter(TO_CHAR(INTERNAL_FUNCTION("ORDERDATE"),'YYYY')='2023')</li>
+            </ul>
+        </div>
+        
+        <div class="info-section analysis-info">
+            <h2>SQL Analysis Report</h2>
+            <ul>
+                <li>   2 -  SEL$1 / "CUSTOMERORDERS"@"SEL$1"
+           -  The following columns have predicates which preclude their 
+              use as keys in index range scan. Consider rewriting the 
+              predicates.
+                "ORDERDATE"</li>
             </ul>
         </div>
 

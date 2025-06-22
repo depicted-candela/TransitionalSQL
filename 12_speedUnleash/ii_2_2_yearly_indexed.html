@@ -17,16 +17,18 @@
             display: flex;
             justify-content: center;
             align-items: flex-start;
+            min-height: 100vh;
         }
 
         /* --- Main Container Card --- */
         .plan-container {
             width: 100%;
-            max-width: 900px;
+            max-width: 950px;
             background: #ffffff;
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            margin-bottom: 20px;
         }
 
         header {
@@ -82,8 +84,9 @@
             background-color: #ecf0f1;
             padding: 15px;
             border-radius: 5px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             font-family: 'Roboto Mono', monospace;
+            font-size: 0.95em;
         }
 
         /* --- Responsive Table Wrapper --- */
@@ -134,28 +137,38 @@
             font-family: 'Roboto Mono', monospace;
         }
 
-        /* --- Predicate Information --- */
-        .predicate-info {
+        /* --- Information Sections --- */
+        .info-section {
             margin-top: 25px;
         }
 
-        .predicate-info ul {
+        .info-section ul {
             list-style: none;
             padding: 0;
             margin: 0;
             font-family: 'Roboto Mono', monospace;
             font-size: 0.9em;
         }
-
-        .predicate-info li {
-            background-color: #fdfaf2;
-            border-left: 4px solid #f1c40f;
+        
+        .info-section li {
             padding: 10px 15px;
             margin-bottom: 8px;
             border-radius: 0 4px 4px 0;
             line-height: 1.5;
-            white-space: pre-wrap; /* Allow long predicates to wrap */
+            white-space: pre-wrap;
             word-break: break-all;
+        }
+
+        /* Predicate Info Styling */
+        .predicate-info li {
+            background-color: #fdfaf2;
+            border-left: 4px solid #f1c40f;
+        }
+        
+        /* Notes Info Styling */
+        .notes-info li {
+            background-color: #f2f9fd;
+            border-left: 4px solid #3498db;
         }
     </style>
 </head>
@@ -168,63 +181,72 @@
 
     <div class="content-wrapper">
         <div class="search-box">
-            <input type="text" id="search" onkeyup="delayedSearch();" placeholder="Filter plan steps...">
+            <input type="text" id="search" onkeyup="delayedSearch();" placeholder="Filter plan steps, predicates, or notes...">
         </div>
 
         <div class="plan-summary">
-            <strong>Plan hash value:</strong> 3547394800
+            <strong>Plan hash value:</strong> 1005945822
         </div>
         
-        <h2>Execution Steps</h2>
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th class="numeric">Id</th>
-                        <th>Operation</th>
-                        <th>Name</th>
-                        <th class="numeric">Rows</th>
-                        <th class="numeric">Bytes</th>
-                        <th class="numeric">Cost (%CPU)</th>
-                        <th class="numeric">Time</th>
-                    </tr>
-                </thead>
-                <tbody id="plan-data">
-                    <tr>
-                        <td class="numeric">0</td>
-                        <td>SELECT STATEMENT</td>
-                        <td></td>
-                        <td class="numeric">1</td>
-                        <td class="numeric">8</td>
-                        <td class="numeric">6 (0)</td>
-                        <td class="numeric">00:00:01</td>
-                    </tr>
-                    <tr>
-                        <td class="numeric">1</td>
-                        <td>SORT AGGREGATE</td>
-                        <td></td>
-                        <td class="numeric">1</td>
-                        <td class="numeric">8</td>
-                        <td class="numeric"></td>
-                        <td class="numeric"></td>
-                    </tr>
-                    <tr>
-                        <td class="numeric">* 2</td>
-                        <td>TABLE ACCESS FULL</td>
-                        <td>CUSTOMERORDERS</td>
-                        <td class="numeric">25</td>
-                        <td class="numeric">200</td>
-                        <td class="numeric">6 (0)</td>
-                        <td class="numeric">00:00:01</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="info-section execution-steps">
+            <h2>Execution Steps</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="numeric">Id</th>
+                            <th>Operation</th>
+                            <th>Name</th>
+                            <th class="numeric">Rows</th>
+                            <th class="numeric">Bytes</th>
+                            <th class="numeric">Cost (%CPU)</th>
+                            <th class="numeric">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="plan-data">
+                        <tr>
+                            <td class="numeric">0</td>
+                            <td>SELECT STATEMENT</td>
+                            <td></td>
+                            <td class="numeric">1</td>
+                            <td class="numeric">4</td>
+                            <td class="numeric">64 (4)</td>
+                            <td class="numeric">00:00:01</td>
+                        </tr>
+                        <tr>
+                            <td class="numeric">1</td>
+                            <td>SORT AGGREGATE</td>
+                            <td></td>
+                            <td class="numeric">1</td>
+                            <td class="numeric">4</td>
+                            <td class="numeric"></td>
+                            <td class="numeric"></td>
+                        </tr>
+                        <tr>
+                            <td class="numeric">* 2</td>
+                            <td>INDEX FAST FULL SCAN</td>
+                            <td>IDX_FORORDEREDYEAR</td>
+                            <td class="numeric">100K</td>
+                            <td class="numeric">390K</td>
+                            <td class="numeric">64 (4)</td>
+                            <td class="numeric">00:00:01</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="predicate-info">
+        <div class="info-section predicate-info">
             <h2>Predicate Information</h2>
-            <ul>
+            <ul id="predicate-data">
                 <li><strong>2</strong> - filter(TO_CHAR(INTERNAL_FUNCTION("ORDERDATE"),'YYYY')='2023')</li>
+            </ul>
+        </div>
+
+        <div class="info-section notes-info">
+            <h2>Note</h2>
+            <ul id="notes-data">
+                <li>dynamic statistics used: dynamic sampling (level=AUTO (SYSTEM))</li>
             </ul>
         </div>
 
@@ -234,16 +256,28 @@
 <script type="text/javascript">
     function search() {
         const searchTerm = document.getElementById('search').value.toUpperCase();
-        const rows = document.getElementById('plan-data').getElementsByTagName('tr');
+        
+        // Function to filter rows/list items
+        const filterElements = (containerId) => {
+            const container = document.getElementById(containerId);
+            if (!container) return;
 
-        for (let i = 0; i < rows.length; i++) {
-            const rowText = rows[i].textContent.toUpperCase();
-            if (rowText.indexOf(searchTerm) > -1) {
-                rows[i].style.display = '';
-            } else {
-                rows[i].style.display = 'none';
+            const items = container.tagName === 'TBODY' ? container.getElementsByTagName('tr') : container.getElementsByTagName('li');
+
+            for (let i = 0; i < items.length; i++) {
+                const itemText = items[i].textContent.toUpperCase();
+                if (itemText.indexOf(searchTerm) > -1) {
+                    items[i].style.display = '';
+                } else {
+                    items[i].style.display = 'none';
+                }
             }
-        }
+        };
+
+        // Filter all relevant sections
+        filterElements('plan-data');
+        filterElements('predicate-data');
+        filterElements('notes-data');
     }
 
     let searchTimer;

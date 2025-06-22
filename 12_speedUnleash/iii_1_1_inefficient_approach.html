@@ -227,7 +227,6 @@
                 <li><strong>2</strong> - filter(TO_CHAR(INTERNAL_FUNCTION("ORDERDATE"),'YYYY')='2023')</li>
             </ul>
         </div>
-
     </div>
 </div>
 
@@ -237,8 +236,17 @@
         const rows = document.getElementById('plan-data').getElementsByTagName('tr');
 
         for (let i = 0; i < rows.length; i++) {
-            const rowText = rows[i].textContent.toUpperCase();
-            if (rowText.indexOf(searchTerm) > -1) {
+            // Check if the search term is found in any cell of the current row
+            const cells = rows[i].getElementsByTagName('td');
+            let found = false;
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j].textContent.toUpperCase().indexOf(searchTerm) > -1) {
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (found) {
                 rows[i].style.display = '';
             } else {
                 rows[i].style.display = 'none';
