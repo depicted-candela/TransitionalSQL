@@ -5,13 +5,6 @@
 
 --      Problem 2.1: Implement Data Redaction and Column-Level Auditing
 -- Protect the sensitive data accessed by the analystUser while auditing access to critical notes.
--- CONNECT SECURITYADMIN/PwdForSecAdmin_04;
--- CONNECT sys/verboTemlos_. AS SYSDBA;
--- GRANT EXECUTE ON DBMS_REDACT TO guardians;
--- BEGIN
---     DBMS_REDACT.DROP_POLICY(object_schema => 'GUARDIANS', object_name => 'SENSITIVEDATA', policy_name => 'hidingSensitiveData');
--- END;
--- /
 -- Step A (As securityAdmin): Create a Data Redaction policy on the guardians.SensitiveData table. The policy must apply only to analystUser and should:
 -- Partially redact the socialSecurityNumber column to show only the last four digits (e.g., 'XXX-XX-6789').
 -- Completely redact the salary column, showing only the number 0.
@@ -26,20 +19,18 @@ CONNECT securityAdmin/PwdForSecAdmin_04;
 
 -- Set up robust cleanup to make the script re-runnable
 BEGIN
-   DBMS_REDACT.DROP_POLICY(
-      object_schema => 'GUARDIANS', object_name   => 'SENSITIVEDATA',
-      policy_name   => 'SENSITIVE_DATA_REDACTION_POLICY'
-   );
+    DBMS_REDACT.DROP_POLICY(
+        object_schema => 'GUARDIANS', object_name   => 'SENSITIVEDATA',
+        policy_name   => 'SENSITIVE_DATA_REDACTION_POLICY'
+    );
 EXCEPTION WHEN OTHERS THEN IF SQLCODE = -28102 THEN NULL; ELSE RAISE; END IF;
 END;
 /
-BEGIN
-   EXECUTE IMMEDIATE 'NOAUDIT POLICY salary_access_audit';
+BEGIN EXECUTE IMMEDIATE 'NOAUDIT POLICY salary_access_audit';
 EXCEPTION WHEN OTHERS THEN IF SQLCODE = -46357 THEN NULL; ELSE RAISE; END IF;
 END;
 /
-BEGIN
-   EXECUTE IMMEDIATE 'DROP AUDIT POLICY salary_access_audit';
+BEGIN EXECUTE IMMEDIATE 'DROP AUDIT POLICY salary_access_audit';
 EXCEPTION WHEN OTHERS THEN IF SQLCODE = -46357 THEN NULL; ELSE RAISE; END IF;
 END;
 /
@@ -55,11 +46,9 @@ BEGIN
         policy_name           => 'SENSITIVE_DATA_REDACTION_POLICY',
         expression            => 'SYS_CONTEXT(''USERENV'', ''SESSION_USER'') = ''ANALYSTUSER''',
         column_name           => 'socialSecurityNumber',
-        function_type         => DBMS_REDACT.REGEXP,
-        regexp_pattern        => '^\w{3}-\w{2}-',
-        regexp_replace_string => 'XXX-XX-'
+        function_type         => DBMS_REDACT.PARTIAL,
+        function_parameters   => 'VVVFVVFVVVV,VVV|VV|VVVV,*,1,5'
     );
-
     -- Alter the policy to add redaction for the salary column
     DBMS_REDACT.ALTER_POLICY(
         object_schema         => 'GUARDIANS',

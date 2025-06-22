@@ -58,7 +58,7 @@
             <li><strong>Value:</strong> The output is a highly relevant, concise audit trail. When a user queries a table but only selects benign columns, no audit record is generated. But the moment they touch a watched column like <code>missionNotes</code>, the action is logged, providing an unassailable record of a security breach or action.<sup class="footnote-ref"><a href="#fn3" id="fnref3">3</a></sup></li>
         </ul>
         <h3 id="section1sub4">Schema Privileges: The Master Key to a Single Room</h3>
-        <p>A <strong>Schema Privilege</strong> is a 23ai authorization innovation. Imagine a <strong>master key</strong> that only works for doors within a single, specific location. This is its core value: granting broad permissions—like <code>SELECT ANY TABLE</code>—but confining that power to a single schema's foundation. It's a <strong>universe minuscule</strong>, a powerful right in a tiny place, an elegant solution for managing access with style and with grace.<sup class="footnote-ref"><a href="#fn4" id="fnref4">4</a></sup></p>
+        <p>A <strong>Schema Privilege</strong> is a 23ai authorization innovation. Imagine a <strong>master key</strong> that only works for doors within a single, specific location. This is its core value: granting broad permissions—like <code>SELECT ANY TABLE</code>—but confining that power to a single schema's foundation. It's a <strong>universe minuscule</strong>, a powerful right in a tiny place, an elegant solution for managing access with style and with grace. But wielding such a key requires a special kind of authority, a right granted only to the most trusted administrators.<sup class="footnote-ref"><a href="#fn4" id="fnref4">4</a></sup></p>
         <ul>
             <li><strong>Meaning:</strong> A single grant that applies to all existing and future objects of a certain type within one specific schema's station.</li>
             <li><strong>Value:</strong> It simplifies privilege management for application schemas where developers need consistent access, without granting dangerous system-wide <code>ANY</code> privileges that could lead to a dire situation.</li>
@@ -77,7 +77,7 @@
             <li><strong>SQL Firewall and DCL:</strong> The Firewall is a filter that comes into play <strong>after</strong> standard privileges (<code>GRANT</code>, <code>REVOKE</code>) are confirmed. A user must first have permission, a concept you know from your PostgreSQL station, and only then does the Firewall begin its SQL inspection.</li>
             <li><strong>Redaction and Privileges:</strong> Data Redaction policies are the final curtain call, applied <strong>after</strong> the database decides to return data to a user at all. A user with the powerful <code>EXEMPT REDACTION POLICY</code> privilege will bypass this masquerade, a concept related to the superuser role you’ve already surveyed.</li>
             <li><strong>Auditing and Other Security Features:</strong> Column-level auditing is the faithful scribe. It can record a query that was <strong>allowed</strong> by the SQL Firewall and whose output was then <strong>disguised</strong> by Data Redaction. For every security interaction, it provides the official narration.</li>
-            <li><strong>Schema Privileges and Standard Privileges:</strong> A Schema Privilege is a grander kind of grant. <code>GRANT SELECT ANY TABLE ON SCHEMA operationsData</code> is like running <code>GRANT SELECT ON ...</code> for every table, both present and future, removing a constant administrative feature.</li>
+            <li><strong>Schema Privileges and Standard Privileges:</strong> A Schema Privilege is a grander kind of grant. It does not replace the standard privilege model but extends it. Think of it as a two-key system: one key (e.g., <code>SELECT ANY TABLE WITH ADMIN OPTION</code>) proves you possess a certain power, while the second, newer key (<code>GRANT ANY SCHEMA PRIVILEGE</code>) proves you are authorized to bestow that power upon a specific domain using the <code>ON SCHEMA</code> clause. You need both to succeed.<sup class="footnote-ref"><a href="#fn10" id="fnref10">10</a></sup></li>
         </ul>
         <h2 id="section3">Section 3: How to Use Them: Structures & Syntax</h2>
         <p>Why did the SQL Firewall go to therapy? Because it had trouble trusting any new query! These security features are configured with precision, using PL/SQL packages and new DDL to fulfill their mission.</p>
@@ -140,30 +140,40 @@ DBMS_REDACT.ADD_POLICY(
     object_name         => 'SENSITIVEDATA',
     policy_name         => 'ssn_mask_policy',
     column_name         => 'SOCIALSECURITYNUMBER',
-    function_type       => DBMS_REDACT.PARTIAL,
-    function_parameters => 'VVVFVVFVVVV, ''XXX-XX-'' || SUBSTR(SOCIALSECURITYNUMBER, -4)',
+    function_type       => DBMS_REDACT.REGEXP, -- Using REGEXP for custom partial redaction
+    regexp_pattern      => '^\w{3}-\w{2}-',
+    regexp_replace_string => 'XXX-XX-',
     expression          => 'SYS_CONTEXT(''USERENV'',''SESSION_USER'') = ''ANALYSTUSER'''
 );
 ```
 </li>
 </ul>
 <h3 id="section3sub3">Creating Audit Policies</h3>
-<p>Unified Auditing uses clear DDL, a simple declaration. The <code>COLUMNS</code> clause provides precise column-level observation.<sup class="footnote-ref"><a href="#fn8" id="fnref8">8</a></sup></p>
+<p>Unified Auditing uses clear DDL, a simple declaration. The <code>ACTIONS ... ON ... (columns)</code> syntax provides precise column-level observation.<sup class="footnote-ref"><a href="#fn8" id="fnref8">8</a></sup></p>
 
 ```sql
 -- Create the policy for specific observation
 CREATE AUDIT POLICY mission_notes_audit
-  COLUMNS guardians.SensitiveData.missionNotes
-  ACTIONS SELECT;
+  ACTIONS SELECT(missionNotes) ON guardians.SensitiveData;
 -- Enable the policy for immediate application
 AUDIT POLICY mission_notes_audit;
 ```
 
 <h3 id="section3sub4">Granting Schema Privileges</h3>
 <p>The syntax extends the familiar <code>GRANT</code> with an <code>ON SCHEMA</code> clause, a powerful new way to handle authorization.<sup class="footnote-ref"><a href="#fn9" id="fnref9">9</a></sup></p>
+<div class="caution">
+    <strong>Prerequisites for Schema Grants:</strong><br>
+    To grant a system privilege (like <code>SELECT ANY TABLE</code>) on a specific schema, the administrator must possess <strong>two distinct privileges</strong>:
+    <ol>
+        <li>The system privilege itself, granted <code>WITH ADMIN OPTION</code>.</li>
+        <li>The new <strong><code>GRANT ANY SCHEMA PRIVILEGE</code></strong> system privilege.</li>
+    </ol>
+    Without both, Oracle will return an <code>ORA-01031: insufficient privileges</code> error.
+</div>
 
 ```sql
--- Grant a developer the right to query any table in a specific situation
+-- This grant will only succeed if the granting user has both
+-- 'SELECT ANY TABLE WITH ADMIN OPTION' and 'GRANT ANY SCHEMA PRIVILEGE'.
 GRANT SELECT ANY TABLE ON SCHEMA operationsData TO devUser;
 ```
 <h2 id="sectionX">Section X: Bridging from PostgreSQL to Oracle</h2>
@@ -172,8 +182,8 @@ GRANT SELECT ANY TABLE ON SCHEMA operationsData TO devUser;
     <h4>PostgreSQL Bridge: From Views and Logs to a Kernel-Level Stage</h4>
     <ul>
         <li><strong>Data Redaction:</strong> In PostgreSQL, redaction is often handled with a <code>VIEW</code>, a clever page. But this isn't transparent; apps must know the view's name. Oracle's Data Redaction is applied directly, changing the security game. It's a policy-driven, automatic art, impossible for a user with table grants to tear apart.</li>
-        <li><strong>Auditing:</strong> PostgreSQL's <code>pgaudit</code> is a fantastic tool for logging with precision. But to audit a single column's selection often requires a complex function or custom log-parsing mission. Oracle's <code>CREATE AUDIT POLICY ... COLUMNS</code> is a direct, declarative command, creating a clean audit trail that's easy to understand.</li>
-        <li><strong>Privilege Management:</strong> The closest kin to Oracle's Schema Privileges in PostgreSQL is <code>ALTER DEFAULT PRIVILEGES</code>, a two-step legislation. Oracle's <code>GRANT ... ON SCHEMA</code> is a single, atomic statement, a more intuitive simplification for schema-wide administration.</li>
+        <li><strong>Auditing:</strong> PostgreSQL's <code>pgaudit</code> is a fantastic tool for logging with precision. But to audit a single column's selection often requires a complex function or custom log-parsing mission. Oracle's <code>CREATE AUDIT POLICY ... ACTIONS ... ON ... (column)</code> is a direct, declarative command, creating a clean audit trail that's easy to understand.</li>
+        <li><strong>Privilege Management:</strong> The closest kin to Oracle's Schema Privileges in PostgreSQL is <code>ALTER DEFAULT PRIVILEGES</code>, a two-step legislation. Oracle's <code>GRANT ... ON SCHEMA</code> is a single, atomic statement, a more intuitive simplification for schema-wide administration, though it requires its own special administrative privilege.</li>
     </ul>
 </div>
 <h2 id="section4">Section 4: Why Use Them? (Advantages in Oracle)</h2>
@@ -190,6 +200,7 @@ GRANT SELECT ANY TABLE ON SCHEMA operationsData TO devUser;
     <li><strong>Firewall Learning Curve:</strong> The greatest pitfall is an incomplete "capture" phase. If your firewall's training data is flawed, then legitimate application logic will be outlawed. Like navigating through <strong>echoing silence</strong>, you won't know what you've missed until a user's legitimate access is dismissed.</li>
     <li><strong>Performance Overhead:</strong> While highly optimized, these features are not entirely free. A complex redaction policy, like a <strong>time carpet</strong>, can consume cycles. The key is to be specific, to redact and audit with a strategy that's clear and terrific.</li>
     <li><strong>Complexity in Management:</strong> With more layers, there's more to inspect. A user's lack of access could be a privilege they've been checked, a Firewall block, or a Redaction effect. Troubleshooting means checking all layers to find the defect.</li>
+    <li><strong>Incomplete Privilege Model Understanding:</strong> An administrator accustomed to older versions may grant <code>... WITH ADMIN OPTION</code> and expect it to be sufficient for all delegation. The new schema-level grants require <code>GRANT ANY SCHEMA PRIVILEGE</code> as well. Forgetting this is like trying to use a master key from an old castle in a new high-tech wing; the lock has fundamentally changed.</li>
     <li><strong>Redaction is Not Encryption:</strong> Redaction is for data in flight, a mask for the user's sight. It is not encryption at rest on the disk. A privileged user could still see the data, a potential risk. It's one piece of the puzzle, a single part of the art, not a replacement for TDE to keep your data smart.</li>
 </ul>
 <div class="caution">
@@ -209,31 +220,34 @@ GRANT SELECT ANY TABLE ON SCHEMA operationsData TO devUser;
 <hr>
 <ol>
 <li id="fn1">
-    <p><a href="/books/oracle-database-sql-firewall-users-guide/03_ch01_overview-of-oracle-sql-firewall.pdf" title="Oracle Database SQL Firewall User's Guide, 23ai - Chapter 1: Overview of Oracle SQL Firewall">Oracle Database SQL Firewall User's Guide, 23ai, Chapter 1: Overview of Oracle SQL Firewall</a>. This guide provides a comprehensive overview of SQL Firewall's architecture, use cases, and benefits. <a href="#fnref1" title="Jump back to footnote 1 in the text">↩</a></p>
+    <p><a href="../books/oracle-database-sql-firewall-users-guide/03_ch01_overview-of-oracle-sql-firewall.pdf" title="Oracle Database SQL Firewall User's Guide, 23ai - Chapter 1: Overview of Oracle SQL Firewall">Oracle Database SQL Firewall User's Guide, 23ai, Chapter 1: Overview of Oracle SQL Firewall</a>. This guide provides a comprehensive overview of SQL Firewall's architecture, use cases, and benefits. <a href="#fnref1" title="Jump back to footnote 1 in the text">↩</a></p>
 </li>
 <li id="fn2">
-    <p><a href="/books/database-security-guide/ch03_15-using-transparent-sensitive-data-protection.pdf" title="Oracle Database Security Guide, 23ai - Chapter 15: Using Transparent Sensitive Data Protection">Oracle Database Security Guide, 23ai, Chapter 15</a>. This chapter includes Data Redaction. The <code>DBMS_REDACT</code> package is detailed in the <a href="/books/database-pl-sql-packages-and-types-reference/ch159_dbms_redact.pdf">PL/SQL Packages and Types Reference</a>. <a href="#fnref2" title="Jump back to footnote 2 in the text">↩</a></p>
+    <p><a href="../books/database-security-guide/ch03_15-using-transparent-sensitive-data-protection.pdf" title="Oracle Database Security Guide, 23ai - Chapter 15: Using Transparent Sensitive Data Protection">Oracle Database Security Guide, 23ai, Chapter 15</a>. This chapter includes Data Redaction. The <code>DBMS_REDACT</code> package is detailed in the <a href="../books/database-pl-sql-packages-and-types-reference/ch159_dbms_redact.pdf">PL/SQL Packages and Types Reference</a>. <a href="#fnref2" title="Jump back to footnote 2 in the text">↩</a></p>
 </li>
 <li id="fn3">
-    <p><a href="/books/database-security-guide/ch03_30-creating-custom-unified-audit-policies.pdf" title="Oracle Database Security Guide, 23ai - Chapter 30: Creating Custom Unified Audit Policies">Oracle Database Security Guide, 23ai, Chapter 30: Creating Custom Unified Audit Policies</a>. Section 30.4.4 specifically covers auditing object actions, including on columns. <a href="#fnref3" title="Jump back to footnote 3 in the text">↩</a></p>
+    <p><a href="../books/database-security-guide/ch02_29-provisioning-audit-policies.pdf" title="Oracle Database Security Guide, 23ai - Chapter 29: Provisioning Audit Policies">Oracle Database Security Guide, 23ai, Chapter 29: Provisioning Audit Policies</a>. Section 30.4.4 in the following chapter specifically covers auditing object actions, including on columns. <a href="#fnref3" title="Jump back to footnote 3 in the text">↩</a></p>
 </li>
 <li id="fn4">
-    <p><a href="/books/database-security-guide/ch03_4-configuring-privilege-and-role-authorization.pdf" title="Oracle Database Security Guide, 23ai - Chapter 4: Configuring Privilege and Role Authorization">Oracle Database Security Guide, 23ai, Chapter 4: Configuring Privilege and Role Authorization</a>. Section 4.7 details the new Schema Privileges feature introduced in Oracle 23ai. <a href="#fnref4" title="Jump back to footnote 4 in the text">↩</a></p>
+    <p><a href="../books/database-security-guide/ch03_4-configuring-privilege-and-role-authorization.pdf" title="Oracle Database Security Guide, 23ai - Chapter 4: Configuring Privilege and Role Authorization">Oracle Database Security Guide, 23ai, Chapter 4: Configuring Privilege and Role Authorization</a>. Section 4.7 details the new Schema Privileges feature introduced in Oracle 23ai. <a href="#fnref4" title="Jump back to footnote 4 in the text">↩</a></p>
 </li>
 <li id="fn5">
-    <p><a href="/books/oracle-database-23ai-new-features-guide/09_Security.pdf" title="Oracle Database 23ai New Features Guide - Chapter 9: Security">Oracle Database 23ai New Features Guide, Chapter 9: Security</a>. This chapter highlights the new and enhanced authentication integrations with Microsoft Entra ID and OCI IAM. <a href="#fnref5" title="Jump back to footnote 5 in the text">↩</a></p>
+    <p><a href="../books/oracle-database-23ai-new-features-guide/09_Security.pdf" title="Oracle Database 23ai New Features Guide - Chapter 9: Security">Oracle Database 23ai New Features Guide, Chapter 9: Security</a>. This chapter highlights the new and enhanced authentication integrations with Microsoft Entra ID and OCI IAM. <a href="#fnref5" title="Jump back to footnote 5 in the text">↩</a></p>
 </li>
 <li id="fn6">
-    <p><a href="/books/database-pl-sql-packages-and-types-reference/ch188_dbms_sql_firewall.pdf" title="Oracle Database PL/SQL Packages and Types Reference, 23ai - Chapter 188: DBMS_SQL_FIREWALL">Oracle Database PL/SQL Packages and Types Reference, 23ai, Chapter 188: DBMS_SQL_FIREWALL</a>. This chapter is the definitive reference for all procedures and constants used to manage SQL Firewall. <a href="#fnref6" title="Jump back to footnote 6 in the text">↩</a></p>
+    <p><a href="../books/database-pl-sql-packages-and-types-reference/ch188_dbms_sql_firewall.pdf" title="Oracle Database PL/SQL Packages and Types Reference, 23ai - Chapter 188: DBMS_SQL_FIREWALL">Oracle Database PL/SQL Packages and Types Reference, 23ai, Chapter 188: DBMS_SQL_FIREWALL</a>. This chapter is the definitive reference for all procedures and constants used to manage SQL Firewall. <a href="#fnref6" title="Jump back to footnote 6 in the text">↩</a></p>
 </li>
 <li id="fn7">
-    <p><a href="/books/database-pl-sql-packages-and-types-reference/ch159_dbms_redact.pdf" title="Oracle Database PL/SQL Packages and Types Reference, 23ai - Chapter 159: DBMS_REDACT">Oracle Database PL/SQL Packages and Types Reference, 23ai, Chapter 159: DBMS_REDACT</a>. Provides the full syntax and parameters for creating and managing data redaction policies. <a href="#fnref7" title="Jump back to footnote 7 in the text">↩</a></p>
+    <p><a href="../books/database-pl-sql-packages-and-types-reference/ch159_dbms_redact.pdf" title="Oracle Database PL/SQL Packages and Types Reference, 23ai - Chapter 159: DBMS_REDACT">Oracle Database PL/SQL Packages and Types Reference, 23ai, Chapter 159: DBMS_REDACT</a>. Provides the full syntax and parameters for creating and managing data redaction policies. Note the use of <code>DBMS_REDACT.REGEXP</code> instead of the older <code>PARTIAL</code> with a complex expression string for custom redaction. <a href="#fnref7" title="Jump back to footnote 7 in the text">↩</a></p>
 </li>
 <li id="fn8">
-    <p><a href="/books/database-security-guide/ch02_29-provisioning-audit-policies.pdf" title="Oracle Database Security Guide, 23ai - Chapter 29: Provisioning Audit Policies">Oracle Database Security Guide, 23ai, Chapter 29: Provisioning Audit Policies</a>. Provides a complete overview of the Unified Audit framework and its DDL syntax. <a href="#fnref8" title="Jump back to footnote 8 in the text">↩</a></p>
+    <p><a href="../books/database-security-guide/ch02_29-provisioning-audit-policies.pdf" title="Oracle Database Security Guide, 23ai - Chapter 29: Provisioning Audit Policies">Oracle Database Security Guide, 23ai, Chapter 29: Provisioning Audit Policies</a>. Provides a complete overview of the Unified Audit framework and its DDL syntax. The syntax <code>ACTIONS action(columns) ON object</code> is the correct form for column-level auditing. <a href="#fnref8" title="Jump back to footnote 8 in the text">↩</a></p>
 </li>
 <li id="fn9">
-    <p><a href="/books/sql-language-reference/18_ch16_sql-statements-drop-table-to-lock-table.pdf" title="Oracle Database SQL Language Reference, 23ai - GRANT Statement">Oracle Database SQL Language Reference, 23ai - GRANT Statement</a>. The <code>GRANT</code> statement documentation includes the syntax for the <code>ON SCHEMA</code> clause. <a href="#fnref9" title="Jump back to footnote 9 in the text">↩</a></p>
+    <p><a href="../books/sql-language-reference/20_ch18_sql-statements-drop-table-to-lock-table.pdf" title="Oracle Database SQL Language Reference, 23ai - GRANT Statement">Oracle Database SQL Language Reference, 23ai - GRANT Statement</a>. Page 18-33 shows the <code>grant_schema_privileges</code> syntax diagram. Page 18-38 explains the prerequisites for granting schema-level privileges. <a href="#fnref9" title="Jump back to footnote 9 in the text">↩</a></p>
+</li>
+<li id="fn10">
+    <p><a href="../books/database-security-guide/ch03_4-configuring-privilege-and-role-authorization.pdf" title="Oracle Database Security Guide, 23ai - Chapter 4: Configuring Privilege and Role Authorization">Oracle Database Security Guide, 23ai, Chapter 4</a>. Section 4.7.3, "Granting a Schema Privilege," and its subsequent sections detail this two-part requirement. You must have the underlying system privilege with <code>ADMIN OPTION</code> *and* the <code>GRANT ANY SCHEMA PRIVILEGE</code> to successfully use the <code>ON SCHEMA</code> clause. <a href="#fnref10" title="Jump back to footnote 10 in the text">↩</a></p>
 </li>
 </ol>
 </div>

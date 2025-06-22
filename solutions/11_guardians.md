@@ -249,6 +249,7 @@ SELECT * FROM operationsData.ProjectCodes;
 <p><strong>Solution Code:</strong></p>
 
 ```sql
+
 -- Step 1: Create the PL/SQL package for policy management (as securityAdmin)
 CONNECT securityAdmin/PwdForSecAdmin_04;
 CREATE OR REPLACE PACKAGE security_policies AS
@@ -257,24 +258,63 @@ CREATE OR REPLACE PACKAGE security_policies AS
 END security_policies;
 /
 CREATE OR REPLACE PACKAGE BODY security_policies AS
+
+
   PROCEDURE apply_all_policies IS
   BEGIN
     -- Data Redaction Policy for analystUser
-    DBMS_REDACT.ADD_POLICY(object_schema=>'GUARDIANS', object_name=>'SENSITIVEDATA', policy_name=>'analyst_pii_redaction', expression=>'SYS_CONTEXT(''USERENV'', ''SESSION_USER'') = ''ANALYSTUSER''');
-    DBMS_REDACT.ALTER_POLICY(object_schema=>'GUARDIANS', object_name=>'SENSITIVEDATA', policy_name=>'analyst_pii_redaction', action=>DBMS_REDACT.ADD_COLUMN, column_name=>'SOCIALSECURITYNUMBER', function_type=>DBMS_REDACT.PARTIAL, function_parameters=>'''XXX-XX-'' || SUBSTR(SOCIALSECURITYNUMBER, -4)');
-    DBMS_REDACT.ALTER_POLICY(object_schema=>'GUARDIANS', object_name=>'SENSITIVEDATA', policy_name=>'analyst_pii_redaction', action=>DBMS_REDACT.ADD_COLUMN, column_name=>'SALARY', function_type=>DBMS_REDACT.FULL, function_parameters=>'0');
-    DBMS_REDACT.ALTER_POLICY(object_schema=>'GUARDIANS', object_name=>'SENSITIVEDATA', policy_name=>'analyst_pii_redaction', action=>DBMS_REDACT.ADD_COLUMN, column_name=>'ISCOVERT', function_type=>DBMS_REDACT.FULL, function_parameters=>'TRUE');
+    DBMS_REDACT.ADD_POLICY(
+      object_schema=>'GUARDIANS', 
+      object_name=>'SENSITIVEDATA', 
+      policy_name=>'analyst_pii_redaction', 
+      expression=>'SYS_CONTEXT(''USERENV'', ''SESSION_USER'') = ''ANALYSTUSER''');
+
+    DBMS_REDACT.ALTER_POLICY(
+      object_schema=>'GUARDIANS', 
+      object_name=>'SENSITIVEDATA', 
+      policy_name=>'analyst_pii_redaction', 
+      action=>DBMS_REDACT.ADD_COLUMN, 
+      column_name=>'SOCIALSECURITYNUMBER', 
+      function_type=>DBMS_REDACT.PARTIAL, 
+      function_parameters=>'''XXX-XX-'' || SUBSTR(SOCIALSECURITYNUMBER, -4)');
+      
+    DBMS_REDACT.ALTER_POLICY(
+      object_schema=>'GUARDIANS', 
+      object_name=>'SENSITIVEDATA', 
+      policy_name=>'analyst_pii_redaction', 
+      action=>DBMS_REDACT.ADD_COLUMN, 
+      column_name=>'SALARY', 
+      function_type=>DBMS_REDACT.FULL, 
+      function_parameters=>'0');
+
+    DBMS_REDACT.ALTER_POLICY(
+      object_schema=>'GUARDIANS', 
+      object_name=>'SENSITIVEDATA', 
+      policy_name=>'analyst_pii_redaction', 
+      action=>DBMS_REDACT.ADD_COLUMN, 
+      column_name=>'ISCOVERT', 
+      function_type=>DBMS_REDACT.FULL, 
+      function_parameters=>'TRUE');
+
     -- Column-Level Audit Policy for missionNotes
     CREATE AUDIT POLICY notes_access_audit COLUMNS guardians.SensitiveData.missionNotes ACTIONS SELECT;
     AUDIT POLICY notes_access_audit;
+
     -- Enable Firewall globally, then create and start capture for appUser
     DBMS_SQL_FIREWALL.ENABLE;
     DBMS_SQL_FIREWALL.CREATE_CAPTURE(username => 'APPUSER');
     DBMS_OUTPUT.PUT_LINE('Initial policies applied. SQL Firewall capture for APPUSER is active.');
+
   END apply_all_policies;
+  
+
   PROCEDURE remove_all_policies IS
   BEGIN
-    DBMS_REDACT.DROP_POLICY(object_schema=>'GUARDIANS', object_name=>'SENSITIVEDATA', policy_name=>'analyst_pii_redaction');
+    DBMS_REDACT.DROP_POLICY(
+      object_schema=>'GUARDIANS', 
+      object_name=>'SENSITIVEDATA', 
+      policy_name=>'analyst_pii_redaction');
+      
     NOAUDIT POLICY notes_access_audit;
     DROP AUDIT POLICY notes_access_audit;
     DBMS_SQL_FIREWALL.DROP_ALLOW_LIST(username => 'APPUSER');
@@ -282,8 +322,11 @@ CREATE OR REPLACE PACKAGE BODY security_policies AS
     DBMS_OUTPUT.PUT_LINE('All security policies removed.');
   EXCEPTION WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE('Cleanup Notice: Some policies might not have existed to be dropped.');
   END remove_all_policies;
+
 END security_policies;
 /
+
+
 -- Step 2: Test Plan Execution
 -- As securityAdmin: INITIATE SECURITY PROTOCOLS
 CONNECT securityAdmin/PwdForSecAdmin_04;
@@ -299,6 +342,8 @@ EXEC DBMS_SQL_FIREWALL.STOP_CAPTURE('APPUSER');
 EXEC DBMS_SQL_FIREWALL.GENERATE_ALLOW_LIST('APPUSER');
 EXEC DBMS_SQL_FIREWALL.ADD_ALLOWED_CONTEXT(username => 'APPUSER', context_type => DBMS_SQL_FIREWALL.IP_ADDRESS, value => '127.0.0.1');
 EXEC DBMS_SQL_FIREWALL.ENABLE_ALLOW_LIST(username => 'APPUSER', enforce => DBMS_SQL_FIREWALL.ENFORCE_ALL, block => TRUE);
+
+
 -- VERIFICATION STAGE --
 -- Verification 1 (SUCCESS): appUser runs allowed operations
 CONNECT appUser/PwdForAppUser_01;

@@ -233,6 +233,14 @@ COMMIT;
     <li><strong>Step C (As <code>operationsData</code>):</strong> Create a <strong>new</strong> table in the <code>operationsData</code> schema.</li>
     <li><strong>Step D (As <code>devUser</code>):</strong> Verify that the user can <strong>immediately</strong> query the new table without any additional grants being issued. This demonstrates the key advantage.</li>
 </ul>
+<div class="oracle-specific">
+    <p><strong>Documentation Reference:</strong></p>
+    This problem involves a new feature in Oracle 23ai. To understand the prerequisites, consult these essential documents:
+    <ul>
+        <li><a href="../books/database-security-guide/ch03_4-configuring-privilege-and-role-authorization.pdf">Security Guide, Chapter 4: Configuring Privilege and Role Authorization</a> - Section 4.7, "Managing Schema Privileges," explains the concept and the required privileges.</li>
+        <li><a href="../books/sql-language-reference/ch18_sql-statements-drop-table-to-lock-table.pdf">SQL Language Reference, GRANT Statement</a> - The syntax diagram on page 18-33 shows the new <code>grant_schema_privileges</code> clause, and the "Prerequisites" on page 18-38 confirms the necessary rights.</li>
+    </ul>
+</div>
 <div class="postgresql-bridge">
     <p><strong>PostgreSQL Bridge:</strong> This single Oracle command, <code>GRANT SELECT ANY TABLE ON SCHEMA...</code>, is a more direct equivalent to the combination of PostgreSQL's <code>GRANT USAGE ON SCHEMA</code> and <code>ALTER DEFAULT PRIVILEGES</code>. It simplifies granting ongoing access to all of an application's tables.</p>
 </div>
