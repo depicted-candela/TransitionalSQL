@@ -39,7 +39,8 @@
     <strong>Problem:</strong> You are tasked with retrieving all orders for a specific <code>productId</code>. First, analyze the performance of this query without any indexes. Then, create a standard B-Tree index on the `productId` column in the `customerOrders` table and analyze the plan again.
 </p>
 
-```-- Step 1 & 2: Run query and generate the initial plan
+```sql
+-- Step 1 & 2: Run query and generate the initial plan
 EXPLAIN PLAN FOR
 SELECT * FROM customerOrders WHERE productId = 2;
 SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
@@ -82,14 +83,17 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
     <strong>Bridging from PostgreSQL:</strong> The concept is identical to using a standard B-Tree index in PostgreSQL. The key difference is the tooling. In PostgreSQL, you would use <code>EXPLAIN (ANALYZE, BUFFERS) SELECT ...</code> to get a plan. In Oracle, the idiomatic way is the two-step process: first, <code>EXPLAIN PLAN FOR ...</code> to populate a plan table, and second, using the <code>DBMS_XPLAN.DISPLAY</code> function to format and display the stored plan. Oracle's plan output is also typically more detailed, showing costs, cardinality estimates, and byte counts for each step.
 </div>
 <div class="oracle-specific">
-    <strong>For more information:</strong> Review <strong>Oracle® Database SQL Tuning Guide</strong>, Chapter 8, "Optimizer Access Paths" and Chapter 6, "Explaining and Displaying Execution Plans". ([Link to Chapter 8](books/sql-tuning-guide/ch01_8-optimizer-access-paths.pdf), [Link to Chapter 6](books/sql-tuning-guide/ch01_6-explaining-and-displaying-execution-plans.pdf))
+    <strong>For more information:</strong> Review <strong>Oracle® Database SQL Tuning Guide</strong> 
+    <a href="../books/sql-tuning-guide/ch08_17-importing-and-exporting-optimizer-statistics.pdf"><em>Chapter 8, Optimizer Access Paths</em></a> and 
+    <a href="../books/sql-tuning-guide/ch06_15-controlling-the-use-of-optimizer-statistics.pdf"><em>Chapter 6, Explaining and Displaying Execution Plans</em></a>
 </div>
 <h4>Exercise 2: <span class="problem-label">Low Cardinality Power - The Bitmap Index</span></h4>
 <p>
     <strong>Problem:</strong> Queries filtering on <code>orderStatus</code> are common for reporting. Since <code>orderStatus</code> has very few distinct values (low cardinality), a Bitmap index is a potential optimization.
 </p>
 
-```-- Step 2: Create the Bitmap index
+```sql
+-- Step 2: Create the Bitmap index
 CREATE BITMAP INDEX idxOrderStatusBitmap ON customerOrders(orderStatus);
 -- Step 1 & 3: Write query and generate plan
 EXPLAIN PLAN FOR
@@ -127,14 +131,16 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
     <strong>Bridging from PostgreSQL:</strong> This is a significant architectural difference. PostgreSQL does not have a native bitmap index type that you create explicitly like this. While PostgreSQL's query planner can create bitmap structures *on-the-fly* during query execution (a "Bitmap Heap Scan"), it's an internal optimization, not a persistent index structure you manage. Oracle's persistent Bitmap Indexes are a powerful, explicit choice for data warehouse-style queries on low-cardinality columns, a tool you would not have in your PostgreSQL toolkit.
 </div>
 <div class="oracle-specific">
-    <strong>For more information:</strong> Read <strong>Oracle® Database Concepts</strong>, Chapter 5, "Overview of Bitmap Indexes". ([Link to Chapter 5](books/database-concepts/ch05_indexes-and-index-organized-tables.pdf))
+    <strong>For more information:</strong> Read <strong>Oracle® Database Concepts</strong>,
+    <a href="books/database-concepts/ch05_indexes-and-index-organized-tables.pdf"><em>Chapter 5, Overview of Bitmap Indexes</em></a>
 </div>
 <h4>Exercise 3: <span class="problem-label">Indexing an Expression - The Function-Based Index</span></h4>
 <p>
     <strong>Problem:</strong> Your application often needs to search for customers by name, but the search must be case-insensitive. A normal index on <code>customerName</code> would be useless for a query with <code>WHERE UPPER(customerName) = '...'</code>.
 </p>
 
-```-- Step 1: Create the function-based index
+```sql
+-- Step 1: Create the function-based index
 CREATE INDEX idxCustNameUpper ON customers(UPPER(customerName));
 -- Step 2 & 3: Run the case-insensitive query and get the plan
 EXPLAIN PLAN FOR
@@ -157,14 +163,16 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
     <strong>Bridging from PostgreSQL:</strong> This feature is conceptually identical in both Oracle and PostgreSQL. The syntax is also very similar (`CREATE INDEX...ON...(expression)`). The value of this exercise is reinforcing the concept in an Oracle context and practicing the Oracle-specific method for plan analysis to *verify* that the index is being used as expected.
 </div>
 <div class="oracle-specific">
-    <strong>For more information:</strong> See <strong>Oracle® Database Development Guide</strong>, Chapter 12, "When to Use Function-Based Indexes". ([Link to Chapter 12](books/database-development-guide/ch12_using_indexes_in_database_applications.pdf))
+    <strong>For more information:</strong> See <strong>Oracle® Database Development Guide</strong>
+    <a href="../books/database-development-guide/ch12_using_indexes_in_database_applications.pdf">Chapter 12, When to Use Function-Based Indexes</a>
 </div>
 <h4>Exercise 4: <span class="problem-label">The Composite Index and the Leading Column Rule</span></h4>
 <p>
     <strong>Problem:</strong> A common query pattern is to look up all orders for a specific customer that occurred after a certain date. Explain why a composite index on <code>(customerId, orderDate)</code> helps in some scenarios but not others.
 </p>
 
-```-- Step 1: Create the composite index
+```sql
+-- Step 1: Create the composite index
 CREATE INDEX idxCustOrderDate ON customerOrders(customerId, orderDate);
 -- Step 2: Plan for query using both columns (Uses index)
 EXPLAIN PLAN SET STATEMENT_ID = 'BOTH' FOR
@@ -201,7 +209,8 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY(statement_id => 'NON_LEADING'));
     <strong>Problem:</strong> Demonstrate the conceptual cost of having too many indexes on a table that undergoes heavy bulk updates.
 </p>
 
-```-- The additional indexes
+```sql
+-- The additional indexes
 CREATE INDEX idxOrderQuantity ON customerOrders(quantity);
 CREATE INDEX idxOrderPrice ON customerOrders(unitPrice);
 CREATE INDEX idxOrderStatusDate ON customerOrders(orderStatus, orderDate);
@@ -227,7 +236,8 @@ WHERE orderStatus = 'PENDING';
     <strong>Problem:</strong> A developer needs to find all orders placed in the year 2023. They write a query using `TO_CHAR(orderDate, 'YYYY') = '2023'`. An index exists on `orderDate`. Explain why the index will not be used.
 </p>
 
-```-- The index exists
+```sql
+-- The index exists
 CREATE INDEX idxOrderDate ON customerOrders(orderDate);
 -- The inefficient query
 EXPLAIN PLAN FOR
@@ -255,7 +265,8 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
     <strong>Problem:</strong> Correct the previous query to efficiently find all orders from 2023 using the existing index on `orderDate`.
 </p>
 
-```-- The Inefficient, Non-SARGable Query
+```sql
+-- The Inefficient, Non-SARGable Query
 EXPLAIN PLAN SET STATEMENT_ID = 'INEFFICIENT' FOR
 SELECT COUNT(*) FROM customerOrders WHERE TO_CHAR(orderDate, 'YYYY') = '2023';
 SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY(statement_id => 'INEFFICIENT'));
@@ -293,7 +304,8 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY(statement_id => 'EFFICIENT'));
     <strong>Problem:</strong> The executive team at 'APAC Partners' (<code>customerId</code> 8) wants a performance report. They need to identify the top 2 performing product categories for each of their direct sub-organizations, based on total sales revenue. The final report must show the sub-organization's name, its category, the total revenue for that category, and the rank of that category's performance within that sub-organization. The query must be case-insensitive when matching the top-level company name.
 </p>
 
-```-- Step 1: Gather Statistics
+```sql
+-- Step 1: Gather Statistics
 BEGIN
 DBMS_STATS.GATHER_TABLE_STATS(ownname => 'SPEEDUNLEASH', tabname => 'CUSTOMERS');
 DBMS_STATS.GATHER_TABLE_STATS(ownname => 'SPEEDUNLEASH', tabname => 'PRODUCTS');

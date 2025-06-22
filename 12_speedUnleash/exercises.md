@@ -39,7 +39,8 @@
     <p>You can run the entire script below in a tool like SQL Developer or SQL*Plus. The script first creates the <code>speedUnleash</code> user and then, after you connect as that user, builds the required tables and populates them with data designed to test various performance scenarios.</p>
 </div>
 
-<pre><code>-- Step 1: Connect as an admin user (e.g., SYSTEM) to create the new schema/user
+```sql
+-- Step 1: Connect as an admin user (e.g., SYSTEM) to create the new schema/user
 CREATE USER speedUnleash IDENTIFIED BY YourSecurePassword1;
 GRANT CONNECT, RESOURCE, UNLIMITED TABLESPACE TO speedUnleash;
 ALTER USER speedUnleash QUOTA UNLIMITED ON USERS;
@@ -115,12 +116,12 @@ BEGIN
 END;
 /
 COMMIT;
-</code></pre>
+```
 
 <h2>Your Mission: The Exercises</h2>
 <p>The exercises are divided into four thematic sections. This structure will guide you from understanding the core value of each concept to identifying its limitations and, finally, to synthesizing everything to solve a complex, real-world problem.</p>
 <ul>
-    <li><strong>(i) Meanings, Values, Relations, and Advantages:</strong> Focus on the "what" and "why" of Oracle's performance features.</li>
+    <li><strong>(i) Meanings, Values, Relations, and Advantages:</strong> Focus on the <em>what</em> and <em>why</em> of Oracle's performance features.</li>
     <li><strong>(ii) Disadvantages and Pitfalls:</strong> Explore the trade-offs and common mistakes associated with these features.</li>
     <li><strong>(iii) Contrasting with Inefficient Common Solutions:</strong> Learn to identify and correct suboptimal approaches.</li>
     <li><strong>(iv) Hardcore Combined Problem:</strong> Integrate all your knowledge up to this point in a single, challenging scenario.</li>
@@ -129,7 +130,7 @@ COMMIT;
 <hr>
 
 <h2>(i) Meanings, Values, Relations, and Advantages</h2>
-<p>These exercises focus on the "what" and "why" of Oracle's indexing and plan analysis tools, contrasting with PostgreSQL where relevant.</p>
+<p>These exercises focus on the <em>what</em> and <em>why</em> of Oracle's indexing and plan analysis tools, contrasting with PostgreSQL where relevant.</p>
 
 <h3>Exercise 1: <span class="problem-label">The Foundation - From Full Scan to B-Tree Index</span></h3>
 <p><strong>Problem:</strong></p>
@@ -157,7 +158,7 @@ COMMIT;
 <p>Your application often needs to search for customers by name, but the search must be case-insensitive. The <code>customerName</code> column, however, contains mixed-case data. A normal index on <code>customerName</code> would be useless for a query with <code>WHERE UPPER(customerName) = '...'</code>.</p>
 <ol>
     <li>Create a function-based index that stores the uppercase version of <code>customerName</code>.</li>
-    <li>Write a query to find the <code>customerId</code> for 'sunrise trading' (note the lowercase).</li>
+    <li>Write a query to find the <code>customerId</code> for <code>sunrise trading</code> (note the lowercase).</li>
     <li>Generate and analyze the execution plan to confirm the new index is used.</li>
 </ol>
 
@@ -217,25 +218,25 @@ COMMIT;
 
 <h3>Exercise 1: <span class="problem-label">Executive Performance Dashboard Query</span></h3>
 <p><strong>Problem:</strong></p>
-<p>The executive team at 'APAC Partners' (<code>customerId</code> 8) wants a performance report. They need to identify the top 2 performing product categories for each of their direct sub-organizations ('Sunrise Trading' and 'southern cross') based on total sales revenue (<code>quantity * unitPrice</code>). The final report must show the sub-organization's name, its category, the total revenue for that category, and the rank of that category's performance within that sub-organization. The query must be case-insensitive when matching the top-level company name 'APAC Partners'.</p>
+<p>The executive team at <code>APAC Partners</code> (<code>customerId</code> 8) wants a performance report. They need to identify the top 2 performing product categories for each of their direct sub-organizations (<code>Sunrise Trading</code> and <code>southern cross</code>) based on total sales revenue (<code>quantity * unitPrice</code>). The final report must show the sub-organization's name, its category, the total revenue for that category, and the rank of that category's performance within that sub-organization. The query must be case-insensitive when matching the top-level company name<code>APAC Partners</code></p>
 <p><strong>Task:</strong></p>
 <ol>
     <li>
         <strong>Gather Statistics:</strong> Write a PL/SQL anonymous block to ensure the optimizer has the most up-to-date statistics for the <code>customers</code>, <code>products</code>, and <code>customerOrders</code> tables.
         <div class="oracle-specific">
-            <p>For more information on the importance of statistics and the <code>DBMS_STATS</code> package, consult the <a href="../books/sql-tuning-guide/ch01_10-optimizer-statistics-concepts.pdf">Oracle® Database SQL Tuning Guide, Chapter 10, "Optimizer Statistics Concepts"</a>.</p>
+            <p>For more information on the importance of statistics and the <code>DBMS_STATS</code> package, consult the <a href="../books/sql-tuning-guide/ch01_10-optimizer-statistics-concepts.pdf">Oracle® Database SQL Tuning Guide, Chapter 10, <em>Optimizer Statistics Concepts</em></a>.</p>
         </div>
     </li>
     <li>
         <strong>Create Optimal Indexes:</strong> Based on the query requirements, determine the necessary B-Tree, Composite, and Function-Based indexes to make the query as efficient as possible. Write the <code>CREATE INDEX</code> statements.
         <div class="postgresql-bridge">
-            <p>While you know B-Tree and Composite indexes from PostgreSQL, pay special attention to Oracle's Function-Based and Bitmap indexes, as they are key to solving specific performance challenges. Refer to the <a href="../books/database-concepts/ch05_indexes-and-index-organized-tables.pdf">Oracle® Database Concepts, Chapter 5, "Indexes and Index-Organized Tables"</a> for a refresher.</p>
+            <p>While you know B-Tree and Composite indexes from PostgreSQL, pay special attention to Oracle's Function-Based and Bitmap indexes, as they are key to solving specific performance challenges. Refer to the <a href="../books/database-concepts/ch05_indexes-and-index-organized-tables.pdf">Oracle® Database Concepts, Chapter 5, <em>Indexes and Index-Organized Tables</em></a> for a refresher.</p>
         </div>
     </li>
     <li>
         <strong>Write the Query:</strong> Construct a single SQL statement to generate the required report. This will involve:
         <ul>
-            <li>A hierarchical query (<code>CONNECT BY</code>) to find the direct sub-organizations of 'APAC Partners'.</li>
+            <li>A hierarchical query (<code>CONNECT BY</code>) to find the direct sub-organizations of<code>APAC Partners</code></li>
             <li>Joins between all three tables.</li>
             <li>A <code>GROUP BY</code> to aggregate revenue.</li>
             <li>An analytic function (<code>DENSE_RANK()</code>) to rank the categories within each company.</li>
@@ -244,15 +245,15 @@ COMMIT;
     <li>
         <strong>Analyze and Justify:</strong> Generate the <code>EXPLAIN PLAN</code> for your final query and add comments to your solution explaining why you chose each index and how each key part of the execution plan (e.g., joins, scans) reflects your indexing strategy.
         <div class="oracle-specific">
-            <p>To understand the output, refer to the <a href="../books/sql-tuning-guide/ch01_6-explaining-and-displaying-execution-plans.pdf">Oracle® Database SQL Tuning Guide, Chapter 6, "Explaining and Displaying Execution Plans"</a>.</p>
+            <p>To understand the output, refer to the <a href="../books/sql-tuning-guide/ch01_6-explaining-and-displaying-execution-plans.pdf">Oracle® Database SQL Tuning Guide, Chapter 6, <em>Explaining and Displaying Execution Plans</em></a>.</p>
         </div>
     </li>
 </ol>
 
 <h2>Tips for Success & Learning</h2>
 <ul>
-    <li><strong>Experiment:</strong> Don't just run the solution. Try creating different indexes or no indexes at all and compare the execution plans. Understanding *why* a plan changes is the goal.</li>
-    <li><strong>Read the Plan Carefully:</strong> Pay close attention to the `Operation` column (`TABLE ACCESS FULL` vs. `INDEX RANGE SCAN`), the `Rows` (estimated cardinality), and the `Cost`.</li>
+    <li><strong>Experiment:</strong> Don't just run the solution. Try creating different indexes or no indexes at all and compare the execution plans. Understanding <strong>why</strong> a plan changes is the goal.</li>
+    <li><strong>Read the Plan Carefully:</strong> Pay close attention to the <code>Operation</code>column (<code>TABLE ACCESS FULL</code>vs. <code>INDEX RANGE SCAN</code>), the <code>Rows</code>(estimated cardinality), and the <code>Cost</code>.</li>
     <li><strong>Consult the Docs:</strong> When you see an operation in an execution plan you don't recognize, use the linked Oracle documentation to learn more about it.</li>
     <li><strong>Think in Sets:</strong> Always try to solve problems with a single, powerful SQL statement before resorting to procedural loops.</li>
 </ul>

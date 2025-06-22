@@ -40,7 +40,7 @@ Welcome to the engine room, a place of refined design, where database performanc
 
 <div class="rhyme">
 To make your queries truly shine,<br>
-on `EXPLAIN PLAN` you must align.<br>
+on <code>EXPLAIN PLAN</code> you must align.<br>
 It shows the path, the cost, the time,<br>
 and makes your logic simply prime.
 </div>
@@ -108,13 +108,13 @@ As a PostgreSQL veteran, the tune of tuning is a familiar song, but Oracle's orc
 <strong>Core Indexing Philosophy:</strong> Your solid grasp of the <strong>B-Tree index</strong> is a perfect foundation; it's the default workhorse in either nation. The vital importance of a <strong>composite index's</strong> leading column is a truth that's universal and never feels foreign.
 </li>
 <li>
-<strong>The Brilliant Bitmap:</strong> Here is where the paths diverge. Oracle's <strong><code>BITMAP</code> index</strong> is a specialized tool that can surge past B-Trees for reporting on low-cardinality data. In PostgreSQL, to handle such a state, you might partition a table or a partial index create, but you cannot replicate the sheer speed Oracle generates when merging bitmaps to adjudicate complex `AND`/`OR` fates.
+<strong>The Brilliant Bitmap:</strong> Here is where the paths diverge. Oracle's <strong><code>BITMAP</code> index</strong> is a specialized tool that can surge past B-Trees for reporting on low-cardinality data. In PostgreSQL, to handle such a state, you might partition a table or a partial index create, but you cannot replicate the sheer speed Oracle generates when merging bitmaps to adjudicate complex <code>AND</code>/<code>OR</code> fates.
 </li>
 <li>
 <strong>Generating the Plan:</strong> This is a workflow you'll need to re-learn.
     <ul>
         <li>In <strong>PostgreSQL</strong>, it's a direct prepend, a single command you send: <code>EXPLAIN ANALYZE SELECT ...</code>, and you're at the very end.</li>
-        <li>In <strong>Oracle</strong>, it's a two-step ballet, a more deliberate display: first, `EXPLAIN PLAN FOR ...` to make the optimizer say what it will do, then `SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);` to bring the plan to you.</li>
+        <li>In <strong>Oracle</strong>, it's a two-step ballet, a more deliberate display: first, <code>EXPLAIN PLAN FOR ...</code> to make the optimizer say what it will do, then <code>SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);</code> to bring the plan to you.</li>
     </ul>
 </li>
 <li>
@@ -127,7 +127,7 @@ As a PostgreSQL veteran, the tune of tuning is a familiar song, but Oracle's orc
 
 ### <a id="section4"></a>Section 4: How to Use Them: Structures & Syntax (in Oracle)
 
-Why did the SQL query break up with the full table scan? It said, "I'm sorry, but we're just not a match. You don't understand my `WHERE`s and `WHEN`s, and frankly, you're too attached... to every single row." The B-Tree index, overhearing, just smiled. Let's explore the syntax that makes an index's life worthwhile.
+Why did the SQL query break up with the full table scan? It said, <em>I'm sorry, but we're just not a match. You don't understand my `WHERE`s and `WHEN`s, and frankly, you're too attached... to every single row</em>. The B-Tree index, overhearing, just smiled. Let's explore the syntax that makes an index's life worthwhile.
 
 #### <a id="sub4.1"></a>Creating the Index Instruments
 
