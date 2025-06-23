@@ -25,6 +25,27 @@ BEGIN
     );
 END;
 /
+BEGIN
+    DBMS_STATS.GATHER_TABLE_STATS(
+        ownname => 'SPEEDUNLEASH',
+        tabname => 'CUSTOMERS',
+        estimate_percent => DBMS_STATS.AUTO_SAMPLE_SIZE,
+        method_opt => 'FOR ALL COLUMNS SIZE AUTO',
+        cascade => TRUE
+    );
+END;
+/
+BEGIN
+    DBMS_STATS.GATHER_TABLE_STATS(
+        ownname => 'SPEEDUNLEASH',
+        tabname => 'PRODUCTS',
+        estimate_percent => DBMS_STATS.AUTO_SAMPLE_SIZE,
+        method_opt => 'FOR ALL COLUMNS SIZE AUTO',
+        cascade => TRUE
+    );
+END;
+/
+
 -- For more information on the importance of statistics and the DBMS_STATS package, consult the Oracle® Database SQL Tuning Guide, 
 -- Chapter 10, Optimizer Statistics Concepts.
 
@@ -36,6 +57,24 @@ END;
 
 -- Write the Query: Construct a single SQL statement to generate the required report. This will involve:
 -- A hierarchical query (CONNECT BY) to find the direct sub-organizations of APAC Partners
+SELECT COUNT(*) FROM SPEEDUNLEASH.CUSTOMERORDERS;
+
+SELECT COLUMN_NAME, NUM_DISTINCT, NUM_NULLS, SAMPLE_SIZE, LAST_ANALYZED FROM DBA_TAB_COL_STATISTICS
+WHERE OWNER = 'SPEEDUNLEASH' AND TABLE_NAME = 'CUSTOMERORDERS';
+SELECT COLUMN_NAME, ENDPOINT_NUMBER, ENDPOINT_VALUE, ENDPOINT_REPEAT_COUNT
+FROM DBA_TAB_HISTOGRAMS
+WHERE OWNER = 'SPEEDUNLEASH' AND TABLE_NAME = 'PRODUCTS'
+ORDER BY COLUMN_NAME, ENDPOINT_NUMBER;
+
+-- CREATE INDEX idx_hierarchicalCustomers ON SPEEDUNLEASH.CUSTOMERS(CUSTOMERID, MANAGERID); -- Unmeaningful because of the CUSTOMERS table size 
+-- CREATE INDEX idx_customerForOrders ON SPEEDUNLEASH.CUSTOMERORDERS(CUSTOMERID); -- incomplete
+-- DROP INDEX idx_hierarchicalCustomers;
+-- DROP INDEX idx_customerForOrders;
+
+
+CREATE INDEX idx_orders_covering_cust_prod ON SPEEDUNLEASH.CUSTOMERORDERS(CUSTOMERID, PRODUCTID, QUANTITY, UNITPRICE);
+
+EXPLAIN PLAN SET STATEMENT_ID = 'HARDCORE_COMBINED_PROBLEM' FOR
 WITH hierarchization AS (
     SELECT CUSTOMERID
     FROM SPEEDUNLEASH.CUSTOMERS 
@@ -48,11 +87,11 @@ WITH hierarchization AS (
     NATURAL JOIN SPEEDUNLEASH.PRODUCTS
     GROUP BY CUSTOMERID, CATEGORY
 )
-
 SELECT CUSTOMERID, CATEGORY FROM (
     SELECT CUSTOMERID, CATEGORY, DENSE_RANK() OVER (PARTITION BY CUSTOMERID ORDER BY TOTALSALESREVENUE) AS CATEGORICALRANKING 
     FROM hierarchizedTotalSales
 ) WHERE CATEGORICALRANKING < 3 ORDER BY CUSTOMERID, CATEGORICALRANKING;
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY(statement_id => 'HARDCORE_COMBINED_PROBLEM'));
 -- Joins between all three tables.
 -- A GROUP BY to aggregate revenue.
 -- An analytic function (DENSE_RANK()) to rank the categories within each company.

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset='UTF-8'>
+    <title>Query Execution Plan</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="styles.css">
+
+    <script type="text/javascript">
+    function search(){
+      var s = document.getElementById('search').value.toUpperCase();
+      var rows = document.getElementById('data').getElementsByTagName('TR');
+      
+      for(var i = 0; i < rows.length; i++){
+        // Use textContent for modern browsers, innerText for older IE
+        var rowText = (rows[i].textContent || rows[i].innerText).toUpperCase();
+        if (rowText.indexOf(s) > -1 || s.length === 0) {
+          rows[i].style.display = '';
+        } else {
+          rows[i].style.display = 'none';
+        }
+      }
+    }
+
+    var timer;
+    function delayedSearch() {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            search();
+        }, 300); // Reduced delay for better responsiveness
+    }
+    </script>
+</head>
+
+<body>
+
+<div class="plan-container">
+    <header>
+        <h1>Query Execution Plan</h1>
+    </header>
+    <div class="content-wrapper">
+        <div class="search-box">
+            <input type="text" size="30" maxlength="1000" value="" id="search" onkeyup="delayedSearch();" placeholder="Filter plan operations..."/>
+        </div>
+
+        <div class="plan-summary">
+            Plan hash value: 752270672
+        </div>
+
+        <h2>Execution Plan Details</h2>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="numeric">Id</th>
+                        <th>Operation</th>
+                        <th>Name</th>
+                        <th class="numeric">Rows</th>
+                        <th class="numeric">Bytes</th>
+                        <th class="numeric">Cost (%CPU)</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody id="data">
+                    <tr>
+                        <td class="numeric">0</td>
+                        <td>SELECT STATEMENT</td>
+                        <td></td>
+                        <td class="numeric">15</td>
+                        <td class="numeric">795</td>
+                        <td class="numeric">184 (5)</td>
+                        <td>00:00:01</td>
+                    </tr>
+                    <tr>
+                        <td class="numeric">1</td>
+                        <td>SORT ORDER BY</td>
+                        <td></td>
+                        <td class="numeric">15</td>
+                        <td class="numeric">795</td>
+                        <td class="numeric">184 (5)</td>
+                        <td>00:00:01</td>
+                    </tr>
+                    <tr>
+                        <td class="numeric">* 2</td>
+                        <td>VIEW</td>
+                        <td></td>
+                        <td class="numeric">15</td>
+                        <td class="numeric">795</td>
+                        <td class="numeric">183 (4)</td>
+                        <td>00:00:01</td>
+                    </tr>
+                    <tr>
+                        <td class="numeric">* 3</td>
+                        <td>WINDOW SORT PUSHED RANK</td>
+                        <td></td>
+                        <td class="numeric">15</td>
+                        <td class="numeric">510</td>
+                        <td class="numeric">183 (4)</td>
+                        <td>00:00:01</td>
+                    </tr>
+                    <tr>
+                        <td class="numeric">4</td>
+                        <td>HASH GROUP BY</td>
+                        <td></td>
+                        <td class="numeric">15</td>
+                        <td class="numeric">510</td>
+                        <td class="numeric">183 (4)</td>
+                        <td>00:00:01</td>
+                    </tr>
+                    <tr>
+                        <td class="numeric">* 5</td>
+                        <td>HASH JOIN</td>
+                        <td></td>
+                        <td class="numeric">100K</td>
+                        <td class="numeric">3320K</td>
+                        <td class="numeric">177 (1)</td>
+                        <td>00:00:01</td>
+                    </tr>
+                    <tr>
+                        <td class="numeric">6</td>
+                        <td>TABLE ACCESS FULL</td>
+                        <td>PRODUCTS</td>
+                        <td class="numeric">4</td>
+                        <td class="numeric">56</td>
+                        <td class="numeric">3 (0)</td>
+                        <td>00:00:01</td>
+                    </tr>
+                    <tr>
+                        <td class="numeric">* 7</td>
+                        <td>HASH JOIN</td>
+                        <td></td>
+                        <td class="numeric">100K</td>
+                        <td class="numeric">1953K</td>
+                        <td class="numeric">174 (1)</td>
+                        <td>00:00:01</td>
+                    </tr>
+                    <tr>
+                        <td class="numeric">8</td>
+                        <td>NESTED LOOPS</td>
+                        <td></td>
+                        <td class="numeric">10</td>
+                        <td class="numeric">60</td>
+                        <td class="numeric">3 (0)</td>
+                        <td>00:00:01</td>
+                    </tr>
+                    <tr>
+                        <td class="numeric">9</td>
+                        <td>VIEW</td>
+                        <td></td>
+                        <td class="numeric">10</td>
+                        <td class="numeric">30</td>
+                        <td class="numeric">3 (0)</td>
+                        <td>00:00:01</td>
+                    </tr>
+                    <tr>
+                        <td class="numeric">* 10</td>
+                        <td>FILTER</td>
+                        <td></td>
+                        <td class="numeric"></td>
+                        <td class="numeric"></td>
+                        <td class="numeric"></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td class="numeric">* 11</td>
+                        <td>CONNECT BY WITHOUT FILTERING</td>
+                        <td></td>
+                        <td class="numeric"></td>
+                        <td class="numeric"></td>
+                        <td class="numeric"></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td class="numeric">12</td>
+                        <td>TABLE ACCESS FULL</td>
+                        <td>CUSTOMERS</td>
+                        <td class="numeric">10</td>
+                        <td class="numeric">60</td>
+                        <td class="numeric">3 (0)</td>
+                        <td>00:00:01</td>
+                    </tr>
+                    <tr>
+                        <td class="numeric">* 13</td>
+                        <td>INDEX UNIQUE SCAN</td>
+                        <td>SYS_C0010591</td>
+                        <td class="numeric">1</td>
+                        <td class="numeric">3</td>
+                        <td class="numeric">0 (0)</td>
+                        <td>00:00:01</td>
+                    </tr>
+                    <tr>
+                        <td class="numeric">14</td>
+                        <td>TABLE ACCESS FULL</td>
+                        <td>CUSTOMERORDERS</td>
+                        <td class="numeric">100K</td>
+                        <td class="numeric">1367K</td>
+                        <td class="numeric">171 (1)</td>
+                        <td>00:00:01</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="predicate-info">
+            <h2>Predicate Information</h2>
+            <ul>
+                <li><strong>2</strong> - filter("CATEGORICALRANKING"<3)</li>
+                <li><strong>3</strong> - filter(DENSE_RANK() OVER ( PARTITION BY "CUSTOMERS"."CUSTOMERID" ORDER BY SUM("CUSTOMERORDERS"."QUANTITY"*"CUSTOMERORDERS"."UNITPRICE"))<3)</li>
+                <li><strong>5</strong> - access("CUSTOMERORDERS"."PRODUCTID"="PRODUCTS"."PRODUCTID")</li>
+                <li><strong>7</strong> - access("HIERARCHIZATION"."CUSTOMERID"="CUSTOMERORDERS"."CUSTOMERID")</li>
+                <li><strong>10</strong> - filter("MANAGERID"=8)</li>
+                <li><strong>11</strong> - access("CUSTOMERID"=PRIOR "MANAGERID")</li>
+                <li><strong>13</strong> - access("HIERARCHIZATION"."CUSTOMERID"="CUSTOMERS"."CUSTOMERID")</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- SQL:
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY(statement_id => 'HARDCORE_COMBINED_PROBLEM'))
+-->
+</body>
+</html>

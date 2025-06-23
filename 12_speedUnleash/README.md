@@ -26,7 +26,9 @@
             <li><a href="#section4">Section 4: How to Use Them (Structures & Syntax)</a>
                 <ul>
                     <li><a href="#sub4.1">Creating the Index Instruments</a></li>
-                    <li><a href="#sub4.2">Generating and Reading an Execution Plan</a></li>
+                    <li><a href="#sub4.2">Managing the Optimizer's Brain (Statistics)</a></li>
+                    <li><a href="#sub4.3">A Consultant's Guide to Prioritizing Indexes</a></li>
+                    <li><a href="#sub4.4">Generating and Reading an Execution Plan</a></li>
                 </ul>
             </li>
             <li><a href="#section5">Section 5: Why Use Them? (Advantages)</a></li>
@@ -188,7 +190,7 @@ CREATE INDEX idx_cust_upper_name ON customers(UPPER(customer_name));
 CREATE BITMAP INDEX idx_order_status_bitmap ON customer_orders(order_status);
 ```
 
-#### <a id="sub4.2"></a>Managing the Brain: Statistics Syntax
+#### <a id="sub4.2"></a>Managing the Optimizer's Brain (Statistics)
 
 An index without fresh statistics is a compass without North. You must know how to check and refresh the optimizer's view of the earth.
 
@@ -222,16 +224,90 @@ FROM   user_tables
 WHERE  table_name = 'CUSTOMER_ORDERS';
 ```
 
-**3. Checking Index Statistics, Including the Clustering Factor**
-This is crucial for diagnosing if an index is "good" for range scans.
+#### <a id="sub4.3"></a>A Consultant's Guide to Prioritizing Indexes
+<p>
+    Knowing how to gather statistics is the first step. The true art lies in reading them to predict which indexes the optimizer will love and which it will ignore. This is how you move from guessing to knowing, by using the optimizer's own data to build the fastest path.
+</p>
+<div class="rhyme">
+To find the index that's truly best,<br>
+put optimizer stats to the test.<br>
+With rows and blocks and factors scanned,<br>
+the fastest query is close at hand.
+</div>
+
+<h5>Step 1: Analyze Table-Level Statistics (The "Size" Factor)</h5>
+<p>
+    First, understand the scale of the battlefield. A tiny table rarely needs an index, as a full scan is already lightning-fast. We're hunting for the giants.
+</p>
+<ul>
+    <li><strong>What to look for:</strong> <code>NUM_ROWS</code> and <code>BLOCKS</code> from <code>user_tables</code>.</li>
+    <li><strong>The Insight:</strong> A high number of rows and blocks confirms the table is large enough that you *want* to avoid a full scan.</li>
+</ul>
+
 ```sql
--- Is the index physically well-aligned with the table?
-SELECT index_name, clustering_factor, last_analyzed
+-- Get a sense of the table's size
+SELECT num_rows, blocks, last_analyzed
+FROM   user_tables
+WHERE  table_name = 'CUSTOMER_ORDERS';
+```
+
+<h5>Step 2: Analyze Column-Level Statistics (The "Selectivity" Factor)</h5>
+<p>
+    An index's power comes from its ability to discriminate. How good is a column at narrowing down the search? This is called selectivity.
+</p>
+<ul>
+    <li><strong>What to look for:</strong> <code>NUM_DISTINCT</code> (Number of Distinct Values) from <code>user_tab_col_statistics</code>.</li>
+    <li><strong>The Insight:</strong>
+        <ul>
+            <li><strong>High Priority:</strong> A column with a high <code>NUM_DISTINCT</code> value relative to <code>NUM_ROWS</code> (e.g., an email address). An index here will be highly effective for lookups.</li>
+            <li><strong>Low Priority:</strong> A column with a low <code>NUM_DISTINCT</code> value (e.g., a status flag with only 3 possible values). A standard B-Tree index is often useless here; the optimizer will likely prefer a full table scan.</li>
+        </ul>
+    </li>
+</ul>
+
+```sql
+-- Check the selectivity of potential index columns
+SELECT column_name, num_distinct, num_nulls
+FROM   user_tab_col_statistics
+WHERE  table_name = 'CUSTOMER_ORDERS';
+```
+
+<h5>Step 3: Evaluate the Index Clustering Factor (The "Efficiency" Factor)</h5>
+<p>
+    This is the master statistic, the <strong>librarian's tidiness score</strong> we discussed in Section 1. It is the single most important number for determining if an index will be efficient for retrieving multiple rows (a range scan).
+</p>
+<ul>
+    <li><strong>What to look for:</strong> The <code>CLUSTERING_FACTOR</code> from <code>user_indexes</code>.</li>
+    <li><strong>The Golden Rule of Prioritization:</strong>
+        <ul>
+            <li><strong>Excellent Index (High Priority):</strong> The <code>CLUSTERING_FACTOR</code> is close to the number of <code>BLOCKS</code> in the table. This means the table's physical row order is well-aligned with the index's logical order. The database can read the data efficiently.</li>
+            <li><strong>Poor Index (Low Priority):</strong> The <code>CLUSTERING_FACTOR</code> is close to the <code>NUM_ROWS</code> in the table. This means the data is physically scattered. To fetch rows using the index, the database must perform thousands of slow, random block reads. The optimizer will see this high cost and will almost always choose a full table scan instead.</li>
+        </ul>
+    </li>
+</ul>
+
+```sql
+-- Check the crucial clustering factor after creating an index
+SELECT index_name, clustering_factor
 FROM   user_indexes
 WHERE  table_name = 'CUSTOMER_ORDERS';
 ```
 
-#### <a id="sub4.2"></a>Generating and Reading an Execution Plan
+<h5>Summary of the Prioritization Strategy</h5>
+<ol>
+    <li>
+        <strong>Highest Priority:</strong> Find columns with <strong>high selectivity</strong> on a <strong>large table</strong>. When you create an index on them, confirm it results in a <strong>low <code>CLUSTERING_FACTOR</code></strong>. This is the perfect index.
+    </li>
+    <li>
+        <strong>Medium Priority:</strong> An index with good selectivity but a mediocre clustering factor. It will be useful for some queries (like unique lookups) but not others (like large range scans).
+    </li>
+    <li>
+        <strong>Lowest Priority / Re-evaluate:</strong> An index with a very high clustering factor. This index is likely dead weight, slowing down your DML without helping your `SELECT`s. The solution may be to reorganize the table or create a covering index to avoid the table access entirely.
+    </li>
+</ol>
+
+
+#### <a id="sub4.4"></a>Generating and Reading an Execution Plan
 
 To see if the optimizer finds your index a sensation, you must consult the query's execution declaration.
 
@@ -299,16 +375,16 @@ An index is a powerful tool, but wielded without wisdom, it can break the rules.
   <hr>
   <ol>
     <li id="fn1_1">
-      <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/cncpt/indexes-and-index-organized-tables.html" title="Oracle® Database Concepts, 23ai - Chapter 5: Indexes and Index-Organized Tables">Oracle® Database Concepts, 23ai, Chapter 5: Indexes and Index-Organized Tables</a>. This chapter provides the fundamental theory behind Oracle's various index structures. <a href="#fnref1_1" title="Jump back to footnote 1 in the text">↩</a></p>
+      <p><a href="../books/database-concepts/ch05_indexes-and-index-organized-tables.pdf" title="Oracle® Database Concepts, 23ai - Chapter 5: Indexes and Index-Organized Tables">Oracle® Database Concepts, 23ai, Chapter 5: Indexes and Index-Organized Tables</a>. This chapter provides the fundamental theory behind Oracle's various index structures. <a href="#fnref1_1" title="Jump back to footnote 1 in the text">↩</a></p>
     </li>
     <li id="fn4_1">
-        <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/adapp/using-indexes-in-database-applications.html" title="Oracle® Database Development Guide, 23ai - Chapter 12: Using Indexes in Database Applications">Oracle® Database Development Guide, 23ai, Chapter 12: Using Indexes in Database Applications</a>. This guide offers practical examples and guidelines for when and how to implement different index types. <a href="#fnref4_1" title="Jump back to footnote 2 in the text">↩</a></p>
+        <p><a href="../books/database-development-guide/ch12_using_indexes_in_database_applications.pdf" title="Oracle® Database Development Guide, 23ai - Chapter 12: Using Indexes in Database Applications">Oracle® Database Development Guide, 23ai, Chapter 12: Using Indexes in Database Applications</a>. This guide offers practical examples and guidelines for when and how to implement different index types. <a href="#fnref4_1" title="Jump back to footnote 2 in the text">↩</a></p>
     </li>
     <li id="fn5_1">
-        <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/tgsql/explaining-and-displaying-execution-plans.html" title="Oracle® Database SQL Tuning Guide, 23ai - Chapter 6: Explaining and Displaying Execution Plans">Oracle® Database SQL Tuning Guide, 23ai, Chapter 6: Explaining and Displaying Execution Plans</a>. This is the definitive chapter on generating, reading, and interpreting execution plans to diagnose query performance. <a href="#fnref5_1" title="Jump back to footnote 3 in the text">↩</a></p>
+        <p><a href="../books/sql-tuning-guide/ch01_6-explaining-and-displaying-execution-plans.pdf" title="Oracle® Database SQL Tuning Guide, 23ai - Chapter 6: Explaining and Displaying Execution Plans">Oracle® Database SQL Tuning Guide, 23ai, Chapter 6: Explaining and Displaying Execution Plans</a>. This is the definitive chapter on generating, reading, and interpreting execution plans to diagnose query performance. <a href="#fnref5_1" title="Jump back to footnote 3 in the text">↩</a></p>
     </li>
     <li id="fn6_1">
-        <p><a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/tgsql/optimizer-statistics-concepts.html" title="Oracle® Database SQL Tuning Guide, 23ai - Chapter 10: Optimizer Statistics Concepts">Oracle® Database SQL Tuning Guide, 23ai, Chapter 10: Optimizer Statistics Concepts</a>. This chapter explains the critical role of statistics for the Cost-Based Optimizer and how their accuracy directly impacts plan generation. <a href="#fnref6_1" title="Jump back to footnote 4 in the text">↩</a></p>
+        <p><a href="../books/sql-tuning-guide/ch01_10-optimizer-statistics-concepts.pdf" title="Oracle® Database SQL Tuning Guide, 23ai - Chapter 10: Optimizer Statistics Concepts">Oracle® Database SQL Tuning Guide, 23ai, Chapter 10: Optimizer Statistics Concepts</a>. This chapter explains the critical role of statistics for the Cost-Based Optimizer and how their accuracy directly impacts plan generation. <a href="#fnref6_1" title="Jump back to footnote 4 in the text">↩</a></p>
     </li>
   </ol>
 </div>
