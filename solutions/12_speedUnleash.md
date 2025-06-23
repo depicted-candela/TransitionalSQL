@@ -1,13 +1,13 @@
 <head>
-    <link rel="stylesheet" href="../styles/lecture.css">
-    <link rel="stylesheet" href="../styles/solutions.css">
+    <link rel="stylesheet"href="../styles/lecture.css">
+    <link rel="stylesheet"href="../styles/solutions.css">
 </head>
 <body>
 <div class="container">
 <h1>Speed Unleashed: Solutions for Oracle Indexing and Query Insights</h1>
 <h2>Introduction: Validating Your Knowledge</h2>
 <p>
-    Welcome to the solutions guide for "Speed Unleashed." This document is more than just an answer key; it's a tool for reinforcing your understanding of Oracle's performance and optimization fundamentals. The goal here is not just to see the correct code, but to deeply understand <strong>why</strong> it's correct.
+    Welcome to the solutions guide for <em>Speed Unleashed.</em> This document is more than just an answer key; it's a tool for reinforcing your understanding of Oracle's performance and optimization fundamentals. The goal here is not just to see the correct code, but to deeply understand <strong>why</strong> it's correct.
 </p>
 <p>
     We encourage you to meticulously compare these solutions with your own attempts. Even if your code produced the right result, the explanations here may reveal a more efficient, idiomatic Oracle approach or highlight a nuance you might have missed. Let's solidify your path from knowing PostgreSQL to mastering Oracle's performance landscape.
@@ -36,7 +36,7 @@
 <h3>(i) Meanings, Values, Relations, and Advantages</h3>
 <h4>Exercise 1: <span class="problem-label">The Foundation - From Full Scan to B-Tree Index</span></h4>
 <p>
-    <strong>Problem:</strong> You are tasked with retrieving all orders for a specific <code>productId</code>. First, analyze the performance of this query without any indexes. Then, create a standard B-Tree index on the `productId` column in the `customerOrders` table and analyze the plan again.
+    <strong>Problem:</strong> You are tasked with retrieving all orders for a specific <code>productId</code>. First, analyze the performance of this query without any indexes. Then, create a standard B-Tree index on the <code>productId</code> column in the <code>customerOrders</code> table and analyze the plan again.
 </p>
 
 ```sql
@@ -68,7 +68,7 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
 ```
 <h5>Analysis</h5>
 <p>
-    The initial plan performs a <code>TABLE ACCESS FULL</code>. This is the database's "brute force" method, where it reads every block of the <code>customerOrders</code> table from disk into memory to check if <code>productId</code> equals 2. For a large table, this is extremely inefficient when you only need a small percentage of the data.
+    The initial plan performs a <code>TABLE ACCESS FULL</code>. This is the database's <em>brute force</em> method, where it reads every block of the <code>customerOrders</code> table from disk into memory to check if <code>productId</code> equals 2. For a large table, this is extremely inefficient when you only need a small percentage of the data.
 </p>
 <p>
     After creating the standard B-Tree index, the optimizer immediately recognizes a more intelligent path. The new plan consists of two steps:
@@ -128,7 +128,7 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
     </li>
 </ul>
 <div class="postgresql-bridge">
-    <strong>Bridging from PostgreSQL:</strong> This is a significant architectural difference. PostgreSQL does not have a native bitmap index type that you create explicitly like this. While PostgreSQL's query planner can create bitmap structures *on-the-fly* during query execution (a "Bitmap Heap Scan"), it's an internal optimization, not a persistent index structure you manage. Oracle's persistent Bitmap Indexes are a powerful, explicit choice for data warehouse-style queries on low-cardinality columns, a tool you would not have in your PostgreSQL toolkit.
+    <strong>Bridging from PostgreSQL:</strong> This is a significant architectural difference. PostgreSQL does not have a native bitmap index type that you create explicitly like this. While PostgreSQL's query planner can create bitmap structures *on-the-fly* during query execution (a <em>Bitmap Heap Scan</em>), it's an internal optimization, not a persistent index structure you manage. Oracle's persistent Bitmap Indexes are a powerful, explicit choice for data warehouse-style queries on low-cardinality columns, a tool you would not have in your PostgreSQL toolkit.
 </div>
 <div class="oracle-specific">
     <strong>For more information:</strong> Read <strong>Oracle® Database Concepts</strong>,
@@ -160,7 +160,7 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
     The function-based index is a powerful tool for indexing computed values. Instead of indexing the raw <code>customerName</code>, Oracle computes <code>UPPER(customerName)</code> for each row and stores that result in the index. The optimizer is intelligent enough to match the expression in the <code>WHERE</code> clause to the expression used to define the index. This allows it to perform a direct and highly efficient <code>INDEX RANGE SCAN</code>, completely avoiding the performance-killing full table scan that would otherwise be required to apply the <code>UPPER()</code> function to every row in the table.
 </p>
 <div class="postgresql-bridge">
-    <strong>Bridging from PostgreSQL:</strong> This feature is conceptually identical in both Oracle and PostgreSQL. The syntax is also very similar (`CREATE INDEX...ON...(expression)`). The value of this exercise is reinforcing the concept in an Oracle context and practicing the Oracle-specific method for plan analysis to *verify* that the index is being used as expected.
+    <strong>Bridging from PostgreSQL:</strong> This feature is conceptually identical in both Oracle and PostgreSQL. The syntax is also very similar (<code>CREATE INDEX...ON...(expression)</code>). The value of this exercise is reinforcing the concept in an Oracle context and practicing the Oracle-specific method for plan analysis to *verify* that the index is being used as expected.
 </div>
 <div class="oracle-specific">
     <strong>For more information:</strong> See <strong>Oracle® Database Development Guide</strong>
@@ -194,13 +194,13 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY(statement_id => 'NON_LEADING'));
 </p>
 <ul>
     <li>
-        <strong>Plan for query with `customerId` and `orderDate`:</strong> This is the most efficient use case. The optimizer performs an `INDEX RANGE SCAN` by seeking directly to the entries for `customerId = 9` and then scanning only the portion of that index block where `orderDate` is greater than the specified date.
+        <strong>Plan for query with <code>customerId</code> and <code>orderDate</code>:</strong> This is the most efficient use case. The optimizer performs an <code>INDEX RANGE SCAN</code> by seeking directly to the entries for <code>customerId = 9</code> and then scanning only the portion of that index block where <code>orderDate</code> is greater than the specified date.
     </li>
     <li>
-        <strong>Plan for query with `customerId` only:</strong> The index is still highly effective. The optimizer uses an `INDEX RANGE SCAN` on the leading column, `customerId`, to find all relevant orders.
+        <strong>Plan for query with <code>customerId</code> only:</strong> The index is still highly effective. The optimizer uses an <code>INDEX RANGE SCAN</code> on the leading column, <code>customerId</code>, to find all relevant orders.
     </li>
     <li>
-        <strong>Plan for query with `orderDate` only:</strong> The index is likely ignored in favor of a `TABLE ACCESS FULL`. Because the index is not sorted primarily by `orderDate`, Oracle cannot efficiently use it to satisfy this `WHERE` clause. It would have to scan large portions of the index, which is often more costly than just scanning the table. This is the **most common pitfall** developers encounter with composite indexes.
+        <strong>Plan for query with <code>orderDate</code> only:</strong> The index is likely ignored in favor of a <code>TABLE ACCESS FULL</code>. Because the index is not sorted primarily by <code>orderDate</code>, Oracle cannot efficiently use it to satisfy this <code>WHERE</code> clause. It would have to scan large portions of the index, which is often more costly than just scanning the table. This is the <strong>most common pitfall</strong> developers encounter with composite indexes.
     </li>
 </ul>
 <h3>(ii) Disadvantages and Pitfalls</h3>
@@ -221,7 +221,7 @@ WHERE orderStatus = 'PENDING';
 ```
 <h5>Analysis</h5>
 <p>
-    While indexes accelerate <code>SELECT</code> statements, they impose a penalty on every <code>INSERT</code>, <code>UPDATE</code>, and <code>DELETE</code> operation. For every single row that is modified by the `UPDATE` statement, Oracle must perform the following work:
+    While indexes accelerate <code>SELECT</code> statements, they impose a penalty on every <code>INSERT</code>, <code>UPDATE</code>, and <code>DELETE</code> operation. For every single row that is modified by the <code>UPDATE</code> statement, Oracle must perform the following work:
 </p>
 <ol>
     <li><strong>Update the Table:</strong> The actual data block containing the row must be modified.</li>
@@ -233,7 +233,7 @@ WHERE orderStatus = 'PENDING';
 </div>
 <h4>Exercise 2: <span class="problem-label">The Non-SARGable Predicate Pitfall</span></h4>
 <p>
-    <strong>Problem:</strong> A developer needs to find all orders placed in the year 2023. They write a query using `TO_CHAR(orderDate, 'YYYY') = '2023'`. An index exists on `orderDate`. Explain why the index will not be used.
+    <strong>Problem:</strong> A developer needs to find all orders placed in the year 2023. They write a query using <code>TO_CHAR(orderDate, 'YYYY') = '2023'</code>. An index exists on <code>orderDate</code>. Explain why the index will not be used.
 </p>
 
 ```sql
@@ -246,10 +246,10 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
 ```
 <h5>Analysis</h5>
 <p>
-    The execution plan will inevitably show a <code>TABLE ACCESS FULL</code>. This is because applying a function (like <code>TO_CHAR</code>) to an indexed column in the <code>WHERE</code> clause makes the predicate **non-SARGable** (not a Search-ARGument-able predicate).
+    The execution plan will inevitably show a <code>TABLE ACCESS FULL</code>. This is because applying a function (like <code>TO_CHAR</code>) to an indexed column in the <code>WHERE</code> clause makes the predicate <strong>non-SARGable</strong> (not a Search-ARGument-able predicate).
 </p>
 <p>
-    The B-Tree index on <code>orderDate</code> contains sorted `DATE` values. It knows nothing about the string '2023'. To resolve the query, Oracle has no choice but to:
+    The B-Tree index on <code>orderDate</code> contains sorted <code>DATE</code> values. It knows nothing about the string '2023'. To resolve the query, Oracle has no choice but to:
 </p>
 <ol>
     <li>Read every single row from the table.</li>
@@ -262,7 +262,7 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
 <h3>(iii) Contrasting with Inefficient Common Solutions</h3>
 <h4>Exercise 1: <span class="problem-label">Date Range Scans vs. Function-based Filtering</span></h4>
 <p>
-    <strong>Problem:</strong> Correct the previous query to efficiently find all orders from 2023 using the existing index on `orderDate`.
+    <strong>Problem:</strong> Correct the previous query to efficiently find all orders from 2023 using the existing index on <code>orderDate</code>.
 </p>
 
 ```sql
@@ -403,11 +403,11 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
     The resulting <code>EXPLAIN PLAN</code> should show a highly optimized path:
 </p>
 <ol>
-    <li>The plan will begin with the <code>subOrgs</code> CTE. It will use the <code>idxCustUpperName</code> index for the <code>START WITH</code> clause (via an `INDEX RANGE SCAN`).
+    <li>The plan will begin with the <code>subOrgs</code> CTE. It will use the <code>idxCustUpperName</code> index for the <code>START WITH</code> clause (via an <code>INDEX RANGE SCAN</code>).
     </li>
     <li>The <code>CONNECT BY</code> operation will show a <code>NESTED LOOPS</code> or similar efficient operation, using the <code>idxCustManagerId</code> index to find child rows.
     </li>
-    <li>The subsequent joins to <code>customerOrders</code> and <code>products</code> will leverage the foreign key indexes, likely as part of `HASH JOIN` operations, which are efficient for joining a small set of rows (the sub-orgs) to a larger set.
+    <li>The subsequent joins to <code>customerOrders</code> and <code>products</code> will leverage the foreign key indexes, likely as part of <code>HASH JOIN</code> operations, which are efficient for joining a small set of rows (the sub-orgs) to a larger set.
     </li>
     <li>The aggregation for <code>SUM(...)</code> will be performed by a <code>HASH GROUP BY</code>.</li>
     <li>Finally, a <code>WINDOW SORT</code> operation will be used to compute the <code>DENSE_RANK</code> analytic function, followed by a <code>FILTER</code> to apply the <code>WHERE categoryRank <= 2</code> condition.

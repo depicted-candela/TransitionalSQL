@@ -1,11 +1,11 @@
 <head>
-<link rel="stylesheet" href="../styles/lecture.css">
+<link rel="stylesheet"href="../styles/lecture.css">
 </head>
 
 <body>
 <div class="toc-popup-container">
-<input type="checkbox" id="tocToggleChunk13" class="toc-toggle-checkbox">
-<label for="tocToggleChunk13" class="toc-toggle-label">
+<input type="checkbox"id="tocToggleChunk13"class="toc-toggle-checkbox">
+<label for="tocToggleChunk13"class="toc-toggle-label">
     <span>Contents</span>
     <span class="toc-icon-open"></span>
 </label>
@@ -50,13 +50,13 @@
 
 <h3 id="section1sub1">The Cost-Based Optimizer (CBO)</h3>
 <p>
-    The <strong>Cost-Based Optimizer</strong> is the <strong>Guiding Intelligence</strong> of Oracle's query execution. Its singular goal is to find the lowest-cost execution plan, a true mission of art. A plan's "cost" is an internal, unit-less number representing the estimated resources (I/O, CPU) that must be lent. The CBO evaluates multiple strategies—different join methods, join orders, and access paths—and then picks the one it calculates as the cheapest, an outcome that is heaven-sent.
+    The <strong>Cost-Based Optimizer</strong> is the <strong>Guiding Intelligence</strong> of Oracle's query execution. Its singular goal is to find the lowest-cost execution plan, a true mission of art. A plan's <em>cost</em>is an internal, unit-less number representing the estimated resources (I/O, CPU) that must be lent. The CBO evaluates multiple strategies—different join methods, join orders, and access paths—and then picks the one it calculates as the cheapest, an outcome that is heaven-sent.
 </p>
 
 <h3 id="section1sub2">Query Tuning Considerations</h3>
 <ul>
     <li>
-        <strong>SARGable Predicates:</strong> A "Searchable Argument" creates a <strong>Grounded Bridge</strong> from your query to an index. The core principle, which you know from PostgreSQL, is to avoid applying functions to indexed columns—a cardinal sin. Instead of <code>TRUNC(hireDate) = '2023-01-01'</code>, you define a clear date range. This simple change is the a-b-c that can mean the difference between a `TABLE ACCESS FULL`, a true `memory mountain`, and a swift `INDEX RANGE SCAN`, a `running river` of data.
+        <strong>SARGable Predicates:</strong> A <em>Searchable Argument</em>creates a <strong>Grounded Bridge</strong> from your query to an index. The core principle, which you know from PostgreSQL, is to avoid applying functions to indexed columns—a cardinal sin. Instead of <code>TRUNC(hireDate) = '2023-01-01'</code>, you define a clear date range. This simple change is the a-b-c that can mean the difference between a <code>TABLE ACCESS FULL</code>, a true <code>memory mountain</code>, and a swift <code>INDEX RANGE SCAN</code>, a <code>running river</code> of data.
     </li>
     <li>
         <strong>Efficient Joins:</strong> The optimizer's choice of join method is a key decision. A <code>NESTED LOOPS</code> join is efficient for joining a small, targeted result set to a large table via an index, while a <code>HASH JOIN</code> excels at processing two large, unsorted row sets in a session.
@@ -68,7 +68,7 @@
 
 <h3 id="section1sub3">Optimizer Hints</h3>
 <p>
-    An <strong>Optimizer Hint</strong> is a special comment, a `/*+ coded whisper */` embedded directly in a SQL statement that acts as a directive to the CBO. It's a way for a developer to make a <strong>Forced Decision</strong>, a sort of `technical debt` paid in advance. Hints are powerful but represent a `brittle solution` and should be used with extreme caution.
+    An <strong>Optimizer Hint</strong> is a special comment, a <code>/*+ coded whisper */</code> embedded directly in a SQL statement that acts as a directive to the CBO. It's a way for a developer to make a <strong>Forced Decision</strong>, a sort of <code>technical debt</code> paid in advance. Hints are powerful but represent a <code>brittle solution</code> and should be used with extreme caution.
 </p>
 
 <h3 id="section1sub4">Table Statistics & DBMS_STATS</h3>
@@ -79,22 +79,22 @@
     <code>DBMS_STATS</code> is the Oracle-specific PL/SQL package, the designated <strong>Statistics Engine</strong>, used to gather and manage this vital information. Knowing its procedures is an absolute mission.
 </p>
 
-<h3 id="section1sub5" class="oracle-specific">Oracle 23ai: Real-Time Enhancements</h3>
+<h3 id="section1sub5"class="oracle-specific">Oracle 23ai: Real-Time Enhancements</h3>
 <ul>
     <li>
-        <strong>Real-Time SQL Plan Management (SPM):</strong> This feature is a true <strong>Performance Guardian</strong>. SPM automatically detects when a query's execution plan regresses, comparing it to a known-good "baseline." It can then prevent this `digital ghost` of a bad plan from haunting your system, a feature that's heaven-sent.<sup id="fnref13_2"><a href="#fn13_2">2</a></sup>
+        <strong>Real-Time SQL Plan Management (SPM):</strong> This feature is a true <strong>Performance Guardian</strong>. SPM automatically detects when a query's execution plan regresses, comparing it to a known-good <em>baseline.</em>It can then prevent this <code>digital ghost</code> of a bad plan from haunting your system, a feature that's heaven-sent.<sup id="fnref13_2"><a href="#fn13_2">2</a></sup>
     </li>
     <li>
-        <strong>SQL Analysis Report:</strong> A built-in diagnostic tool, an `analytical engine`, that automatically inspects a SQL statement for common structural flaws like Cartesian products and provides clear, actionable recommendations.
+        <strong>SQL Analysis Report:</strong> A built-in diagnostic tool, an <code>analytical engine</code>, that automatically inspects a SQL statement for common structural flaws like Cartesian products and provides clear, actionable recommendations.
     </li>
 </ul>
 
 <h2 id="section2">Section 2: Relations: How They Play with Others (in Oracle)</h2>
 <p>
-    These performance concepts form a `knowledge cascade`. Accurate <strong>Statistics</strong>, gathered by <code>DBMS_STATS</code>, are the foundation. The <strong>CBO</strong> uses these stats to build an intelligent plan. When statistics are flawed, the CBO's plan might be absurd. A developer, in a moment of hurried concern, might then use a **Hint** to force a better plan, `shouting over a whisper` of the optimizer's logic.
+    These performance concepts form a <code>knowledge cascade</code>. Accurate <strong>Statistics</strong>, gathered by <code>DBMS_STATS</code>, are the foundation. The <strong>CBO</strong> uses these stats to build an intelligent plan. When statistics are flawed, the CBO's plan might be absurd. A developer, in a moment of hurried concern, might then use a  <strong>Hint</strong> to force a better plan, <code>shouting over a whisper</code> of the optimizer's logic.
 </p>
 <p>
-    This creates a brittle solution, a `golden cage` that traps performance. The true Oracle way is to ensure statistics are current, allowing the CBO to adapt. The 23ai **Real-Time SQL Plan Management** feature elevates this to a new station, using a history of good plans to prevent regressions automatically, providing a powerful foundation. The **SQL Analysis Report** acts as an initial diagnostic layer, helping you find and bind the solution before you even start to feel the grind.
+    This creates a brittle solution, a <code>golden cage</code> that traps performance. The true Oracle way is to ensure statistics are current, allowing the CBO to adapt. The 23ai  <strong>Real-Time SQL Plan Management</strong> feature elevates this to a new station, using a history of good plans to prevent regressions automatically, providing a powerful foundation. The  <strong>SQL Analysis Report</strong> acts as an initial diagnostic layer, helping you find and bind the solution before you even start to feel the grind.
 </p>
 
 <div class="postgresql-bridge">
@@ -115,19 +115,22 @@
             But flip the condition, make the logic take flight, <br>
             And the optimizer's path becomes blindingly bright.
         </div>
-        <pre><code class="sql">-- Inefficient (Non-SARGable): optimizer cannot use an index on hireDate
+
+```sql Inefficient (Non-SARGable): optimizer cannot use an index on hireDate
 SELECT * FROM employees WHERE TRUNC(hireDate) = TO_DATE('2022-01-15', 'YYYY-MM-DD');
 
 -- Efficient (SARGable): optimizer can use an index on hireDate
 SELECT * FROM employees WHERE hireDate >= TO_DATE('2022-01-15', 'YYYY-MM-DD') AND hireDate < TO_DATE('2022-01-16', 'YYYY-MM-DD');
-</code></pre>
-    </li>
+```
+</li>
 </ul>
 <h3 id="section3sub2">Using Optimizer Hints</h3>
 <p>
     Hints are embedded in comments, a command you impart. They are powerful but should be used when you're truly smart.
 </p>
-<pre><code class="sql">-- Syntax: /*+ HINT_NAME(alias) [HINT_NAME(alias)] */
+
+```sql
+-- Syntax: /*+ HINT_NAME(alias) [HINT_NAME(alias)] */
 
 -- Force the use of a specific index
 SELECT /*+ INDEX(e idxEmpHireDate) */ *
@@ -138,13 +141,15 @@ WHERE hireDate > TO_DATE('2023-01-01', 'YYYY-MM-DD');
 SELECT /*+ FULL(e) */ *
 FROM employees e
 WHERE status = 'ACTIVE';
-</code></pre>
+```
 
 <h3 id="section3sub3">Managing Statistics with DBMS_STATS</h3>
 <p>
     This PL/SQL package is your primary interface for managing optimizer statistics, a true performance-tuning artist.
 </p>
-<pre><code class="sql">-- Basic syntax to gather stats for a single table
+
+```sql
+-- Basic syntax to gather stats for a single table
 BEGIN
 DBMS_STATS.GATHER_TABLE_STATS(
 ownname => 'PERFORMANCESYMPHONY',
@@ -160,22 +165,24 @@ ownname => 'PERFORMANCESYMPHONY'
 );
 END;
 /
-</code></pre>
+```
 
-<h3 id="section3sub4" class="oracle-specific">Using 23ai Performance Features</h3>
+<h3 id="section3sub4"class="oracle-specific">Using 23ai Performance Features</h3>
 <ol>
     <li>
-        <strong>SQL Analysis Report:</strong> This feature requires no special syntax; it's part of the `EXPLAIN PLAN` bargain.
-        <pre><code class="sql">-- Step 1: Run your query (even a flawed one)
+        <strong>SQL Analysis Report:</strong> This feature requires no special syntax; it's part of the <code>EXPLAIN PLAN</code> bargain.
+
+```sql Step 1: Run your query (even a flawed one)
 SELECT e.lastName FROM employees e, departments d; -- Missing join
 
 -- Step 2: Display the cursor plan with the analysis report
 SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(FORMAT => 'ALL'));
-</code></pre>
-    </li>
-    <li>
-        <strong>Real-Time SQL Plan Management (Conceptual Use):</strong> Load a known-good plan to protect it from a change of heart.
-        <pre><code class="sql">-- Find the SQL_ID of your well-performing query
+```
+</li>
+<li>
+    <strong>Real-Time SQL Plan Management (Conceptual Use):</strong> Load a known-good plan to protect it from a change of heart.
+
+```sql Find the SQL_ID of your well-performing query
 SELECT sql_id FROM v$sql WHERE sql_text LIKE '...';
 
 -- Load the plan from the cursor cache into a new baseline
@@ -187,8 +194,9 @@ sql_id => 'your_sql_id_here'
 );
 END;
 /
-</code></pre>
-    </li>
+```
+
+</li>
 </ol>
 
 <h2 id="section4">Why Use Them? (Advantages in Oracle)</h2>
@@ -197,23 +205,23 @@ END;
         <strong>Predictable Performance:</strong> Properly maintained statistics lead to stable, predictable query execution. The CBO can make consistently good choices, a true elevation.
     </li>
     <li>
-        <strong>Automation and Reduced Overhead:</strong> 23ai features act as a **laughing river**, effortlessly washing away performance bugs and plan regressions. They automate what was once a manual, expertise-driven expedition.
+        <strong>Automation and Reduced Overhead:</strong> 23ai features act as a  <strong>laughing river</strong>, effortlessly washing away performance bugs and plan regressions. They automate what was once a manual, expertise-driven expedition.
     </li>
     <li>
         <strong>Scalability:</strong> Writing SARGable queries and ensuring efficient joins are fundamental to building applications that can handle a growing data foundation.
     </li>
     <li>
-        <strong>Surgical Intervention:</strong> With great care, a hint becomes a `precision tool`, a scalpel for the rare case, providing a powerful escape hatch when the optimizer, for complex reasons, is out of the race.
+        <strong>Surgical Intervention:</strong> With great care, a hint becomes a <code>precision tool</code>, a scalpel for the rare case, providing a powerful escape hatch when the optimizer, for complex reasons, is out of the race.
     </li>
 </ul>
 
 <h2 id="section5">Watch Out! (Disadvantages & Pitfalls in Oracle)</h2>
 <ul>
     <li>
-        <strong>Stale Statistics (The #1 Pitfall):</strong> The most common cause of performance degradation is stale statistics, an optimizer's lamentation. A plan for a 1,000-row table will fail on 10 million. Relying on this is like using a **frozen flame** for warmth; it's a `brittle solution` that offers no real salvation.
+        <strong>Stale Statistics (The #1 Pitfall):</strong> The most common cause of performance degradation is stale statistics, an optimizer's lamentation. A plan for a 1,000-row table will fail on 10 million. Relying on this is like using a  <strong>frozen flame</strong> for warmth; it's a <code>brittle solution</code> that offers no real salvation.
     </li>
     <li>
-        <strong>Hint Brittleness:</strong> Hard-coding hints is a **time carpet**; you're woven into its design, unable to leave. A hint that helps today becomes a bottleneck tomorrow. It locks a plan in place, removing the CBO's ability to adapt to a new design.
+        <strong>Hint Brittleness:</strong> Hard-coding hints is a  <strong>time carpet</strong>; you're woven into its design, unable to leave. A hint that helps today becomes a bottleneck tomorrow. It locks a plan in place, removing the CBO's ability to adapt to a new design.
     </li>
     <li>
         <strong>Dynamic Sampling's Toll:</strong> If stats are missing, the database may resort to dynamic sampling. While helpful, it adds overhead to the parsing elation. It's better to have pre-gathered, accurate statistics for every situation.
@@ -226,10 +234,10 @@ END;
 <div class="footnotes">
 <ol>
     <li id="fn13_1">
-        <p><a href="/books/sql-tuning-guide/ch01_19-influencing-the-optimizer.pdf" title="Oracle Database SQL Tuning Guide, 23ai - Chapter 19: Influencing the Optimizer">Oracle Database SQL Tuning Guide, 23ai, Chapter 19: Influencing the Optimizer</a>. This chapter provides a comprehensive overview of hints, their syntax, and their purpose. <a href="#fnref13_1" title="Jump back to footnote 1 in the text">↩</a></p>
+        <p><a href="/books/sql-tuning-guide/ch01_19-influencing-the-optimizer.pdf"title="Oracle Database SQL Tuning Guide, 23ai - Chapter 19: Influencing the Optimizer">Oracle Database SQL Tuning Guide, 23ai, Chapter 19: Influencing the Optimizer</a>. This chapter provides a comprehensive overview of hints, their syntax, and their purpose. <a href="#fnref13_1"title="Jump back to footnote 1 in the text">↩</a></p>
     </li>
     <li id="fn13_2">
-        <p><a href="/books/oracle-database-23ai-new-features-guide/11_Diagnosability.pdf" title="Oracle Database 23ai New Features Guide - Chapter 11: Diagnosability">Oracle Database 23ai New Features Guide, Chapter 11: Diagnosability, Section "Add Verified SQL Plan Baseline"</a>. This section introduces the concept of real-time plan management and automatic baseline creation. <a href="#fnref13_2" title="Jump back to footnote 2 in the text">↩</a></p>
+        <p><a href="/books/oracle-database-23ai-new-features-guide/11_Diagnosability.pdf"title="Oracle Database 23ai New Features Guide - Chapter 11: Diagnosability">Oracle Database 23ai New Features Guide, Chapter 11: Diagnosability, Section <em>Add Verified SQL Plan Baseline"</a>. This section introduces the concept of real-time plan management and automatic baseline creation. <a href="#fnref13_2"title="Jump back to footnote 2 in the text">↩</a></p>
     </li>
 </ol>
 </div>
