@@ -50,13 +50,13 @@
 
 <h3 id="section1sub1">The Cost-Based Optimizer (CBO)</h3>
 <p>
-    The <strong>Cost-Based Optimizer</strong> is the <strong>Guiding Intelligence</strong> of Oracle's query execution. Its singular goal is to find the lowest-cost execution plan, a true mission of art. A plan's <em>cost</em>is an internal, unit-less number representing the estimated resources (I/O, CPU) that must be lent. The CBO evaluates multiple strategies—different join methods, join orders, and access paths—and then picks the one it calculates as the cheapest, an outcome that is heaven-sent.
+    The <strong>Cost-Based Optimizer</strong> is the <strong>Guiding Intelligence</strong> of Oracle's query execution. Its singular goal is to find the lowest-cost execution plan, a true mission of art. A plan's <em>cost</em> is an internal, unit-less number representing the estimated resources (I/O, CPU) that must be lent. The CBO evaluates multiple strategies—different join methods, join orders, and access paths—and then picks the one it calculates as the cheapest, an outcome that is heaven-sent.
 </p>
 
 <h3 id="section1sub2">Query Tuning Considerations</h3>
 <ul>
     <li>
-        <strong>SARGable Predicates:</strong> A <em>Searchable Argument</em>creates a <strong>Grounded Bridge</strong> from your query to an index. The core principle, which you know from PostgreSQL, is to avoid applying functions to indexed columns—a cardinal sin. Instead of <code>TRUNC(hireDate) = '2023-01-01'</code>, you define a clear date range. This simple change is the a-b-c that can mean the difference between a <code>TABLE ACCESS FULL</code>, a true <code>memory mountain</code>, and a swift <code>INDEX RANGE SCAN</code>, a <code>running river</code> of data.
+        <strong>SARGable Predicates:</strong> A <em>Searchable Argument</em> creates a <strong>Grounded Bridge</strong> from your query to an index. The core principle, which you know from PostgreSQL, is to avoid applying functions to indexed columns—a cardinal sin. Instead of <code>TRUNC(hireDate) = '2023-01-01'</code>, you define a clear date range. This simple change is the a-b-c that can mean the difference between a <code>TABLE ACCESS FULL</code>, a true <code>memory mountain</code>, and a swift <code>INDEX RANGE SCAN</code>, a <code>running river</code> of data.
     </li>
     <li>
         <strong>Efficient Joins:</strong> The optimizer's choice of join method is a key decision. A <code>NESTED LOOPS</code> join is efficient for joining a small, targeted result set to a large table via an index, while a <code>HASH JOIN</code> excels at processing two large, unsorted row sets in a session.
@@ -82,7 +82,7 @@
 <h3 id="section1sub5"class="oracle-specific">Oracle 23ai: Real-Time Enhancements</h3>
 <ul>
     <li>
-        <strong>Real-Time SQL Plan Management (SPM):</strong> This feature is a true <strong>Performance Guardian</strong>. SPM automatically detects when a query's execution plan regresses, comparing it to a known-good <em>baseline.</em>It can then prevent this <code>digital ghost</code> of a bad plan from haunting your system, a feature that's heaven-sent.<sup id="fnref13_2"><a href="#fn13_2">2</a></sup>
+        <strong>Real-Time SQL Plan Management (SPM):</strong> This feature is a true <strong>Performance Guardian</strong>. SPM automatically detects when a query's execution plan regresses, comparing it to a known-good <em>baseline.</em> It can then prevent this <code>digital ghost</code> of a bad plan from haunting your system, a feature that's heaven-sent.<sup id="fnref13_2"><a href="#fn13_2">2</a></sup>
     </li>
     <li>
         <strong>SQL Analysis Report:</strong> A built-in diagnostic tool, an <code>analytical engine</code>, that automatically inspects a SQL statement for common structural flaws like Cartesian products and provides clear, actionable recommendations.

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset='UTF-8'>
+  <title>Execution Plan Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Link to the provided stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+
+  <script type="text/javascript">
+    // This script enables live filtering of the execution plan table.
+    function search() {
+      var filter, table, tr, td, i, txtValue;
+      filter = document.getElementById('search').value.toUpperCase();
+      table = document.getElementById('execution-plan-table');
+      tr = table.getElementsByTagName('tr');
+
+      // Loop through all table rows, and hide those who don't match the search query
+      for (i = 1; i < tr.length; i++) { // Start from 1 to skip the header row
+        // Check all cells in the row
+        let rowVisible = false;
+        for (let j = 0; j < tr[i].cells.length; j++) {
+            td = tr[i].cells[j];
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    rowVisible = true;
+                    break; 
+                }
+            }
+        }
+        tr[i].style.display = rowVisible ? "" : "none";
+      }
+    }
+
+    // Debounce the search function to avoid running it on every single keystroke
+    var timer;
+    function delayedSearch() {
+      clearTimeout(timer);
+      timer = setTimeout(search, 300); // 300ms delay
+    }
+  </script>
+</head>
+
+<body>
+
+  <div class="plan-container">
+    <header>
+      <h1>Oracle Execution Plan</h1>
+    </header>
+
+    <div class="content-wrapper">
+      
+      <div class="search-box">
+        <input type="text" id="search" onkeyup="delayedSearch();" placeholder="Filter plan operations...">
+      </div>
+
+      <div class="plan-summary">
+        Plan hash value: 2440785576
+      </div>
+
+      <h2>Execution Plan</h2>
+      <div class="table-responsive">
+        <table id="execution-plan-table">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Operation</th>
+              <th>Name</th>
+              <th class="numeric">Rows</th>
+              <th class="numeric">Bytes</th>
+              <th class="numeric">Cost (%CPU)</th>
+              <th class="numeric">Time</th>
+            </tr>
+          </thead>
+          <!-- The original script looked for id="data", so we assign it to the tbody -->
+          <tbody id="data">
+            <tr>
+              <td>0</td>
+              <td>SELECT STATEMENT</td>
+              <td></td>
+              <td class="numeric">200</td>
+              <td class="numeric">7400</td>
+              <td class="numeric">200 (0)</td>
+              <td class="numeric">00:00:01</td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>TABLE ACCESS BY INDEX ROWID BATCHED</td>
+              <td>PRODUCTSALES</td>
+              <td class="numeric">200</td>
+              <td class="numeric">7400</td>
+              <td class="numeric">200 (0)</td>
+              <td class="numeric">00:00:01</td>
+            </tr>
+            <tr>
+              <td>* 2</td>
+              <td>INDEX RANGE SCAN</td>
+              <td>PERFORMANCESYMPHONY_PRODUCT</td>
+              <td class="numeric">200</td>
+              <td class="numeric"></td>
+              <td class="numeric">3 (0)</td>
+              <td class="numeric">00:00:01</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="predicate-info">
+        <h2>Predicate Information</h2>
+        <ul>
+          <li>
+            <strong>2</strong> - access("PRODUCTID"=3113)
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+  
+  <!-- Original SQL query can be placed here as a comment for reference -->
+  <!-- SQL: SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY(STATEMENT_ID => 'PRODUCTUAL_GATHERED')) -->
+</body>
+
+</html>

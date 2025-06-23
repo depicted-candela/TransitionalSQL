@@ -44,97 +44,13 @@
 <li>Execute the subsequent <code>CREATE TABLE</code> and <code>INSERT</code> statements to build the necessary dataset for the exercises.</li>
 </ol>
 
-<p>It is crucial that you set up this dataset correctly, as the exercises are crafted to demonstrate specific performance characteristics based on this data.</p>
+<p>It is crucial that you set up this dataset correctly defined in <code>dataset.sql</code>, as the exercises are crafted to demonstrate specific performance characteristics based on this data.</p>
 
 <h2>Exercises</h2>
 
 <div class="exercise-section">
-<h3>Dataset: The `performanceSymphony` Schema</h3>
-<pre><code>
--- Run this part as SYS or a user with DBA privileges
-CREATE USER performanceSymphony IDENTIFIED BY YourPassword;
-GRANT CONNECT, RESOURCE, DBA TO performanceSymphony;
-ALTER USER performanceSymphony QUOTA UNLIMITED ON USERS;
-
--- Connect as the performanceSymphony user to create the objects
--- conn performanceSymphony/YourPassword
-
-CREATE TABLE employees (
-employeeId      NUMBER(6) NOT NULL,
-firstName       VARCHAR2(20),
-lastName        VARCHAR2(25) NOT NULL,
-email           VARCHAR2(25) NOT NULL,
-jobId           VARCHAR2(10) NOT NULL,
-salary          NUMBER(8,2),
-managerId       NUMBER(6),
-departmentId    NUMBER(4),
-status          VARCHAR2(20) DEFAULT 'ACTIVE' NOT NULL,
-hireDate        DATE NOT NULL
-);
-
-CREATE TABLE departments (
-departmentId    NUMBER(4) NOT NULL,
-departmentName  VARCHAR2(30) NOT NULL,
-locationId      NUMBER(4)
-);
-
-CREATE TABLE jobHistory (
-employeeId      NUMBER(6) NOT NULL,
-startDate       DATE NOT NULL,
-endDate         DATE NOT NULL,
-jobId           VARCHAR2(10) NOT NULL,
-departmentId    NUMBER(4)
-);
-
--- Populate with data to illustrate performance concepts
-
--- Departments Table
-INSERT INTO departments VALUES (10, 'Administration', 1700);
-INSERT INTO departments VALUES (20, 'Marketing', 1800);
-INSERT INTO departments VALUES (30, 'Purchasing', 1700);
-INSERT INTO departments VALUES (40, 'Human Resources', 2400);
-INSERT INTO departments VALUES (50, 'Shipping', 1500);
-INSERT INTO departments VALUES (60, 'IT', 1400);
-INSERT INTO departments VALUES (70, 'Public Relations', 1700);
-INSERT INTO departments VALUES (80, 'Sales', 2500);
-INSERT INTO departments VALUES (90, 'Executive', 1700);
-INSERT INTO departments VALUES (100, 'Finance', 1700);
-INSERT INTO departments VALUES (110, 'Accounting', 1700);
-INSERT INTO departments VALUES (120, 'Treasury', 1700);
-INSERT INTO departments VALUES (130, 'Corporate Tax', 1700);
-INSERT INTO departments VALUES (140, 'Control And Credit', 1700);
-INSERT INTO departments VALUES (150, 'Shareholder Services', 1700);
-INSERT INTO departments VALUES (160, 'Benefits', 1700);
-INSERT INTO departments VALUES (170, 'Manufacturing', 1700);
-INSERT INTO departments VALUES (180, 'Construction', 1700);
-INSERT INTO departments VALUES (190, 'Contracting', 1700);
-INSERT INTO departments VALUES (200, 'Operations', 1700);
-INSERT INTO departments VALUES (210, 'IT Support', 1700);
-INSERT INTO departments VALUES (220, 'NOC', 1700);
-INSERT INTO departments VALUES (230, 'IT Helpdesk', 1700);
-INSERT INTO departments VALUES (240, 'Government Sales', 1700);
-INSERT INTO departments VALUES (250, 'Retail Sales', 1700);
-INSERT INTO departments VALUES (260, 'Recruiting', 1700);
-INSERT INTO departments VALUES (270, 'Payroll', 1700);
-
--- Employees Table
--- Skewed data: a large number of employees are 'SA_REP'
-BEGIN
-FOR i IN 1..2000 LOOP
-INSERT INTO employees (employeeId, firstName, lastName, email, jobId, salary, departmentId, status, hireDate)
-VALUES (i, 'John'||i, 'Doe'||i, 'JDOE'||i, 'SA_REP', 6000 + (10*i), 80, 'ACTIVE', TO_DATE('2022-01-01', 'YYYY-MM-DD') + i);
-END LOOP;
--- Add a few non-sales reps for variety and index testing
-INSERT INTO employees VALUES (2001, 'Jane', 'Smith', 'JSMITH', 'IT_PROG', 9000, 60, 'ACTIVE', TO_DATE('2021-05-15', 'YYYY-MM-DD'));
-INSERT INTO employees VALUES (2002, 'Peter', 'Jones', 'PJONES', 'IT_PROG', 8500, 60, 'ACTIVE', TO_DATE('2020-03-20', 'YYYY-MM-DD'));
-INSERT INTO employees VALUES (2003, 'Mary', 'Jane', 'MJANE', 'MK_MAN', 14000, 20, 'ACTIVE', TO_DATE('2019-11-10', 'YYYY-MM-DD'));
--- Add an entry with a function-unfriendly format
-INSERT INTO employees VALUES (2004, 'Manager', 'Case', 'MCASE', 'SA_MAN', 15000, 80, 'active', TO_DATE('2018-01-01', 'YYYY-MM-DD'));
-END;
-/
-
-COMMIT;
-</code></pre>
+<h3>Dataset: The <code>performanceSymphony</code> Schema</h3>
+<p>Defined in <code>dataset.sql</code></p>
 </div>
 
 <div class="exercise-section">
@@ -175,12 +91,14 @@ COMMIT;
     <li>Use <code>DBMS_XPLAN.DISPLAY_CURSOR</code> to view the execution plan and the SQL Analysis Report that Oracle generates for the last executed statement.</li>
     <li>Interpret the report's findings and explain its recommendation.</li>
 </ol>
-<pre><code>
+
+```sql
 -- The flawed query
 SELECT e.lastName, d.departmentName
 FROM employees e, departments d
 WHERE e.departmentId = 90; -- Missing join condition!
-</code></pre>
+```
+
 <div class="oracle-specific">
     <p><strong>Focus:</strong> This exercise introduces a powerful <strong>Oracle 23ai feature</strong>. The SQL Analysis Report automates the diagnosis of common SQL anti-patterns, providing clear, actionable feedback directly in the plan output. This is a significant time-saver for both new and experienced developers. Learn more in the <a href="../books/sql-tuning-guide/ch01_19-influencing-the-optimizer.pdf">SQL Tuning Guide, Chapter 19</a> and the <a href="../books/oracle-database-23ai-new-features-guide/10_OLTP_and_Core_Database.pdf">New Features Guide</a>.</p>
 </div>
@@ -190,7 +108,7 @@ WHERE e.departmentId = 90; -- Missing join condition!
 <h3>2. Disadvantages and Pitfalls</h3>
 <h4>Exercise 2.1: The Pitfall of Stale Statistics</h4>
 <p class="problem-label">Problem:</p>
-<p>An application's performance has suddenly degraded. The query in question retrieves "ACTIVE" employees with a high salary. Initially, the table had very few such employees, but after a large data load, the number has increased dramatically. The statistics have not been updated.</p>
+<p>An application's performance has suddenly degraded. The query in question retrieves <em>ACTIVE</em> employees with a high salary. Initially, the table had very few such employees, but after a large data load, the number has increased dramatically. The statistics have not been updated.</p>
 <ol>
     <li>Delete the existing <code>employees</code> data. Insert a small, initial set of data where only 2 employees have a salary > 10000.</li>
     <li>Gather statistics on this small table.</li>
@@ -213,10 +131,10 @@ WHERE e.departmentId = 90; -- Missing join condition!
     <li>Examine the execution plan to confirm the hint worked.</li>
     <li>Now, <code>ROLLBACK</code> or delete the large data load. The table is small again.</li>
     <li>Execute the <em>hinted</em> query again on the small table.</li>
-    <li>Explain why the hinted query is now the "inefficient common solution" and what the Oracle-idiomatic, long-term solution is.</li>
+    <li>Explain why the hinted query is now the <em>inefficient common solution</em> and what the Oracle-idiomatic, long-term solution is.</li>
 </ol>
 <div class="postgresql-bridge">
-    <p><strong>Bridging from PostgreSQL:</strong> While PostgreSQL supports hints via extensions (like `pg_hint_plan`), they are not part of the core product and are often discouraged. Oracle has a long history with hints, but modern best practice, especially with 23ai, is to treat them as a temporary diagnostic tool, not a permanent fix. The idiomatic Oracle approach is to provide the optimizer with the best information (via statistics) and use features like SQL Plan Management to ensure stability.</p>
+    <p><strong>Bridging from PostgreSQL:</strong> While PostgreSQL supports hints via extensions (like <code>pg_hint_plan</code>), they are not part of the core product and are often discouraged. Oracle has a long history with hints, but modern best practice, especially with 23ai, is to treat them as a temporary diagnostic tool, not a permanent fix. The idiomatic Oracle approach is to provide the optimizer with the best information (via statistics) and use features like SQL Plan Management to ensure stability.</p>
 </div>
 </div>
 
@@ -226,18 +144,20 @@ WHERE e.departmentId = 90; -- Missing join condition!
 <p class="problem-label">Problem:</p>
 <p>You are a consultant tasked with optimizing a critical reporting query at an e-commerce company. The query identifies all IT and Sales managers and their direct/indirect reports. The query's performance is unacceptable.</p>
 <p><strong>The problematic query:</strong></p>
-<pre><code>
+
+```sql
 SELECT
-LPAD(' ', (LEVEL-1)*2) || e.lastName as employee,
-e.jobId,
-d.departmentName
+    LPAD(' ', (LEVEL-1)*2) || e.lastName as employee,
+    e.jobId,
+    d.departmentName
 FROM
-employees e,
-departments d
+    employees e,
+    departments d
 WHERE e.departmentId = d.departmentId
 START WITH e.jobId IN ('IT_PROG', 'SA_MAN')
 CONNECT BY PRIOR e.employeeId = e.managerId;
-</code></pre>
+```
+
 <p><strong>Your Task:</strong></p>
 <ol>
     <li><strong>Initial Diagnosis:</strong> Gather initial statistics on the tables. Run the query and generate its execution plan using <code>DBMS_XPLAN.DISPLAY_CURSOR</code>. Analyze the plan, paying special attention to the join methods and any findings in the SQL Analysis Report. What are the immediate problems you can spot?</li>
@@ -250,7 +170,7 @@ CONNECT BY PRIOR e.employeeId = e.managerId;
 <h2>Tips for Success & Learning</h2>
 <ul>
 <li><strong>Experiment:</strong> Don't just run the provided solutions. Change the predicates, alter the data, and see how the execution plans change. The goal is to build an intuition for how the Oracle optimizer thinks.</li>
-<li><strong>Read the Plan:</strong> Focus on the <code>Operation</code>, <code>Rows</code> (cardinality), and <code>Cost</code> columns in the `EXPLAIN PLAN` output. Understanding the relationship between these is key.</li>
+<li><strong>Read the Plan:</strong> Focus on the <code>Operation</code>, <code>Rows</code> (cardinality), and <code>Cost</code> columns in the <code>EXPLAIN PLAN</code> output. Understanding the relationship between these is key.</li>
 <li><strong>Consult the Docs:</strong> When you encounter a new operation or hint, use the provided links to the Oracle documentation. They are your most reliable source for in-depth information.</li>
 </ul>
 
