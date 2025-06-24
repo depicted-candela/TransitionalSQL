@@ -147,7 +147,6 @@ BEGIN
 END;
 /
 CREATE INDEX idxProdId ON productSales(productId);
-
 ```
 
 </li>
@@ -174,7 +173,6 @@ BEGIN
   );
 END;
 /
-
 ```
 
 </li>
@@ -210,13 +208,12 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
 <h5>Solution 1.3</h5>
 <ol>
 <li>
-<strong>Execute Flawed Query:</strong> This query is missing the join condition `e.departmentId = d.departmentId`.
+<strong>Execute Flawed Query:</strong> This query is missing the join condition <code>e.departmentId = d.departmentId</code>.
 
 ```sql
 SELECT e.lastName, d.departmentName
 FROM employees e, departments d
 WHERE e.departmentId = 90;
-
 ```
 
 </li>
@@ -227,7 +224,6 @@ WHERE e.departmentId = 90;
 -- The FORMAT=>'ALL' is a good practice to get all available details,
 -- including the new SQL Analysis Report section.
 SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(FORMAT => 'ALL'));
-
 ```
 
 </li>
@@ -248,7 +244,7 @@ Second, and most powerfully, a new section will appear at the bottom:
 <strong>Advantage Explanation:</strong> This is a game-changer for developers. In previous versions, you had to manually inspect the plan, identify the Cartesian join, and deduce the cause. The Oracle 23ai **SQL Analysis Report** does this for you. It automatically diagnoses the structural flaw (a Cartesian product in the <code>SEL$1</code> query block) and provides a clear, actionable recommendation: "Consider adding join conditions". This feature significantly reduces the time to resolution for common but critical SQL errors.
 </li>
 </ol>
-<p><strong>📚 Reference:</strong> The SQL Analysis Report is detailed in the `sql-tuning-guide/ch01_19-influencing-the-optimizer.pdf` and highlighted as a key enhancement in the `oracle-database-23ai-new-features-guide/10_OLTP_and_Core_Database.pdf`.</p>
+<p><strong>📚 Reference:</strong> The SQL Analysis Report is detailed in the <code>sql-tuning-guide/ch01_19-influencing-the-optimizer.pdf</code> and highlighted as a key enhancement in the <code>oracle-database-23ai-new-features-guide/10_OLTP_and_Core_Database.pdf</code>.</p>
 
 ---
 
@@ -259,9 +255,9 @@ Second, and most powerfully, a new section will appear at the bottom:
 <div class="caution">
     <p><strong>Problem:</strong> An application's performance has suddenly degraded. The query in question retrieves "ACTIVE" employees with a high salary. Initially, the table had very few such employees, but after a large data load, the number has increased dramatically. The statistics have not been updated.
     <ol>
-        <li>Re-initialize the `employees` table with a small set of data where only 2 employees have a salary > 10000 and gather statistics.</li>
+        <li>Re-initialize the <code>employees</code> table with a small set of data where only 2 employees have a salary > 10000 and gather statistics.</li>
         <li>Simulate a large data load by inserting 50,000 new employees, all with high salaries. Do <strong>not</strong> regather statistics.</li>
-        <li>Run a query to select all employees with `salary > 10000` and examine its very inefficient execution plan.</li>
+        <li>Run a query to select all employees with <code>salary > 10000</code> and examine its very inefficient execution plan.</li>
         <li>Explain the pitfall.</li>
     </ol>
     </p>
@@ -278,12 +274,9 @@ INSERT INTO employees VALUES (1, 'High', 'Earner1', 'HE1', 'VP', 20000, 90, 'ACT
 INSERT INTO employees VALUES (2, 'High', 'Earner2', 'HE2', 'VP', 21000, 90, 'ACTIVE', SYSDATE);
 INSERT INTO employees VALUES (3, 'Low', 'Earner1', 'LE1', 'CLERK', 3000, 50, 'ACTIVE', SYSDATE);
 COMMIT;
-
 CREATE INDEX idxEmpSalary ON employees(salary);
-
 -- Gather stats on the small, skewed table
 EXEC DBMS_STATS.GATHER_TABLE_STATS('PERFORMANCESYMPHONY', 'EMPLOYEES');
-
 ```
 
 </li>
@@ -298,7 +291,6 @@ BEGIN
   COMMIT;
 END;
 /
-
 ```
 
 </li>
@@ -308,14 +300,12 @@ END;
 ```sql
 EXPLAIN PLAN FOR
 SELECT employeeId, lastName FROM employees WHERE salary > 10000;
-
 SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
-
 ```
 
 </li>
 <li>
-<strong>Pitfall Explanation:</strong> The execution plan will show an <code>INDEX RANGE SCAN</code> on `idxEmpSalary` followed by a <code>TABLE ACCESS BY INDEX ROWID</code>. The key problem is in the <code>Rows</code> column of the plan, which will estimate a very small number (e.g., 2), based on the old statistics.
+<strong>Pitfall Explanation:</strong> The execution plan will show an <code>INDEX RANGE SCAN</code> on <code>idxEmpSalary</code> followed by a <code>TABLE ACCESS BY INDEX ROWID</code>. The key problem is in the <code>Rows</code> column of the plan, which will estimate a very small number (e.g., 2), based on the old statistics.
 <div class="rhyme">
     The stats are old, the plan's a mess,<br>
     The CBO is lost, I must confess.<br>
@@ -324,7 +314,7 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
     But thousands of rows it has to find,<br>
     Leaving performance far behind.
 </div>
-The pitfall is that **the optimizer's plan is only as good as the statistics it's given**. Based on the stale data, it made a perfectly logical choice to use the index. However, the underlying data reality has changed dramatically. Accessing over 50,000 rows one-by-one via an index is a classic performance killer. A `TABLE ACCESS FULL` would now be vastly more efficient because it would use multi-block reads. This scenario demonstrates the critical danger of not maintaining statistics in a database with volatile data.
+The pitfall is that **the optimizer's plan is only as good as the statistics it's given**. Based on the stale data, it made a perfectly logical choice to use the index. However, the underlying data reality has changed dramatically. Accessing over 50,000 rows one-by-one via an index is a classic performance killer. A <code>TABLE ACCESS FULL</code> would now be vastly more efficient because it would use multi-block reads. This scenario demonstrates the critical danger of not maintaining statistics in a database with volatile data.
 </li>
 </ol>
 
@@ -335,7 +325,7 @@ The pitfall is that **the optimizer's plan is only as good as the statistics it'
 <h4>Exercise 3.1: Forcing a Plan with Hints vs. Robust Plan Management</h4>
 
 <div class="postgresql-bridge">
-    <p><strong>Problem:</strong> In the previous exercise, you identified that a `TABLE ACCESS FULL` would be better. A common, but often short-sighted, reaction from developers under pressure is to force the better plan using a hint.
+    <p><strong>Problem:</strong> In the previous exercise, you identified that a <code>TABLE ACCESS FULL</code> would be better. A common, but often short-sighted, reaction from developers under pressure is to force the better plan using a hint.
     <ol>
         <li>Using the state from the end of exercise 2.1 (large table, stale stats), use the <code>/*+ FULL(e) */</code> hint to force a full table scan. Confirm the plan changes.</li>
         <li>Now, revert the data to its small, original state.</li>
@@ -356,7 +346,6 @@ EXPLAIN PLAN FOR
 SELECT /*+ FULL(e) */ employeeId, lastName FROM employees e WHERE salary > 10000;
 
 SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
-
 ```
 
 <strong>Explanation:</strong> The plan now shows a <code>TABLE ACCESS FULL</code>. The hint has successfully overridden the optimizer's cost-based decision, and for this specific data state, this plan is indeed faster. The immediate problem appears solved.
@@ -367,7 +356,6 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
 ```sql
 DELETE FROM employees WHERE employeeId > 100;
 COMMIT;
-
 ```
 
 </li>
@@ -379,24 +367,25 @@ EXPLAIN PLAN FOR
 SELECT /*+ FULL(e) */ employeeId, lastName FROM employees e WHERE salary > 10000;
 
 SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
-
 ```
 
 </li>
 <li>
-<strong>Contrast and Conclusion:</strong> The plan is *still* a <code>TABLE ACCESS FULL</code> because the hint forces it, but this is now the wrong choice. For retrieving just 2 rows from the table, an `INDEX RANGE SCAN` would be far more efficient.
+<strong>Contrast and Conclusion:</strong> The plan is *still* a <code>TABLE ACCESS FULL</code> because the hint forces it, but this is now the wrong choice. For retrieving just 2 rows from the table, an <code>INDEX RANGE SCAN</code> would be far more efficient.
 
 The **inefficient common solution** is hard-coding hints in application code. It creates a "brittle" plan that is only optimal under a specific set of circumstances. When data volumes or statistics change, the hint can become a performance liability, requiring a code deployment to fix.
 
 The **superior Oracle-idiomatic solution** is to manage the environment, not the code.
 <ul>
     <li><strong>Primary Solution:</strong> Keep statistics up-to-date.
-        <pre><code>EXEC DBMS_STATS.GATHER_TABLE_STATS('PERFORMANCESYMPHONY', 'EMPLOYEES');
+
+```sql
+EXEC DBMS_STATS.GATHER_TABLE_STATS('PERFORMANCESYMPHONY', 'EMPLOYEES');
 ```
 
-        By simply running this after the data load, the CBO would have naturally switched to a `TABLE ACCESS FULL` on its own. When the data was reverted and stats gathered again, it would switch back to the `INDEX RANGE SCAN`.
-    </li>
-    <li><strong>Robust Solution (The 23ai Way):</strong> For truly critical queries prone to instability, use **SQL Plan Management**. Capturing a known-good plan as a baseline ensures that even if stats change, the database will not immediately switch to a potentially regressed plan without verification. This is the philosophy behind 23ai's **Real-Time SQL Plan Management**, which automates this protection, providing performance stability without brittle, hard-coded hints.</li>
+By simply running this after the data load, the CBO would have naturally switched to a <code>TABLE ACCESS FULL</code> on its own. When the data was reverted and stats gathered again, it would switch back to the <code>INDEX RANGE SCAN</code>.
+</li>
+<li><strong>Robust Solution (The 23ai Way):</strong> For truly critical queries prone to instability, use **SQL Plan Management**. Capturing a known-good plan as a baseline ensures that even if stats change, the database will not immediately switch to a potentially regressed plan without verification. This is the philosophy behind 23ai's **Real-Time SQL Plan Management**, which automates this protection, providing performance stability without brittle, hard-coded hints.</li>
 </ul>
 </li>
 </ol>
@@ -425,7 +414,6 @@ INSERT INTO employees VALUES (2004, 'Manager', 'Case', 'MCASE', 'SA_REP', 7000, 
 COMMIT;
 EXEC DBMS_STATS.GATHER_TABLE_STATS('PERFORMANCESYMPHONY', 'EMPLOYEES');
 EXEC DBMS_STATS.GATHER_TABLE_STATS('PERFORMANCESYMPHONY', 'DEPARTMENTS');
-
 ```
 
 <p>Now, we run the problematic query and check its plan.</p>
@@ -440,10 +428,9 @@ CONNECT BY PRIOR e.employeeId = e.managerId;
 
 -- Check the plan
 SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(FORMAT=>'ALL'));
-
 ```
 
-<strong>Analysis:</strong> For this small dataset, the plan will likely feature <code>NESTED LOOPS</code> and index access. The key is to note the cardinality estimates (`Rows` column). They will be very small. The plan is efficient for this data size.
+<strong>Analysis:</strong> For this small dataset, the plan will likely feature <code>NESTED LOOPS</code> and index access. The key is to note the cardinality estimates (`Rows</code> column). They will be very small. The plan is efficient for this data size.
 </li>
 <li>
 <strong>Simulate Data Change and The Pitfall:</strong>
@@ -459,14 +446,12 @@ BEGIN
   COMMIT;
 END;
 /
-
 ```
 
 <p>Now, re-run the *exact same query*.</p>
 
 ```sql
 SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(FORMAT=>'ALL'));
-
 ```
 
 <strong>Analysis:</strong> The optimizer, still using the **stale statistics** from the small dataset, generates the *exact same execution plan* with <code>NESTED LOOPS</code>. The cardinality estimates are still tiny. This is the performance pitfall: the optimizer is trying to execute a plan designed for a few rows against tens of thousands, leading to a massive number of inefficient single-block reads.
@@ -477,17 +462,15 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(FORMAT=>'ALL'));
 
 ```sql
 EXEC DBMS_STATS.GATHER_TABLE_STATS('PERFORMANCESYMPHONY', 'EMPLOYEES');
-
 ```
 
 <p>Now, let's see how the CBO adapts when we run the query a third time.</p>
 
 ```sql
 SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(FORMAT=>'ALL'));
-
 ```
 
-<strong>Analysis:</strong> With fresh statistics, the CBO now sees the massive number of rows under the 'SA_MAN'. It will likely change the plan dramatically, perhaps switching from `NESTED LOOPS` to a `HASH JOIN` to process the larger dataset more efficiently. It has adapted correctly because it has the right information.
+<strong>Analysis:</strong> With fresh statistics, the CBO now sees the massive number of rows under the 'SA_MAN'. It will likely change the plan dramatically, perhaps switching from <code>NESTED LOOPS</code> to a <code>HASH JOIN</code> to process the larger dataset more efficiently. It has adapted correctly because it has the right information.
 </li>
 <li>
 <strong>Long-Term Stability with SQL Plan Management (The 23ai Philosophy):</strong>
@@ -511,7 +494,6 @@ BEGIN
   );
 END;
 /
-
 ```
 
 <strong>Conclusion:</strong> We have taken a poorly performing query, diagnosed the root cause (stale statistics), fixed it by providing the optimizer with accurate data, and finally, protected the resulting good plan using SQL Plan Management. This workflow embodies the principles of Oracle tuning. The 23ai **Real-Time SQL Plan Management** feature automates this last step, detecting plan changes, comparing performance against the baseline, and preventing the use of a regressed plan without any manual intervention, ensuring robust performance over time.

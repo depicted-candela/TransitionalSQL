@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset='UTF-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Execution Plan</title>
+
+    <!-- Link to the provided stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+
+<body>
+
+    <div class="plan-container">
+        <header>
+            <h1>SQL Execution Plan</h1>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="search-box">
+                <input type="text" size="30" maxlength="1000" value="" id="search" onkeyup="delayedSearch();" placeholder="Search plan details...">
+            </div>
+
+            <div class="plan-summary">
+                <p>Plan hash value: 3529268847</p>
+            </div>
+
+            <h2>Execution Plan</h2>
+            <div class="table-responsive">
+                <!-- The id="data" is kept for the search Javascript to function -->
+                <table id="data">
+                    <thead>
+                        <tr>
+                            <th class="numeric">Id</th>
+                            <th>Operation</th>
+                            <th>Name</th>
+                            <th class="numeric">Rows</th>
+                            <th class="numeric">Bytes</th>
+                            <th class="numeric">Cost (%CPU)</th>
+                            <th class="numeric">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="numeric">0</td>
+                            <td>SELECT STATEMENT</td>
+                            <td></td>
+                            <td class="numeric">208M</td>
+                            <td class="numeric">12G</td>
+                            <td class="numeric">767 (78)</td>
+                            <td class="numeric">00:00:01</td>
+                        </tr>
+                        <tr>
+                            <td class="numeric">* 1</td>
+                            <td>CONNECT BY NO FILTERING WITH START-WITH</td>
+                            <td></td>
+                            <td class="numeric"></td>
+                            <td class="numeric"></td>
+                            <td class="numeric"></td>
+                            <td class="numeric"></td>
+                        </tr>
+                        <tr>
+                            <td class="numeric">* 2</td>
+                            <td>HASH JOIN</td>
+                            <td></td>
+                            <td class="numeric">52004</td>
+                            <td class="numeric">2285K</td>
+                            <td class="numeric">174 (1)</td>
+                            <td class="numeric">00:00:01</td>
+                        </tr>
+                        <tr>
+                            <td class="numeric">3</td>
+                            <td>TABLE ACCESS FULL</td>
+                            <td>DEPARTMENTS</td>
+                            <td class="numeric">27</td>
+                            <td class="numeric">432</td>
+                            <td class="numeric">3 (0)</td>
+                            <td class="numeric">00:00:01</td>
+                        </tr>
+                        <tr>
+                            <td class="numeric">4</td>
+                            <td>TABLE ACCESS FULL</td>
+                            <td>EMPLOYEES</td>
+                            <td class="numeric">52004</td>
+                            <td class="numeric">1472K</td>
+                            <td class="numeric">170 (0)</td>
+                            <td class="numeric">00:00:01</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="predicate-info">
+                <h2>Predicate Information</h2>
+                <ul>
+                    <li>1 - access("E"."MANAGERID"=PRIOR "E"."EMPLOYEEID")
+filter("E"."JOBID"='IT_PROG' OR "E"."JOBID"='SA_MAN')</li>
+                    <li>2 - access("E"."DEPARTMENTID"="D"."DEPARTMENTID")</li>
+                </ul>
+            </div>
+
+            <div class="predicate-info">
+                <h2>Query Block Name / Object Alias</h2>
+                <ul>
+                    <li>1 - SEL$1</li>
+                    <li>2 - SEL$2</li>
+                    <li>3 - SEL$2 / "D"@"SEL$2"</li>
+                    <li>4 - SEL$2 / "E"@"SEL$2"</li>
+                </ul>
+            </div>
+
+            <div class="predicate-info">
+                <h2>Column Projection Information</h2>
+                <ul>
+                    <li>1 - "E"."MANAGERID"[NUMBER,22], "E"."EMPLOYEEID"[NUMBER,22], "D"."DEPARTMENTNAME"[VARCHAR2,30], "E"."JOBID"[VARCHAR2,10], "E"."LASTNAME"[VARCHAR2,25], PRIOR NULL[22], LEVEL[4]</li>
+                    <li>2 - (#keys=1) "D"."DEPARTMENTID"[NUMBER,22], "E"."DEPARTMENTID"[NUMBER,22], "D"."DEPARTMENTNAME"[VARCHAR2,30], "E"."EMPLOYEEID"[NUMBER,22], "E"."LASTNAME"[VARCHAR2,25], "E"."JOBID"[VARCHAR2,10], "E"."MANAGERID"[NUMBER,22]</li>
+                    <li>3 - (rowset=256) "D"."DEPARTMENTID"[NUMBER,22], "D"."DEPARTMENTNAME"[VARCHAR2,30]</li>
+                    <li>4 - "E"."EMPLOYEEID"[NUMBER,22], "E"."LASTNAME"[VARCHAR2,25], "E"."JOBID"[VARCHAR2,10], "E"."MANAGERID"[NUMBER,22], "E"."DEPARTMENTID"[NUMBER,22]</li>
+                </ul>
+            </div>
+            
+        </div><!-- .content-wrapper -->
+    </div><!-- .plan-container -->
+
+    <!--
+    SQL Query that generated this plan:
+    SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY(STATEMENT_ID => 'INEFFICIENT_HIERARCHIZATION', FORMAT => 'ALL'))
+    -->
+
+    <script type="text/javascript">
+        function search() {
+            var s = document.getElementById('search').value.toUpperCase();
+            // The table body to search has id="data"
+            var tableBody = document.getElementById('data');
+            if (!tableBody) return; // Exit if the table body doesn't exist
+            
+            var rows = tableBody.getElementsByTagName('tr');
+            
+            for (var i = 0; i < rows.length; i++) {
+                // Check the text content of the entire row.
+                // The search is case-insensitive.
+                if (rows[i].textContent.toUpperCase().indexOf(s) > -1 || s.length === 0) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        }
+
+        var timer;
+        function delayedSearch() {
+            clearTimeout(timer);
+            timer = setTimeout(function() {
+                search();
+            }, 300); // A 300ms delay is usually sufficient
+        }
+    </script>
+</body>
+
+</html>
