@@ -70,11 +70,12 @@ These exercises use a unified dataset designed for the <code>horizons</code> sch
 </ol>
 
 <div class="oracle-specific">
-<p><strong>Setup Script: <code>horizons_connectivity_setup.sql</code></strong></p>
+<p><strong>Setup Script: <code>dataset.sql</code></strong></p>
 <p>This script establishes the <code>productCatalog</code> (hierarchical), <code>customerOrders</code>, and <code>orderDetails</code> (using <code>XMLTYPE</code>) tables. It also configures the <code>PartRequestType</code> object and the corresponding Oracle Advanced Queue (<code>partRequestTopic</code>) that we will use as a JMS Topic.</p>
 </div>
 
-<pre><code>
+```sql
+
 -- DDL and DML for the 'horizons' user schema.
 -- This script is idempotent and can be run multiple times.
 
@@ -201,7 +202,8 @@ BEGIN
   DBMS_AQADM.GRANT_QUEUE_PRIVILEGE('DEQUEUE', 'horizons.partRequestTopic', 'PUBLIC');
 END;
 /
-</code></pre>
+```
+
 </div>
 
 <div class="container">
@@ -282,12 +284,15 @@ A Java development team is building a high-throughput order processing service a
 <p>
 A developer needs to find the quantity for <code>partNumber</code> "40" for the order with <code>anbr</code> 'ORD202' from the <code>orderDetails</code> table. They write the following query, which works but is suboptimal because the <code>EXTRACTVALUE</code> function is deprecated.
 </p>
-<pre><code>-- Inefficient and Deprecated Query
+
+```sql
+-- Inefficient and Deprecated Query
 SELECT EXTRACTVALUE(od.detailXML, '/order/items/item/@quantity') AS quantity
 FROM horizons.orderDetails od
 WHERE EXTRACTVALUE(od.detailXML, '/order/items/item/@partNumber') = '40'
   AND EXTRACTVALUE(od.detailXML, '/order/@anbr') = 'ORD202';
-</code></pre>
+```
+
 <p>What is the primary performance pitfall of using this function-per-value approach, especially on documents with many attributes and nodes, compared to the modern SQL/XML standard functions?</p>
 
 
