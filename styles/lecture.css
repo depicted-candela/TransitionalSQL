@@ -869,7 +869,7 @@ sup.footnote-ref a:hover {
     grid-column: 1 / -1;
     justify-self: center;
     font-family: var(--header-font);
-    font-size: 1.2em;
+    font-size: 1.1em;
     color: var(--accent-color);
     border-bottom: 2px solid var(--accent-color);
     text-align: center;
@@ -880,7 +880,7 @@ sup.footnote-ref a:hover {
     color: var(--table-header-text);
     background-color: var(--table-header-bg);
     padding: 12px;
-    font-size: 1.2em;
+    font-size: 1.3em;
     font-weight: bold;
     border-radius: 6px 6px 0 0;
     border-bottom: 2px solid var(--table-border);

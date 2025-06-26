@@ -76,9 +76,11 @@
                 <li><strong>Value:</strong> Its primary value is <strong>performance</strong>. It drastically reduces the latency of getting a connection because it bypasses the costly network negotiation, authentication, and session setup processes required for new connections. This leads to higher application throughput and better resource utilization.</li>
             </ul>
         </div>
-        <small><strong>Reference:</strong> <code>./books/universal-connection-pool-developers-guide/03_ch01_introduction-to-ucp.pdf</code>, Chapter 1, "Benefits of Using a Connection Pool"</small>        
-<p><strong>Java Code Example (Explicit UCP):</strong></p>
-<pre><code>import oracle.ucp.jdbc.PoolDataSource;
+        <small><strong>Reference:</strong> <a href="./books/universal-connection-pool-developers-guide/03_ch01_introduction-to-ucp.pdf">Chapter 1, <em>Benefits of Using a Connection Pool</em></small>        
+<p><strong>Java Code Example (Explicit UCP)</a></strong></p>
+
+```java
+import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -92,7 +94,9 @@ public Connection getUcpConnection() throws SQLException {
     pds.setInitialPoolSize(5);
     // In a real application, pds would be a singleton.
     return pds.getConnection();
-}</code></pre>
+}
+```
+
 </li>
 <li>
     <strong>Relational (PostgreSQL Bridge):</strong>

@@ -4,8 +4,8 @@
 
 <body>
     <div class="toc-popup-container">
-    <input type="checkbox" id="tocToggleChunk12" class="toc-toggle-checkbox">
-    <label for="tocToggleChunk12" class="toc-toggle-label">
+    <input type="checkbox"id="tocToggleChunk12"class="toc-toggle-checkbox">
+    <label for="tocToggleChunk12"class="toc-toggle-label">
         <span class="toc-icon-open"></span>
         Contents
     </label>
@@ -62,12 +62,12 @@ If `JDBC` is the language, then connection management is the art of conversation
 
 *   **Meaning:** A connection pool is a **Reservoir of Readiness**, a managed cache of pre-warmed, authenticated database connections. Instead of the high cost of making a new friend for every single question, your app borrows an existing acquaintance from the pool. This is expertly handled by Oracle's **Universal Connection Pool** (`UCP`).<sup id="fnref1_2"><a href="#fn1_2">2</a></sup>
 *   **Value:** The result is a dramatic boost in performance, a gift of pure velocity, by sidestepping the ceremony of connection creation, which can be an ocean of latency.
-*   <div class="oracle-specific">
-    <strong>Oracle 23ai Feature: Implicit Connection Pooling</strong>. This is the **Invisible Butler** of the database world. The 23ai driver, when prompted, manages a UCP pool automatically. The developer simply asks for a connection, and the driver handles the complex etiquette of pooling behind the scenes, making high-performance the graceful default.<sup id="fnref1_3"><a href="#fn1_3">3</a></sup>
-    </div>
-*   <div class="oracle-specific">
-    <strong>Oracle 23ai Feature: Database Resident Connection Pooling (DRCP)</strong>. This is a **Shared Highway with Private Lanes**, a pool of server processes living inside the database listener. It's a powerful commons for many clients, and with **Multi-Pool DRCP**, you can assign dedicated lanes, ensuring your critical traffic never gets stuck behind a slow-moving data parade.
-    </div>
+<div class="oracle-specific">
+    <strong>Oracle 23ai Feature: Implicit Connection Pooling</strong>. This is the <strong>Invisible Butler</strong> of the database world. The 23ai driver, when prompted, manages a UCP pool automatically. The developer simply asks for a connection, and the driver handles the complex etiquette of pooling behind the scenes, making high-performance the graceful default.<sup id="fnref1_3"><a href="#fn1_3">3</a></sup>
+</div>
+<div class="oracle-specific">
+    <strong>Oracle 23ai Feature: Database Resident Connection Pooling (DRCP)</strong>. This is a <strong>Shared Highway with Private Lanes</strong>, a pool of server processes living inside the database listener. It's a powerful commons for many clients, and with <strong>Multi-Pool DRCP</strong>, you can assign dedicated lanes, ensuring your critical traffic never gets stuck behind a slow-moving data parade.
+</div>
 
 #### Database Driver Asynchronous Programming (Pipelining)
 

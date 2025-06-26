@@ -1,0 +1,6 @@
+// ~/Devs/sql/TransitionalSQL/14_horizons/java/.vscode/settings.json
+{
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar"
+    ]
+}
