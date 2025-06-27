@@ -1,4 +1,4 @@
-// Final Corrected Reserver.java
+// src/iv_hardcoreCombinedProblem/i/Reserver.java
 package iv_hardcoreCombinedProblem.i;
 
 import java.sql.SQLException;
@@ -60,7 +60,13 @@ public class Reserver {
         System.out.println("Attempting to clean up previous durable subscription: " + SUBSCRIPTION_NAME);
         try (var connection = tcf.createTopicConnection()) {
             connection.setClientID(CLIENT_ID);
+            connection.start();
             try (var session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE)) {
+                Topic topic = session.createTopic(QUEUE_NAME);
+                System.out.println("Re-attaching to subscription to close it...");
+                MessageConsumer consumerToClose = session.createDurableSubscriber(topic, SUBSCRIPTION_NAME);
+                consumerToClose.close();
+                System.out.println("Consumer closed.");
                 session.unsubscribe(SUBSCRIPTION_NAME);
                 System.out.println("Successfully unsubscribed from previous session.");
             }
