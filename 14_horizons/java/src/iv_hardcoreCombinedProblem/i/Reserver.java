@@ -9,9 +9,9 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,19 +35,11 @@ import oracle.ucp.jdbc.PoolDataSourceFactory;
 
 public class Reserver {
 
-    private static final String DB_URL = "jdbc:oracle:thin:@localhost:1521/FREEPDB1";
-    private static final String DB_USER = "horizons";
-    private static final String DB_PASSWORD = "YourPassword";
-    private static final String QUEUE_NAME = "HORIZONS.PARTREQUESTTOPIC";
-    private static final long BATCH_TIMEOUT_MS = 1500;
-    private static final String SUBSCRIPTION_NAME = "PartReservationService";
-    private static final String CLIENT_ID = "PartReservationClient";
-    private static final String UCP_POOL_NAME = "ReserverConnectionPool";
-
     private final PoolDataSource pds;
     private final TopicConnectionFactory tcf;
-    private final Map<Integer, List<PartRequest>> pendingOrderBatches = new HashMap<>();
-    private final Map<Integer, Long> lastMessageTime = new HashMap<>();
+    // Use ConcurrentHashMap for thread-safe, high-performance batching without explicit synchronization blocks.
+    private final Map<Integer, List<PartRequest>> pendingOrderBatches = new ConcurrentHashMap<>();
+    private final Map<Integer, Long> lastMessageTime = new ConcurrentHashMap<>();
     private volatile boolean running = true;
     private final ScheduledExecutorService scheduler;
     private final ExecutorService processingExecutor;
@@ -56,42 +48,30 @@ public class Reserver {
 
     private enum LogLevel { INFO, WARN, ERROR }
     
-    private void log(LogLevel level, String message) {
-        System.out.printf("%s [%-5s] %s%n", 
-            logTimestampFormatter.format(Instant.now()), 
-            level, 
-            message);
-    }
-    
+    // (Logging methods remain unchanged)
+    private void log(LogLevel level, String message) { System.out.printf("%s [%-5s] %s%n", logTimestampFormatter.format(Instant.now()), level, message); }
     private void log(LogLevel level, String message, Throwable t) {
         synchronized(System.err) {
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
+            var sw = new StringWriter();
+            var pw = new PrintWriter(sw);
             t.printStackTrace(pw);
-            System.err.printf("%s [%-5s] %s%n--- Stack Trace ---%n%s--- End Stack Trace ---%n", 
-                logTimestampFormatter.format(Instant.now()), 
-                level, 
-                message + ": " + t.getMessage(), 
-                sw.toString());
+            System.err.printf("%s [%-5s] %s%n--- Stack Trace ---%n%s--- End Stack Trace ---%n", logTimestampFormatter.format(Instant.now()), level, message + ": " + t.getMessage(), sw.toString());
         }
     }
     
     public Reserver() throws SQLException, JMSException {
         log(LogLevel.INFO, "Service initializing...");
-        log(LogLevel.INFO, "Configuring Universal Connection Pool...");
         pds = PoolDataSourceFactory.getPoolDataSource();
         pds.setConnectionFactoryClassName("oracle.jdbc.pool.OracleDataSource");
-        pds.setURL(DB_URL);
-        pds.setUser(DB_USER);
-        pds.setPassword(DB_PASSWORD);
+        pds.setURL(HorizonsConfig.DB_URL);
+        pds.setUser(HorizonsConfig.DB_USER);
+        pds.setPassword(HorizonsConfig.DB_PASSWORD);
         pds.setInitialPoolSize(5);
         pds.setMinPoolSize(5);
         pds.setMaxPoolSize(20);
-        pds.setConnectionPoolName(UCP_POOL_NAME);
+        pds.setConnectionPoolName(HorizonsConfig.UCP_POOL_NAME);
         
-        log(LogLevel.INFO, "Configuring AQ JMS Connection Factory...");
         this.tcf = AQjmsFactory.getTopicConnectionFactory(pds);
-
         this.scheduler = Executors.newSingleThreadScheduledExecutor();
         this.processingExecutor = Executors.newFixedThreadPool(5);
         
@@ -100,30 +80,16 @@ public class Reserver {
     }
     
     private void cleanupSubscription() throws JMSException {
-        log(LogLevel.INFO, "Attempting to clean up previous durable subscription: " + SUBSCRIPTION_NAME);
+        log(LogLevel.INFO, "Attempting to clean up previous durable subscription: " + HorizonsConfig.SUBSCRIPTION_NAME);
         try (var connection = tcf.createTopicConnection()) {
-            connection.setClientID(CLIENT_ID);
+            connection.setClientID(HorizonsConfig.CLIENT_ID);
             connection.start();
             try (var session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE)) {
-                // THE FIX: Cast to AQjmsSession and use the Oracle-specific API overload.
                 var aqSession = (AQjmsSession) session;
-                Topic topic = aqSession.createTopic(QUEUE_NAME);
-                
-                log(LogLevel.INFO, "Re-attaching to subscription to close it...");
-                // Use the overload that accepts the payload factory, just like in the main loop.
-                MessageConsumer consumerToClose = aqSession.createDurableSubscriber(
-                    topic, 
-                    SUBSCRIPTION_NAME,
-                    null,
-                    false,
-                    PartRequest.getORADataFactory()
-                );
-                
+                Topic topic = aqSession.createTopic(HorizonsConfig.QUEUE_NAME);
+                MessageConsumer consumerToClose = aqSession.createDurableSubscriber(topic, HorizonsConfig.SUBSCRIPTION_NAME, null, false, PartRequest.getORADataFactory());
                 consumerToClose.close();
-                log(LogLevel.INFO, "Consumer closed.");
-
-                // Now that the consumer is properly created and closed, unsubscribe will work.
-                session.unsubscribe(SUBSCRIPTION_NAME);
+                session.unsubscribe(HorizonsConfig.SUBSCRIPTION_NAME);
                 log(LogLevel.INFO, "Successfully unsubscribed from previous session.");
             }
         } catch (JMSException e) {
@@ -136,22 +102,15 @@ public class Reserver {
     }
     
     public void startListening() throws SQLException {
-        scheduler.scheduleAtFixedRate(this::processTimedOutBatches, BATCH_TIMEOUT_MS, BATCH_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        log(LogLevel.INFO, "Service started. Listening for messages on " + QUEUE_NAME);
+        scheduler.scheduleAtFixedRate(this::processTimedOutBatches, HorizonsConfig.BATCH_TIMEOUT_MS, HorizonsConfig.BATCH_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        log(LogLevel.INFO, "Service started. Listening for messages on " + HorizonsConfig.QUEUE_NAME);
         try (var connection = tcf.createTopicConnection()) {
-            connection.setClientID(CLIENT_ID);
+            connection.setClientID(HorizonsConfig.CLIENT_ID);
             connection.start(); 
-
             try (var session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE)) {
                 var aqSession = (AQjmsSession) session;
-                Topic topic = aqSession.createTopic(QUEUE_NAME);
-                MessageConsumer consumer = aqSession.createDurableSubscriber(
-                    topic, 
-                    SUBSCRIPTION_NAME, 
-                    null,
-                    false,
-                    PartRequest.getORADataFactory()
-                );
+                Topic topic = aqSession.createTopic(HorizonsConfig.QUEUE_NAME);
+                MessageConsumer consumer = aqSession.createDurableSubscriber(topic, HorizonsConfig.SUBSCRIPTION_NAME, null, false, PartRequest.getORADataFactory());
                 
                 log(LogLevel.INFO, "Durable subscriber created successfully. Waiting for messages...");
                 while (running) {
@@ -160,14 +119,19 @@ public class Reserver {
                         try {
                             PartRequest req = (PartRequest) ((ObjectMessage) message).getObject();
                             
-                            synchronized(pendingOrderBatches) {
-                               if (!pendingOrderBatches.containsKey(req.getOrderId())) {
-                                   log(LogLevel.INFO, "New reservation workflow started for Order ID: " + req.getOrderId());
-                               }
-                               log(LogLevel.INFO, String.format("  -> Queued Part ID: %-4d (Quantity: %d) for Order ID: %d", req.getPartId(), req.getQuantity(), req.getOrderId()));
-                               pendingOrderBatches.computeIfAbsent(req.getOrderId(), k -> new ArrayList<>()).add(req);
-                               lastMessageTime.put(req.getOrderId(), System.currentTimeMillis());
+                            // Using computeIfAbsent is an atomic, thread-safe way to initialize the list.
+                            List<PartRequest> batch = pendingOrderBatches.computeIfAbsent(req.getOrderId(), k -> {
+                                log(LogLevel.INFO, "New reservation workflow started for Order ID: " + k);
+                                return new ArrayList<>(); // The list itself isn't thread-safe, so we synchronize on it below
+                            });
+                            
+                            // Synchronize on the specific batch list for this order to safely add to it.
+                            synchronized(batch) {
+                                batch.add(req);
                             }
+                            lastMessageTime.put(req.getOrderId(), System.currentTimeMillis());
+                            log(LogLevel.INFO, String.format("  -> Queued Part ID: %-4d (Quantity: %d) for Order ID: %d", req.getPartId(), req.getQuantity(), req.getOrderId()));
+
                         } catch (JMSException e) {
                             if (running) log(LogLevel.ERROR, "Error deserializing message", e);
                         }
@@ -176,9 +140,7 @@ public class Reserver {
                 log(LogLevel.INFO, "Listener loop has exited.");
             }
         } catch (JMSException e) {
-            if(running) {
-                log(LogLevel.ERROR, "A fatal error occurred in the listener. Shutting down.", e);
-            }
+            if(running) log(LogLevel.ERROR, "A fatal error occurred in the listener. Shutting down.", e);
         } finally {
             shutdown();
         }
@@ -187,41 +149,31 @@ public class Reserver {
     private void processTimedOutBatches() {
         if (!running) return;
         long currentTime = System.currentTimeMillis();
-        var ordersToProcess = new ArrayList<Integer>();
-        
-        synchronized(pendingOrderBatches) {
-            lastMessageTime.forEach((orderId, time) -> {
-                if (currentTime - time > BATCH_TIMEOUT_MS) {
-                    ordersToProcess.add(orderId);
-                }
-            });
-            
-            for (var orderId : ordersToProcess) {
-                var batch = pendingOrderBatches.remove(orderId);
+        // Iterate over a snapshot of keys to avoid ConcurrentModificationException
+        for (Integer orderId : lastMessageTime.keySet()) {
+            if (currentTime - lastMessageTime.get(orderId) > HorizonsConfig.BATCH_TIMEOUT_MS) {
+                // remove() is thread-safe on ConcurrentHashMap
+                List<PartRequest> batch = pendingOrderBatches.remove(orderId);
                 lastMessageTime.remove(orderId);
-                processingExecutor.submit(() -> processBatchWithPipelining(orderId, batch));
+                if (batch != null) {
+                    processingExecutor.submit(() -> processBatchWithPipelining(orderId, batch));
+                }
             }
         }
     }
     
     public void shutdown() {
         if (!running) return;
-        
         log(LogLevel.INFO, "\nShutdown signal received. Shutting down gracefully...");
         this.running = false;
-
-        log(LogLevel.INFO, "Shutting down scheduler...");
         scheduler.shutdown();
+        log(LogLevel.INFO, "Scheduler shut down.");
 
         log(LogLevel.INFO, "Processing final outstanding batches...");
-        synchronized(pendingOrderBatches) {
-            for(var orderId : pendingOrderBatches.keySet()) {
-                List<PartRequest> batch = pendingOrderBatches.get(orderId);
-                log(LogLevel.INFO, "Submitting final batch for Order ID: " + orderId);
-                processingExecutor.submit(() -> processBatchWithPipelining(orderId, batch));
-            }
-            pendingOrderBatches.clear();
-        }
+        pendingOrderBatches.forEach((orderId, batch) -> {
+            log(LogLevel.INFO, "Submitting final batch for Order ID: " + orderId);
+            processingExecutor.submit(() -> processBatchWithPipelining(orderId, batch));
+        });
 
         log(LogLevel.INFO, "Awaiting termination of processing thread pool...");
         processingExecutor.shutdown();
@@ -230,23 +182,23 @@ public class Reserver {
                 log(LogLevel.WARN, "Processing pool did not terminate in 60 seconds. Forcing shutdown...");
                 processingExecutor.shutdownNow();
             }
-        } catch (InterruptedException ie) {
+        } catch (InterruptedException e) {
             processingExecutor.shutdownNow();
             Thread.currentThread().interrupt();
         }
 
-        log(LogLevel.INFO, "Stopping database connection pool: " + UCP_POOL_NAME);
+        log(LogLevel.INFO, "Stopping database connection pool: " + HorizonsConfig.UCP_POOL_NAME);
         try {
             UniversalConnectionPoolManager mgr = UniversalConnectionPoolManagerImpl.getUniversalConnectionPoolManager();
-            mgr.stopConnectionPool(UCP_POOL_NAME);
+            mgr.stopConnectionPool(HorizonsConfig.UCP_POOL_NAME);
             log(LogLevel.INFO, "Database connection pool stopped successfully.");
         } catch (Exception e) {
             log(LogLevel.ERROR, "Error stopping connection pool", e);
         }
-
         log(LogLevel.INFO, "Shutdown complete.");
     }
     
+    // (processBatchWithPipelining and main methods are unchanged, but use config and logging)
     public void processBatchWithPipelining(int orderId, List<PartRequest> batch) {
         log(LogLevel.INFO, "Starting DB transaction for Order ID " + orderId + " with " + batch.size() + " part(s).");
         try (var conn = pds.getConnection()) {
@@ -273,7 +225,7 @@ public class Reserver {
 
     public static void main(String[] args) {
         try {
-            final Reserver service = new Reserver();
+            final var service = new Reserver();
             Runtime.getRuntime().addShutdownHook(new Thread(service::shutdown));
             service.startListening();
         } catch (Exception e) { 
