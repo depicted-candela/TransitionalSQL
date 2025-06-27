@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizons Order Fulfillment</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f9; color: #333; display: flex; flex-direction: column; align-items: center; margin: 0; }
+        header { background-color: #2c3e50; color: white; width: 100%; padding: 20px 0; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { margin: 0; }
+        main { width: 100%; max-width: 800px; margin-top: 30px; }
+        .card { background-color: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 20px; }
+        .order-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .order-item { border: 1px solid #e0e0e0; padding: 15px; border-radius: 6px; display: flex; flex-direction: column; justify-content: space-between; }
+        .order-item h3 { margin: 0 0 10px; color: #3498db; }
+        .order-item p { margin: 4px 0; }
+        .process-btn { background-color: #3498db; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: background-color 0.2s; }
+        .process-btn:hover { background-color: #2980b9; }
+        #status-message { margin-top: 20px; padding: 15px; border-radius: 5px; text-align: center; font-weight: bold; display: none; }
+        .status-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Horizons Order Fulfillment Portal</h1>
+    </header>
+
+    <main>
+        <div class="card">
+            <h2>Customer Orders</h2>
+            <p>This list is generated directly from the database. Click "Process Order" to enqueue part reservation messages for the backend `Reserver` service.</p>
+            <div id="orders-container" class="order-list">
+                <p>Loading orders...</p>
+            </div>
+        </div>
+        <div id="status-message"></div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const ordersContainer = document.getElementById('orders-container');
+            const statusMessage = document.getElementById('status-message');
+
+            // Fetches orders from the backend API
+            async function fetchOrders() {
+                try {
+                    const response = await fetch('/api/orders');
+                    if (!response.ok) throw new Error('Failed to fetch orders from the server.');
+                    
+                    const orders = await response.json();
+                    ordersContainer.innerHTML = ''; // Clear loading message
+
+                    if (orders.length === 0) {
+                        ordersContainer.innerHTML = '<p>No orders found in the database.</p>';
+                        return;
+                    }
+
+                    orders.forEach(order => {
+                        const orderDiv = document.createElement('div');
+                        orderDiv.className = 'order-item';
+                        orderDiv.innerHTML = `
+                            <h3>Order #${order.orderId}</h3>
+                            <p><strong>Customer:</strong> ${order.customerName}</p>
+                            <p><strong>Status:</strong> ${order.orderStatus}</p>
+                            <button class="process-btn" data-orderid="${order.orderId}">Process Order</button>
+                        `;
+                        ordersContainer.appendChild(orderDiv);
+                    });
+
+                } catch (error) {
+                    ordersContainer.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                }
+            }
+
+            // Handles the click event for processing an order
+            ordersContainer.addEventListener('click', event => {
+                if (event.target.classList.contains('process-btn')) {
+                    const orderId = event.target.dataset.orderid;
+                    processOrder(orderId, event.target);
+                }
+            });
+
+            // Sends the request to process a specific order
+            async function processOrder(orderId, button) {
+                button.disabled = true;
+                button.textContent = 'Processing...';
+                showStatus('Processing Order ID ' + orderId + '...', 'info');
+
+                try {
+                    const response = await fetch('/api/process-order', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        // Send a simple body. The server logic will parse it.
+                        body: `{"orderId": ${orderId}}` 
+                    });
+
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.error || 'Unknown server error.');
+
+                    showStatus(`Success: ${result.message}`, 'success');
+                
+                } catch (error) {
+                    showStatus(`Error: ${error.message}`, 'error');
+                } finally {
+                    button.disabled = false;
+                    button.textContent = 'Process Order';
+                }
+            }
+
+            // Displays a status message to the user
+            function showStatus(message, type) {
+                statusMessage.textContent = message;
+                statusMessage.className = type === 'success' ? 'status-success' : 'status-error';
+                statusMessage.style.display = 'block';
+                setTimeout(() => { statusMessage.style.display = 'none'; }, 5000);
+            }
+
+            // Initial load
+            fetchOrders();
+        });
+    </script>
+</body>
+</html>
