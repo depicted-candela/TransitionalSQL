@@ -4,7 +4,8 @@
         "java/lib/ojdbc17.jar",
         "java/lib/ucp17.jar",
         "java/lib/javax.jms-api-2.0.1.jar",
-        "java/lib/aqapi-19.3.0.0.jar"
+        "java/lib/aqapi-19.3.0.0.jar",
+        "java/lib/javax.transaction-api-1.3.jar"
     ],
     "java.dependency.packagePresentation": "hierarchical"
 }
