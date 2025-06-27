@@ -17,7 +17,7 @@
 -- The entire distributed flow, from the initial web request that calls the PL/SQL procedure to the final database commits by the Java service, must be traceable 
 -- using a single trace ID via OpenTelemetry.
 -- Tasks:
--- PL/SQL Package: Create a PL/SQL package horizons.orderFulfillment with a procedure processNewOrder(p_orderId IN NUMBER). This procedure must:
+-- PL/SQL Package: Create a PL/SQL package HORIZONS.ORDERFULFILLMENT with a procedure processNewOrder(p_orderId IN NUMBER). This procedure must:
 
 -- Use XMLTABLE to parse the orderDetails.detailXML.
 -- For each part number found, use a hierarchical query (CONNECT BY ... ISLEAF) to find all its base components in productCatalog.
@@ -31,13 +31,13 @@
 -- AQ message, and finally into the Java consumer. What is the key Oracle 23ai feature that makes this seamless?
 
 
-CREATE OR REPLACE PACKAGE horizons.orderFulfillment AS
-    PROCEDURE processNewOrder(p_orderId IN NUMBER);
-END orderFulfillment;
+CREATE OR REPLACE PACKAGE HORIZONS.ORDERFULFILLMENT AS
+    PROCEDURE PROCESSNEWORDER(p_orderId IN NUMBER);
+END ORDERFULFILLMENT;
 /
 
-CREATE OR REPLACE PACKAGE BODY horizons.orderFulfillment AS
-    PROCEDURE processNewOrder(p_orderId IN NUMBER) IS
+CREATE OR REPLACE PACKAGE BODY HORIZONS.ORDERFULFILLMENT AS
+    PROCEDURE PROCESSNEWORDER(p_orderId IN NUMBER) IS
         l_enqueue_options    DBMS_AQ.enqueue_options_t;
         l_message_properties DBMS_AQ.message_properties_t;
         l_message_handle     RAW(16);
@@ -65,24 +65,24 @@ CREATE OR REPLACE PACKAGE BODY horizons.orderFulfillment AS
         ) LOOP
             -- Create and enqueue the message object
             l_reservationMsg := horizons.PartRequestType(
-            p_orderId,
-            baseComponent.partId,
-            orderItem.quantity,
-            SYSTIMESTAMP
+                p_orderId,
+                baseComponent.partId,
+                orderItem.quantity,
+                SYSTIMESTAMP
             );
             -- Oracle AQ: Enqueue the typed message.
             -- 23ai Observability: The trace context is propagated automatically.
             DBMS_AQ.ENQUEUE(
-            queue_name         => 'horizons.partRequestTopic',
-            enqueue_options    => l_enqueue_options,
-            message_properties => l_message_properties,
-            payload            => l_reservationMsg,
-            msgid              => l_message_handle
+                queue_name         => 'horizons.partRequestTopic',
+                enqueue_options    => l_enqueue_options,
+                message_properties => l_message_properties,
+                payload            => l_reservationMsg,
+                msgid              => l_message_handle
             );
             DBMS_OUTPUT.PUT_LINE('Enqueued reservation for Order ' || p_orderId || ', Part ' || baseComponent.partId);
         END LOOP;
         END LOOP;
         -- The calling application is responsible for the COMMIT
-    END processNewOrder;
-END orderFulfillment;
+    END PROCESSNEWORDER;
+END ORDERFULFILLMENT;
 /

@@ -15,7 +15,7 @@ public class OrderProcessorClient {
 
     // --- Database Configuration (should match your Reserver config) ---
     private static final String DB_URL = "jdbc:oracle:thin:@localhost:1521/FREEPDB1";
-    private static final String DB_USER = "horizons";
+    private static final String DB_USER = "HORIZONS";
     private static final String DB_PASSWORD = "YourPassword";
 
     /**
@@ -23,7 +23,7 @@ public class OrderProcessorClient {
      * @param orderId The ID of the order to process.
      */
     public void processOrder(int orderId) {
-        String plsqlCall = "{call horizons.orderFulfillment.processNewOrder(?)}";
+        String plsqlCall = "{call HORIZONS.ORDERFULFILLMENT.PROCESSNEWORDER(?)}";
         
         // Use try-with-resources to ensure resources are always closed.
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);

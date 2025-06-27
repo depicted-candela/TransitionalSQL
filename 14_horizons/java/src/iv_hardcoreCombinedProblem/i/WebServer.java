@@ -27,7 +27,7 @@ import com.sun.net.httpserver.HttpServer;
 public class WebServer {
 
     private static final String DB_URL = "jdbc:oracle:thin:@localhost:1521/FREEPDB1";
-    private static final String DB_USER = "horizons";
+    private static final String DB_USER = "HORIZONS";
     private static final String DB_PASSWORD = "YourPassword";
 
     public static void main(String[] args) throws IOException {
@@ -143,7 +143,7 @@ public class WebServer {
                 responseMessage = "{\"message\":\"Successfully triggered processing for Order ID " + orderId + "\"}";
                 statusCode = 200;
 
-            } catch (Exception e) {
+            } catch (NumberFormatException e) {
                 e.printStackTrace();
                 responseMessage = "{\"error\":\"Failed to process order " + orderId + ". " + e.getMessage() + "\"}";
                 statusCode = 500;

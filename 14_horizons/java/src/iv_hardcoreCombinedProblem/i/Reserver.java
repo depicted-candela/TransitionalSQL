@@ -1,4 +1,4 @@
-// Final, Observable, and Production-Ready Reserver.java
+// src/iv_hardcoreCombinedProblem/i/Reserver.java
 package iv_hardcoreCombinedProblem.i;
 
 import java.io.PrintWriter;
@@ -35,17 +35,15 @@ import oracle.ucp.jdbc.PoolDataSourceFactory;
 
 public class Reserver {
 
-    // --- Configuration ---
     private static final String DB_URL = "jdbc:oracle:thin:@localhost:1521/FREEPDB1";
     private static final String DB_USER = "horizons";
     private static final String DB_PASSWORD = "YourPassword";
     private static final String QUEUE_NAME = "HORIZONS.PARTREQUESTTOPIC";
-    private static final long BATCH_TIMEOUT_MS = 1500; // Increased for demonstration
+    private static final long BATCH_TIMEOUT_MS = 1500;
     private static final String SUBSCRIPTION_NAME = "PartReservationService";
     private static final String CLIENT_ID = "PartReservationClient";
     private static final String UCP_POOL_NAME = "ReserverConnectionPool";
 
-    // --- State & Resources ---
     private final PoolDataSource pds;
     private final TopicConnectionFactory tcf;
     private final Map<Integer, List<PartRequest>> pendingOrderBatches = new HashMap<>();
@@ -58,7 +56,6 @@ public class Reserver {
 
     private enum LogLevel { INFO, WARN, ERROR }
     
-    // --- Centralized Logging ---
     private void log(LogLevel level, String message) {
         System.out.printf("%s [%-5s] %s%n", 
             logTimestampFormatter.format(Instant.now()), 
@@ -108,9 +105,24 @@ public class Reserver {
             connection.setClientID(CLIENT_ID);
             connection.start();
             try (var session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE)) {
-                Topic topic = session.createTopic(QUEUE_NAME);
-                MessageConsumer consumerToClose = session.createDurableSubscriber(topic, SUBSCRIPTION_NAME);
+                // THE FIX: Cast to AQjmsSession and use the Oracle-specific API overload.
+                var aqSession = (AQjmsSession) session;
+                Topic topic = aqSession.createTopic(QUEUE_NAME);
+                
+                log(LogLevel.INFO, "Re-attaching to subscription to close it...");
+                // Use the overload that accepts the payload factory, just like in the main loop.
+                MessageConsumer consumerToClose = aqSession.createDurableSubscriber(
+                    topic, 
+                    SUBSCRIPTION_NAME,
+                    null,
+                    false,
+                    PartRequest.getORADataFactory()
+                );
+                
                 consumerToClose.close();
+                log(LogLevel.INFO, "Consumer closed.");
+
+                // Now that the consumer is properly created and closed, unsubscribe will work.
                 session.unsubscribe(SUBSCRIPTION_NAME);
                 log(LogLevel.INFO, "Successfully unsubscribed from previous session.");
             }
@@ -118,7 +130,7 @@ public class Reserver {
             if (e.getMessage() != null && e.getMessage().contains("JMS-232")) {
                  log(LogLevel.INFO, "Subscription did not previously exist (normal for a first run).");
             } else {
-                 log(LogLevel.WARN, "Could not clean up subscription. This may be okay on first run.", e);
+                 log(LogLevel.WARN, "Could not clean up subscription, which may be okay on first run.", e);
             }
         }
     }
@@ -134,7 +146,12 @@ public class Reserver {
                 var aqSession = (AQjmsSession) session;
                 Topic topic = aqSession.createTopic(QUEUE_NAME);
                 MessageConsumer consumer = aqSession.createDurableSubscriber(
-                    topic, SUBSCRIPTION_NAME, null, false, PartRequest.getORADataFactory());
+                    topic, 
+                    SUBSCRIPTION_NAME, 
+                    null,
+                    false,
+                    PartRequest.getORADataFactory()
+                );
                 
                 log(LogLevel.INFO, "Durable subscriber created successfully. Waiting for messages...");
                 while (running) {
@@ -144,7 +161,6 @@ public class Reserver {
                             PartRequest req = (PartRequest) ((ObjectMessage) message).getObject();
                             
                             synchronized(pendingOrderBatches) {
-                               // Check if this is the first message for this order
                                if (!pendingOrderBatches.containsKey(req.getOrderId())) {
                                    log(LogLevel.INFO, "New reservation workflow started for Order ID: " + req.getOrderId());
                                }
@@ -261,7 +277,6 @@ public class Reserver {
             Runtime.getRuntime().addShutdownHook(new Thread(service::shutdown));
             service.startListening();
         } catch (Exception e) { 
-            // The logger is not yet initialized, so we use a raw print here.
             System.err.println("CRITICAL: Failed to initialize the reservation service.");
             e.printStackTrace();
         }
