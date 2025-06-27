@@ -1,6 +1,5 @@
-// src/Pooler.java
-
-// No package declaration for simplicity
+package i_meaningsValuesRelationsAdvantages.i;
+// src/i_meaningsValuesRelationsAdvantages/i/Pooler.java
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -18,9 +17,7 @@ public class Pooler {
             pds.setURL("jdbc:oracle:thin:@localhost:1521/FREEPDB1");
             pds.setUser("horizons");
             pds.setPassword("YourPassword"); // <-- IMPORTANT: CHANGE THIS
-
             System.out.println("Pool configured. Requesting connection...");
-
             // Use a try-with-resources block to automatically close the connection
             try (Connection connection = pds.getConnection()) {
                 System.out.println("--> Successfully got a connection!");

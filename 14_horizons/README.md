@@ -69,16 +69,12 @@ If <code>JDBC</code> is the language, then connection management is the art of c
             <li>
                 <strong>Value:</strong> The result is a dramatic boost in performance, a gift of pure velocity, by sidestepping the ceremony of connection creation, which can be an ocean of latency.
             </li>
-            <li>
-                <div class="oracle-specific">
+            <div class="oracle-specific">
                 <strong>Oracle 23ai Feature: Implicit Connection Pooling.</strong> This is the <strong>Invisible Butler</strong> of the database world. The 23ai driver, when prompted, manages a UCP pool automatically. The developer simply asks for a connection, and the driver handles the complex etiquette of pooling behind the scenes, making high-performance the graceful default.<sup id="fnref14_2"><a href="#fn14_2">2</a></sup>
-                </div>
-            </li>
-            <li>
-                <div class="oracle-specific">
+            </div>
+            <div class="oracle-specific">
                 <strong>Oracle 23ai Feature: Database Resident Connection Pooling (DRCP).</strong> This is a <strong>Shared Highway with Private Lanes</strong>, a pool of server processes living inside the database listener. It's a powerful commons for many clients, and with <strong>Multi-Pool DRCP</strong>, you can assign dedicated lanes, ensuring your critical traffic never gets stuck behind a slow-moving data parade.
-                </div>
-            </li>
+            </div>
         </ul>
     </li>
     <li>

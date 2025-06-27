@@ -174,7 +174,9 @@ WHERE XMLExists(od.detailXML, '/order[@anbr="ORD201"]');</code></pre>
     </li>
     <li>
         <strong>Value (Java Snippet):</strong>
-<pre><code>import oracle.jdbc.OracleConnection;
+
+```java
+import oracle.jdbc.OracleConnection;
 import oracle.jdbc.OraclePreparedStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -195,12 +197,13 @@ public void pipelineUpdates(Connection conn) throws SQLException {
         conn.commit(); // Commit sends the pipelined batch for execution
         System.out.println("All update requests have been pipelined.");
     }
-}</code></pre>
-    </li>
-    <li>
-        <strong>Advantage:</strong>
-        <p>The primary advantage is <strong>improved scalability and resource utilization</strong>. The client thread is not blocked waiting for database I/O. It can send a volley of requests and then immediately move on to other tasks. This allows a single application thread to manage many concurrent database operations, significantly reducing the total number of threads required by the application and improving overall system throughput.</p>
-    </li>
+}
+```
+</li>
+<li>
+    <strong>Advantage:</strong>
+    <p>The primary advantage is <strong>improved scalability and resource utilization</strong>. The client thread is not blocked waiting for database I/O. It can send a volley of requests and then immediately move on to other tasks. This allows a single application thread to manage many concurrent database operations, significantly reducing the total number of threads required by the application and improving overall system throughput.</p>
+</li>
 </ol>
 <hr>
 <h3>Exercise 1.4: Oracle AQ/JMS and OpenTelemetry Observability</h3>
@@ -250,11 +253,15 @@ public void pipelineUpdates(Connection conn) throws SQLException {
 <h3>Exercise 2.1: The Pitfall of Inefficient XML Querying</h3>
 <h4>Problem Statement</h4>
 <p class="problem-label">A developer needs to find the quantity for <code>partNumber</code> "40" for the order with <code>anbr</code> 'ORD202' from the <code>orderDetails</code> table. They write the following query, which works but is suboptimal because the <code>EXTRACTVALUE</code> function is deprecated.</p>
-<pre><code>-- Inefficient and Deprecated Query
+
+```sql
+-- Inefficient and Deprecated Query
 SELECT EXTRACTVALUE(od.detailXML, '/order/items/item/@quantity') AS quantity
 FROM horizons.orderDetails od
 WHERE EXTRACTVALUE(od.detailXML, '/order/items/item/@partNumber') = '40'
-  AND EXTRACTVALUE(od.detailXML, '/order/@anbr') = 'ORD202';</code></pre>
+  AND EXTRACTVALUE(od.detailXML, '/order/@anbr') = 'ORD202';
+```
+
 <p class="problem-label">What is the primary performance pitfall of using this function-per-value approach, especially on documents with many attributes and nodes, compared to the modern SQL/XML standard functions?</p>
 <h4>Detailed Explanation</h4>
 <div class="caution">
@@ -334,7 +341,9 @@ WHERE EXTRACTVALUE(od.detailXML, '/order/items/item/@partNumber') = '40'
 </ol>
 <h4>Solution Code & Explanation</h4>
 <h5>1. PL/SQL Package <code>orderFulfillment</code></h5>
-<pre><code>CREATE OR REPLACE PACKAGE horizons.orderFulfillment AS
+
+```sql
+CREATE OR REPLACE PACKAGE horizons.orderFulfillment AS
   PROCEDURE processNewOrder(p_orderId IN NUMBER);
 END orderFulfillment;
 /
@@ -388,9 +397,12 @@ CREATE OR REPLACE PACKAGE BODY horizons.orderFulfillment AS
   END processNewOrder;
 END orderFulfillment;
 /
-</code></pre>
+```
+
 <h5>2. Conceptual Java Processor Logic</h5>
-<pre><code>// Assumes a JMS framework is handling message listening and thread management.
+
+```java
+// Assumes a JMS framework is handling message listening and thread management.
 // This is the core logic within a message handler.
 import oracle.jdbc.OraclePreparedStatement;
 import java.sql.Connection;
@@ -417,7 +429,8 @@ public void processReservationMessage(ObjectMessage message, Connection conn) {
         // to allow for redelivery.
     }
 }
-</code></pre>
+```
+
 <h5>3. Observability Explanation</h5>
 <div class="oracle-specific">
     <p>The key Oracle 23ai feature enabling seamless observability here is the <strong>automatic propagation of the OpenTelemetry trace context through the database kernel, including AQ and the JDBC driver</strong>.</p>
