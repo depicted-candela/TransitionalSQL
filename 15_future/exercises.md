@@ -55,7 +55,9 @@
 <p>This group focuses on features that simplify how you define schema objects and modify data, making your code more robust and efficient.</p>
 
 <h4>Dataset for Group 1</h4>
-<pre><code>CREATE TABLE future.employees (
+
+```sql
+CREATE TABLE future.employees (
     employeeId      NUMBER PRIMARY KEY,
     firstName       VARCHAR2(50),
     lastName        VARCHAR2(50),
@@ -99,7 +101,7 @@ INSERT INTO future.performanceReviews VALUES (3, 103, DATE '2023-12-15', 'Excell
 INSERT INTO future.performanceReviews VALUES (4, 104, DATE '2023-12-22', 'Good');
 
 COMMIT;
-</code></pre>
+```
 
 <h4>(i) Meanings, Values, Relations, and Advantages</h4>
 <h5>Problem 1: Conditional DDL with <code>IF EXISTS</code></h5>
@@ -139,7 +141,9 @@ COMMIT;
 <p>This group covers new features that make writing common queries simpler, more intuitive, and more readable.</p>
 
 <h4>Dataset for Group 2</h4>
-<pre><code>CREATE TABLE future.regionalSales (
+
+```sql
+CREATE TABLE future.regionalSales (
     region          VARCHAR2(50),
     product         VARCHAR2(50),
     salesAmount     NUMBER(12, 2)
@@ -152,7 +156,7 @@ INSERT INTO future.regionalSales VALUES ('South', 'Widget', 3100);
 INSERT INTO future.regionalSales VALUES ('North', 'Gadget', 1600);
 
 COMMIT;
-</code></pre>
+```
 
 <h4>(i) Meanings, Values, Relations, and Advantages</h4>
 <h5>Problem 1: <code>GROUP BY</code> with an Alias</h5>
@@ -186,7 +190,9 @@ COMMIT;
 <p>This group explores new data types and functions that enable more powerful and modern data modeling and analysis.</p>
 
 <h4>Dataset for Group 3</h4>
-<pre><code>CREATE TABLE future.projectTasks (
+
+```sql
+CREATE TABLE future.projectTasks (
     taskId        NUMBER PRIMARY KEY,
     taskName      VARCHAR2(100),
     isCompleted   BOOLEAN,
@@ -202,7 +208,7 @@ INSERT INTO future.projectTasks VALUES (5, 'Testing',               FALSE, TIMES
 INSERT INTO future.projectTasks VALUES (6, 'Documentation',         TRUE,  TIMESTAMP '2023-01-20 10:00:00', TIMESTAMP '2023-02-20 12:00:00');
 
 COMMIT;
-</code></pre>
+```
 
 <h4>(i) Meanings, Values, Relations, and Advantages</h4>
 <h5>Problem 1: Using the Native <code>BOOLEAN</code> Data Type</h5>
@@ -237,7 +243,9 @@ COMMIT;
 <p>This final problem requires you to integrate all the concepts from this module into a single, multi-step solution.</p>
 
 <h4>Dataset for Hardcore Problem</h4>
-<pre><code>CREATE TABLE future.hcEmployees (
+
+```sql
+CREATE TABLE future.hcEmployees (
     employeeId      NUMBER,
     employeeName    VARCHAR2(100),
     departmentId    NUMBER,
@@ -280,7 +288,7 @@ INSERT INTO future.hcAssignments VALUES (2, 1002);
 INSERT INTO future.hcAssignments VALUES (2, 1003);
 
 COMMIT;
-</code></pre>
+```
 
 <h4>Hardcore Problem Description</h4>
 <p>

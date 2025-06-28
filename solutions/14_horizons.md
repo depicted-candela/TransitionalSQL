@@ -76,8 +76,8 @@
                 <li><strong>Value:</strong> Its primary value is <strong>performance</strong>. It drastically reduces the latency of getting a connection because it bypasses the costly network negotiation, authentication, and session setup processes required for new connections. This leads to higher application throughput and better resource utilization.</li>
             </ul>
         </div>
-        <small><strong>Reference:</strong> <a href="./books/universal-connection-pool-developers-guide/03_ch01_introduction-to-ucp.pdf">Chapter 1, <em>Benefits of Using a Connection Pool</em></small>        
-<p><strong>Java Code Example (Explicit UCP)</a></strong></p>
+        <small><strong>Reference:</strong> <a href="./books/universal-connection-pool-developers-guide/03_ch01_introduction-to-ucp.pdf">Chapter 1, <em>Benefits of Using a Connection Pool</em></a></small>
+        <p><strong>Java Code Example (Explicit UCP)</strong></p>
 
 ```java
 import oracle.ucp.jdbc.PoolDataSource;
@@ -106,14 +106,14 @@ public Connection getUcpConnection() throws SQLException {
             <li><strong>Value of Multi-Pool DRCP:</strong> The new <strong>Multi-Pool DRCP</strong> feature in 23ai allows different applications or microservices to be configured with their own logical sub-pools within the main DRCP broker. This provides superior resource isolation and management. For example, a high-priority OLTP service and a low-priority reporting service can have separate connection pools, preventing the reporting service from exhausting all available server processes and starving the critical OLTP service. This is a level of built-in, fine-grained control not typically available with a single external proxy like PgBouncer.</li>
         </ul>
     </div>
-    <small><strong>Reference:</strong> <code>./books/jdbc-developers-guide/ch07_28-database-resident-connection-pooling.pdf</code>, Chapter 28, "Multi-Pool Support in DRCP"</small>
+    <small><strong>Reference:</strong> <a href="./books/jdbc-developers-guide/ch07_28-database-resident-connection-pooling.pdf">Chapter 28, <em>Multi-Pool Support in DRCP</em></a></small>
 </li>
 <li>
     <strong>Advantage (Implicit Pooling):</strong>
     <div class="oracle-specific">
         <p>Implicit Connection Pooling simplifies the developer's code by making pooling a transparent, default behavior of the standard <code>OracleDataSource</code>. The developer does not need to import UCP-specific classes (<code>PoolDataSourceFactory</code>, <code>PoolDataSource</code>) or explicitly configure a pool in their application code. They can use the standard <code>OracleDataSource</code>, and the JDBC driver, when configured (often via system properties), automatically manages a UCP instance behind the scenes. This reduces boilerplate code and lowers the barrier to entry for using pooling.</p>
     </div>
-    <small><strong>Reference:</strong> <code>./books/jdbc-developers-guide/ch07_28-database-resident-connection-pooling.pdf</code>, Chapter 28, "Database Resident Connection Pooling"</small>
+    <small><strong>Reference:</strong> <a href="./books/jdbc-developers-guide/ch07_28-database-resident-connection-pooling.pdf">Chapter 28, <em>Database Resident Connection Pooling</em></a></small>
 </li>
 </ol>
 <hr>
@@ -130,20 +130,29 @@ public Connection getUcpConnection() throws SQLException {
     <li>
         <strong>Meaning:</strong>
         <p>A <code>CLOB</code> (Character Large Object) stores the XML as an opaque block of text. The database is unaware of its internal structure. <code>XMLTYPE</code> is a native data type that stores the XML in a parsed, structured format (binary or object-relational). The database understands its hierarchy, elements, and attributes, enabling XML-specific operations and indexing.</p>
-        <small><strong>Reference:</strong> <code>./books/xml-db-developers-guide/ch01_1-introduction-to-oracle-xml-db.pdf</code>, Chapter 1, "Overview of Oracle XML DB"</small>
+        <small>
+            <strong>Reference:</strong> 
+            <a href=".books/xml-db-developers-guide/ch01_1-introduction-to-oracle-xml-db.pdf">Chapter 28, 
+                <em>Overview of Oracle XML DB</em>
+            </a>
+        </small>
     </li>
     <li>
         <strong>Value & Syntax (<code>XMLTABLE</code>):</strong>
-<pre><code>SELECT xt.partNumber, xt.quantity
+
+```sql
+SELECT xt.partNumber, xt.quantity
 FROM horizons.orderDetails od,
-     XMLTABLE('/order/items/item'
-       PASSING od.detailXML
-       COLUMNS
-         partNumber NUMBER PATH '@partNumber',
-         quantity   NUMBER PATH '@quantity'
-     ) xt
-WHERE XMLExists(od.detailXML, '/order[@anbr="ORD201"]');</code></pre>
-        <p>This query first finds the correct order using the efficient <code>XMLExists</code> operator and then uses <code>XMLTABLE</code> to project the XML nodes into a relational rowset, which is the standard and most performant method.</p>
+    XMLTABLE('/order/items/item'
+    PASSING od.detailXML
+    COLUMNS
+        partNumber NUMBER PATH '@partNumber',
+        quantity   NUMBER PATH '@quantity'
+    ) xt
+WHERE XMLExists(od.detailXML, '/order[@anbr="ORD201"]');
+```
+
+<p>This query first finds the correct order using the efficient <code>XMLExists</code> operator and then uses <code>XMLTABLE</code> to project the XML nodes into a relational rowset, which is the standard and most performant method.</p>
     </li>
     <li>
         <strong>Advantage:</strong>
@@ -153,7 +162,7 @@ WHERE XMLExists(od.detailXML, '/order[@anbr="ORD201"]');</code></pre>
                 <li><strong>XMLTYPE Superiority:</strong> The <code>XMLTYPE</code> approach is superior because it leverages the power of the database. The parsing and filtering happen <strong>on the server</strong>, and only the final, structured result set is returned to the client. This is far more efficient. Furthermore, <code>XMLTYPE</code> columns can be indexed using specialized <code>XMLIndex</code> structures, allowing the database optimizer to perform highly efficient XPath-based lookups, which is impossible with a <code>CLOB</code>.</li>
             </ul>
         </div>
-        <small><strong>Reference:</strong> <code>./books/xml-db-developers-guide/ch01_4-xquery-and-oracle-xml-db.pdf</code>, Chapter 4, "SQL/XML Functions XMLQUERY, XMLTABLE, XMLExists, and XMLCast"</small>
+        <small><strong>Reference:</strong> <a href="./books/xml-db-developers-guide/ch01_4-xquery-and-oracle-xml-db.pdf">Chapter 4, <em>SQL/XML Functions XMLQUERY, XMLTABLE, XMLExists, and XMLCast</em></a></small>
     </li>
 </ol>
 <hr>
@@ -170,7 +179,7 @@ WHERE XMLExists(od.detailXML, '/order[@anbr="ORD201"]');</code></pre>
     <li>
         <strong>Relational:</strong>
         <p>Standard JDBC batching collects statements on the client and sends them to the server in a single network round-trip, but the client application thread <strong>waits (blocks)</strong> until the entire batch is processed and all results are returned. Pipelining is a form of <strong>asynchronous I/O</strong>. The client sends a request and *does not wait* for the response, immediately sending the next request. The network connection is "pipelined" with requests. The results are consumed later, also asynchronously.</p>
-        <small><strong>Reference:</strong> <code>./books/jdbc-developers-guide/ch05_26-support-for-pipelined-database-operations.pdf</code>, Chapter 26, "Support for Pipelined Database Operations"</small>
+        <small><strong>Reference:</strong> <a href="./books/jdbc-developers-guide/ch05_26-support-for-pipelined-database-operations.pdf">Chapter 26, <em>Support for Pipelined Database Operations</em></a></small>
     </li>
     <li>
         <strong>Value (Java Snippet):</strong>
@@ -223,15 +232,14 @@ public void pipelineUpdates(Connection conn) throws SQLException {
             <li>An AQ queue created within a queue table with <code>multiple_consumers => TRUE</code> (like our <code>partRequestTopic</code>) functions as a <strong>JMS Topic</strong> (publish-subscribe model).</li>
             <li>An AQ queue created within a queue table with <code>multiple_consumers => FALSE</code> functions as a <strong>JMS Queue</strong> (point-to-point model).</li>
         </ul>
-        <p>This allows Java applications to use the standard, vendor-neutral JMS API to interact with the powerful, database-integrated Oracle AQ.</p>
-        <small><strong>Reference:</strong> <code>./books/database-transactional-event-queues-and-advanced-queuing-users-guide/11_ch06_java-message-service-for-transactional-event-queues-and-advanced-queuing.pdf</code>, Chapter 6, "Java Message Service for Transactional Event Queues and Advanced Queuing"</small>
+        <small><strong>Reference:</strong> <a href="./books/database-transactional-event-queues-and-advanced-queuing-users-guide/11_ch06_java-message-service-for-transactional-event-queues-and-advanced-queuing.pdf">Chapter 6, <em>Java Message Service for Transactional Event Queues and Advanced Queuing</em></a></small>
     </li>
     <li>
         <strong>Value (OpenTelemetry):</strong>
         <div class="oracle-specific">
             <p>OpenTelemetry is a standard for observability, providing APIs for tracing, metrics, and logs. A <strong>trace</strong> represents the journey of a single request through a distributed system. The <strong>trace context</strong> (containing a unique <code>trace_id</code> and parent <code>span_id</code>) allows events in different services to be linked together. In Oracle 23ai, when a database session that is part of a trace (e.g., initiated by a JDBC call) enqueues a message to AQ, the database <strong>automatically injects the trace context into the AQ message properties</strong>. When a consumer (like a Java application) dequeues that message, the driver automatically extracts this context and continues the same trace.</p>
         </div>
-        <small><strong>Reference:</strong> <code>./books/jdbc-developers-guide/ch02_40-diagnosability-in-jdbc.pdf</code>, Chapter 40, "Diagnosability in JDBC"</small>
+        <small><strong>Reference:</strong> <a href="./books/jdbc-developers-guide/ch02_40-diagnosability-in-jdbc.pdf">Chapter 40, <em>Diagnosability in JDBC</em></a></small>
     </li>
     <li>
         <strong>Advantage:</strong>
@@ -268,7 +276,7 @@ WHERE EXTRACTVALUE(od.detailXML, '/order/items/item/@partNumber') = '40'
     <p>The primary performance pitfall is that the database must <strong>parse the entire XML document multiple times</strong> for each <code>EXTRACTVALUE</code> function call in the <code>SELECT</code> and <code>WHERE</code> clauses. In this example, the XML in the target row is parsed three separate times: once to get the <code>partNumber</code>, once to get the <code>anbr</code>, and a final time to get the <code>quantity</code>. For complex documents, this repeated parsing creates significant CPU overhead and is a major disadvantage.</p>
     <p>The efficient <code>XMLTABLE</code> and <code>XMLExists</code> approach (as shown in Exercise 1.2) is designed to parse the document a single time and project all required nodes into a virtual relational row, which is vastly more performant.</p>
 </div>
-<small><strong>Reference:</strong> <code>./books/xml-db-developers-guide/ch01_4-xquery-and-oracle-xml-db.pdf</code>. The documentation now heavily favors the SQL/XML standard functions like <code>XMLTABLE</code>, <code>XMLExists</code>, etc., over the older, Oracle-specific <code>EXTRACTVALUE</code>.</small>
+<small><strong>Reference:</strong> <a href="./books/xml-db-developers-guide/ch01_4-xquery-and-oracle-xml-db.pdf">The documentation now heavily favors the SQL/XML standard functions like <code>XMLTABLE</code>, <code>XMLExists</code>, etc., over the older, Oracle-specific <code>EXTRACTVALUE</code>.</a></small>
 <!-- ================================================================= -->
 <!-- ===== EXERCISE III: Contrasting with Inefficient Solutions ======== -->
 <!-- ================================================================= -->
@@ -276,7 +284,7 @@ WHERE EXTRACTVALUE(od.detailXML, '/order/items/item/@partNumber') = '40'
 <h2>Exercise III: Contrasting with Inefficient Common Solutions</h2>
 <h3>Exercise 3.1: The "DIY Queue" vs. Oracle AQ</h3>
 <h4>Problem Statement</h4>
-<p class="problem-label">A developer needs an asynchronous job queue. Instead of using Oracle AQ, they create a simple table: <code>jobQueue(jobId NUMBER, payload VARCHAR2(100), status VARCHAR2(10))</code>. The application <code>INSERT</code>s jobs with <code>status = 'NEW'</code>. A background process polls this table every 5 seconds with <code>SELECT ... FROM jobQueue WHERE status = 'NEW' FOR UPDATE SKIP LOCKED</code>.</p>
+<p class="problem-label">A developer needs an asynchronous job queue.</p> Instead of using Oracle AQ, they create a simple table: <code>jobQueue(jobId NUMBER, payload VARCHAR2(100), status VARCHAR2(10))</code>. The application <code>INSERT</code>s jobs with <code>status = 'NEW'</code>. A background process polls this table every 5 seconds with <code>SELECT ... FROM jobQueue WHERE status = 'NEW' FOR UPDATE SKIP LOCKED</code>.
 <p class="problem-label">Contrast this polling-based approach with using Oracle AQ (<code>DBMS_AQ.DEQUEUE</code>). Explain two significant advantages that AQ provides over this "Do-It-Yourself" table-based queue, demonstrating the loss of value from not using the Oracle-idiomatic feature.</p>
 <h4>Detailed Explanation</h4>
 <p>
@@ -299,7 +307,7 @@ WHERE EXTRACTVALUE(od.detailXML, '/order/items/item/@partNumber') = '40'
 <p>
     In essence, the DIY approach forces the developer to poorly re-implement a fraction of the features that Oracle AQ provides as a robust, transactional, and highly-performant part of the database kernel, losing significant relational power and Oracle-specific value.
 </p>
-<small><strong>Reference:</strong> <code>./books/database-transactional-event-queues-and-advanced-queuing-users-guide/06_ch01_introduction-to-transactional-event-queues-and-advanced-queuing.pdf</code>, Chapter 1, "What Is Queuing?"</small>
+<small><strong>Reference: </strong><a href="./books/database-transactional-event-queues-and-advanced-queuing-users-guide/06_ch01_introduction-to-transactional-event-queues-and-advanced-queuing.pdf">Chapter 1, <em>What Is Queuing?</em></a></small>
 <!-- ================================================================= -->
 <!-- ============ EXERCISE IV: Hardcore Combined Problem ============= -->
 <!-- ================================================================= -->
