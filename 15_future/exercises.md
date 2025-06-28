@@ -40,12 +40,9 @@
 </p>
 <ol>
     <li>Connect to your Oracle database as the <code>future</code> user.</li>
-    <li>Execute the <code>CREATE TABLE</code> and <code>INSERT INTO</code> scripts provided at the beginning of each exercise group.</li>
+    <li>Execute the <code>dataset.sql</code> script provided for this lecture.</li>
     <li>Verify that the data has been inserted correctly before proceeding with the problems.</li>
 </ol>
-<div class="caution">
-    <p><strong>Important:</strong> Each exercise group uses a distinct set of tables. Always run the setup script for the group you are currently working on.</p>
-</div>
 
 <hr>
 
@@ -53,55 +50,6 @@
 
 <h3>Group 1: DDL and DML Enhancements</h3>
 <p>This group focuses on features that simplify how you define schema objects and modify data, making your code more robust and efficient.</p>
-
-<h4>Dataset for Group 1</h4>
-
-```sql
-CREATE TABLE future.employees (
-    employeeId      NUMBER PRIMARY KEY,
-    firstName       VARCHAR2(50),
-    lastName        VARCHAR2(50),
-    departmentId    NUMBER,
-    salary          NUMBER(10, 2),
-    hireDate        DATE
-);
-
-CREATE TABLE future.departments (
-    departmentId    NUMBER PRIMARY KEY,
-    departmentName  VARCHAR2(100),
-    locationCity    VARCHAR2(100)
-);
-
-CREATE TABLE future.performanceReviews (
-    reviewId        NUMBER PRIMARY KEY,
-    employeeId      NUMBER,
-    reviewDate      DATE,
-    reviewScore     VARCHAR2(20)
-);
-
-CREATE TABLE future.archivedEmployees (
-    employeeId      NUMBER,
-    lastName        VARCHAR2(50),
-    archiveDate     DATE
-);
-
--- Populate Data
-INSERT INTO future.departments VALUES (10, 'Sales', 'New York');
-INSERT INTO future.departments VALUES (20, 'Engineering', 'San Francisco');
-INSERT INTO future.departments VALUES (30, 'HR', 'New York');
-
-INSERT INTO future.employees VALUES (101, 'Alice', 'Smith', 10, 75000, DATE '2022-01-15');
-INSERT INTO future.employees VALUES (102, 'Bob', 'Johnson', 10, 80000, DATE '2021-03-22');
-INSERT INTO future.employees VALUES (103, 'Charlie', 'Williams', 20, 120000, DATE '2020-05-10');
-INSERT INTO future.employees VALUES (104, 'Diana', 'Brown', 30, 65000, DATE '2023-07-01');
-
-INSERT INTO future.performanceReviews VALUES (1, 101, DATE '2023-12-20', 'Good');
-INSERT INTO future.performanceReviews VALUES (2, 102, DATE '2023-12-21', 'Below Average');
-INSERT INTO future.performanceReviews VALUES (3, 103, DATE '2023-12-15', 'Excellent');
-INSERT INTO future.performanceReviews VALUES (4, 104, DATE '2023-12-22', 'Good');
-
-COMMIT;
-```
 
 <h4>(i) Meanings, Values, Relations, and Advantages</h4>
 <h5>Problem 1: Conditional DDL with <code>IF EXISTS</code></h5>
@@ -140,24 +88,6 @@ COMMIT;
 <h3>Group 2: Querying Conveniences</h3>
 <p>This group covers new features that make writing common queries simpler, more intuitive, and more readable.</p>
 
-<h4>Dataset for Group 2</h4>
-
-```sql
-CREATE TABLE future.regionalSales (
-    region          VARCHAR2(50),
-    product         VARCHAR2(50),
-    salesAmount     NUMBER(12, 2)
-);
-
-INSERT INTO future.regionalSales VALUES ('North', 'Gadget', 1500);
-INSERT INTO future.regionalSales VALUES ('North', 'Widget', 2200);
-INSERT INTO future.regionalSales VALUES ('South', 'Gadget', 1800);
-INSERT INTO future.regionalSales VALUES ('South', 'Widget', 3100);
-INSERT INTO future.regionalSales VALUES ('North', 'Gadget', 1600);
-
-COMMIT;
-```
-
 <h4>(i) Meanings, Values, Relations, and Advantages</h4>
 <h5>Problem 1: <code>GROUP BY</code> with an Alias</h5>
 <p>
@@ -188,27 +118,6 @@ COMMIT;
 
 <h3>Group 3: Advanced Data Types and Functions</h3>
 <p>This group explores new data types and functions that enable more powerful and modern data modeling and analysis.</p>
-
-<h4>Dataset for Group 3</h4>
-
-```sql
-CREATE TABLE future.projectTasks (
-    taskId        NUMBER PRIMARY KEY,
-    taskName      VARCHAR2(100),
-    isCompleted   BOOLEAN,
-    startDate     TIMESTAMP,
-    endDate       TIMESTAMP
-);
-
-INSERT INTO future.projectTasks VALUES (1, 'Initial Analysis',      TRUE,  TIMESTAMP '2023-01-10 09:00:00', TIMESTAMP '2023-01-15 17:00:00');
-INSERT INTO future.projectTasks VALUES (2, 'Design Phase',        TRUE,  TIMESTAMP '2023-01-16 09:00:00', TIMESTAMP '2023-01-28 18:00:00');
-INSERT INTO future.projectTasks VALUES (3, 'Development Sprint 1',  TRUE,  TIMESTAMP '2023-02-01 09:00:00', TIMESTAMP '2023-02-14 17:30:00');
-INSERT INTO future.projectTasks VALUES (4, 'Development Sprint 2',  FALSE, TIMESTAMP '2023-02-15 09:00:00', NULL);
-INSERT INTO future.projectTasks VALUES (5, 'Testing',               FALSE, TIMESTAMP '2023-03-01 09:00:00', NULL);
-INSERT INTO future.projectTasks VALUES (6, 'Documentation',         TRUE,  TIMESTAMP '2023-01-20 10:00:00', TIMESTAMP '2023-02-20 12:00:00');
-
-COMMIT;
-```
 
 <h4>(i) Meanings, Values, Relations, and Advantages</h4>
 <h5>Problem 1: Using the Native <code>BOOLEAN</code> Data Type</h5>
@@ -241,54 +150,6 @@ COMMIT;
 
 <h3>Hardcore Combined Problem</h3>
 <p>This final problem requires you to integrate all the concepts from this module into a single, multi-step solution.</p>
-
-<h4>Dataset for Hardcore Problem</h4>
-
-```sql
-CREATE TABLE future.hcEmployees (
-    employeeId      NUMBER,
-    employeeName    VARCHAR2(100),
-    departmentId    NUMBER,
-    salary          NUMBER(10, 2),
-    isActive        BOOLEAN
-);
-
-CREATE TABLE future.hcDepartments (
-    departmentId    NUMBER,
-    departmentName  VARCHAR2(100)
-);
-
-CREATE TABLE future.hcProjects (
-    projectId       NUMBER,
-    projectName     VARCHAR2(100),
-    startDate       TIMESTAMP,
-    endDate         TIMESTAMP,
-    budget          NUMBER
-);
-
-CREATE TABLE future.hcAssignments (
-    employeeId      NUMBER,
-    projectId       NUMBER
-);
-
-INSERT INTO future.hcDepartments VALUES (100, 'Innovation');
-INSERT INTO future.hcDepartments VALUES (200, 'Logistics');
-
-INSERT INTO future.hcEmployees VALUES (1, 'John Doe', 100, 90000, TRUE);
-INSERT INTO future.hcEmployees VALUES (2, 'Jane Smith', 100, 95000, TRUE);
-INSERT INTO future.hcEmployees VALUES (3, 'Peter Jones', 200, 80000, FALSE);
-
-INSERT INTO future.hcProjects VALUES (1001, 'Quantum Leap', TIMESTAMP '2023-01-15 00:00:00', TIMESTAMP '2023-04-20 00:00:00', 50000);
-INSERT INTO future.hcProjects VALUES (1002, 'Project Phoenix', TIMESTAMP '2023-05-01 00:00:00', TIMESTAMP '2023-11-10 00:00:00', 150000);
-INSERT INTO future.hcProjects VALUES (1003, 'Helios Initiative', TIMESTAMP '2023-06-22 00:00:00', NULL, 250000);
-
-INSERT INTO future.hcAssignments VALUES (1, 1001);
-INSERT INTO future.hcAssignments VALUES (1, 1002);
-INSERT INTO future.hcAssignments VALUES (2, 1002);
-INSERT INTO future.hcAssignments VALUES (2, 1003);
-
-COMMIT;
-```
 
 <h4>Hardcore Problem Description</h4>
 <p>

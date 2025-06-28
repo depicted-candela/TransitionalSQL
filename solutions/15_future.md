@@ -49,14 +49,17 @@ The optimal path, beyond just compare.
 <p class="problem-label">Write a script that first attempts to drop a table named <code>future.tempProjects</code>. The script should not fail if the table doesn't exist. Then, write a statement to create the same <code>future.tempProjects</code> table (with columns <code>projectId NUMBER, projectName VARCHAR2(100)</code>), but only if it does not already exist.</p>
 
 <h5>Solution</h5>
-<pre><code>-- Safely drop the table, ignoring the error if it does not exist
+
+```sql
+-- Safely drop the table, ignoring the error if it does not exist
 DROP TABLE IF EXISTS future.tempProjects;
 
 -- Safely create the table, only if it is not already present
 CREATE TABLE IF NOT EXISTS future.tempProjects (
     projectId     NUMBER,
     projectName   VARCHAR2(100)
-);</code></pre>
+);
+```
 
 <h5>Explanation</h5>
 <div class="postgresql-bridge">
@@ -74,7 +77,9 @@ CREATE TABLE IF NOT EXISTS future.tempProjects (
 <p class="problem-label">The company has decided to give a 5% salary cut to all employees in the 'Sales' department who received a 'Below Average' performance review. Write a single <code>UPDATE</code> statement to apply this change.</p>
 
 <h5>Solution</h5>
-<pre><code>UPDATE future.employees e
+
+```sql
+UPDATE future.employees e
 SET    e.salary = e.salary * 0.95
 WHERE  EXISTS (
     SELECT 1
@@ -84,7 +89,8 @@ WHERE  EXISTS (
     WHERE e.departmentId = d.departmentId
       AND d.departmentName = 'Sales'
       AND pr.reviewScore = 'Below Average'
-);</code></pre>
+);
+```
 
 <h5>Explanation</h5>
 <div class="oracle-specific">
@@ -102,7 +108,9 @@ WHERE  EXISTS (
 <p class="problem-label">The HR department in 'New York' is being dissolved. All employees in that department must be deleted. As you delete them, you need to capture their <code>employeeId</code> and <code>lastName</code> into a log table (<code>future.archivedEmployees</code>). Use the <code>DELETE</code> statement with the <code>RETURNING</code> clause to accomplish this in a single step.</p>
 
 <h5>Solution</h5>
-<pre><code>DECLARE
+
+```sql
+DECLARE
     TYPE t_employee_ids IS TABLE OF future.employees.employeeId%TYPE;
     TYPE t_last_names IS TABLE OF future.employees.lastName%TYPE;
 
@@ -123,7 +131,8 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE(v_deleted_ids.COUNT || ' employees archived.');
 END;
 /
-</code></pre>
+
+```
 
 <h5>Explanation</h5>
 <div class="oracle-specific">
@@ -139,12 +148,14 @@ END;
 
 <h3>(ii) Disadvantages and Pitfalls</h3>
 
-<h4>Problem 1: `RETURNING INTO` with Multiple Rows</h4>
+<h4>Problem 1: <code>RETURNING INTO</code> with Multiple Rows</h4>
 <h5>Problem Statement</h5>
 <p class="problem-label">Write a PL/SQL anonymous block. Attempt to delete all employees from the 'Sales' department and use <code>RETURNING employeeId INTO ...</code> to capture the ID of the deleted employee into a single <code>NUMBER</code> variable. Execute the block and analyze the error.</p>
 
 <h5>Solution</h5>
-<pre><code>DECLARE
+
+```sql
+DECLARE
     vEmployeeId NUMBER;
 BEGIN
     DELETE FROM future.employees
@@ -157,7 +168,8 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE('Error: ORA-01422: exact fetch returns more than requested number of rows.');
         DBMS_OUTPUT.PUT_LINE('Pitfall: RETURNING INTO a scalar variable cannot handle multiple affected rows.');
 END;
-/</code></pre>
+/
+```
 
 <h5>Explanation</h5>
 <div class="caution">
@@ -170,7 +182,7 @@ END;
 
 <h3>(iii) Contrasting with Inefficient Common Solutions</h3>
 
-<h4>Problem 1: Inefficient Update vs. Efficient `UPDATE`</h4>
+<h4>Problem 1: Inefficient Update vs. Efficient <code>UPDATE</code></h4>
 <h5>Problem Statement</h5>
 <p class="problem-label">A policy change requires that the salary of every employee in the 'Engineering' department be updated to match the salary of employee 'Charlie Williams' (ID 103). First, solve this using a less efficient, two-step approach. Then, solve it using a more efficient, single-statement approach.</p>
 
@@ -180,7 +192,9 @@ END;
 </div>
 
 <p><strong>Method 1: The Inefficient (but common) Two-Step PL/SQL Approach</strong></p>
-<pre><code>DECLARE
+
+```sql
+DECLARE
     vTargetSalary future.employees.salary%TYPE;
 BEGIN
     -- Step 1: Query the database to get the value
@@ -197,15 +211,18 @@ BEGIN
     ROLLBACK; -- Reset for next example
 END;
 /
-</code></pre>
+
+```
 
 <p><strong>Method 2: The Efficient Single-Statement SQL Approach</strong></p>
-<pre><code>UPDATE future.employees
+
+```sql
+UPDATE future.employees
 SET salary = (SELECT e2.salary FROM future.employees e2 WHERE e2.employeeId = 103)
 WHERE departmentId = 20;
 
 ROLLBACK;
-</code></pre>
+```
 
 <h5>Explanation</h5>
 <ul>
@@ -224,7 +241,9 @@ ROLLBACK;
 <p class="problem-label">Write a query that calculates the total sales for each region. In your <code>SELECT</code> list, alias the <code>region</code> column as <code>salesRegion</code>. Use this alias <code>salesRegion</code> in the <code>GROUP BY</code> clause.</p>
 
 <h5>Solution</h5>
-<pre><code>SELECT
+
+```sql
+SELECT
     region AS salesRegion,
     SUM(salesAmount) AS totalSales
 FROM
@@ -233,7 +252,7 @@ GROUP BY
     salesRegion -- Using the alias here is new in 23ai
 ORDER BY
     salesRegion;
-</code></pre>
+```
 
 <h5>Explanation</h5>
 <div class="postgresql-bridge">
@@ -245,12 +264,14 @@ ORDER BY
 <p class="problem-label">Perform two simple calculations without referencing any table: 1. Find the result of <code>SYSDATE + 7</code>. 2. Calculate <code>100 * 1.05</code>.</p>
 
 <h5>Solution</h5>
-<pre><code>-- Example 1
+
+```sql
+-- Example 1
 SELECT SYSDATE + 7;
 
 -- Example 2
 SELECT 100 * 1.05 AS hundredWithInterest;
-</code></pre>
+```
 
 <h5>Explanation</h5>
 <div class="postgresql-bridge">
@@ -262,7 +283,9 @@ SELECT 100 * 1.05 AS hundredWithInterest;
 <p class="problem-label">You have a new set of product price points to analyze. Without creating a permanent table, construct a two-column, three-row result set using the <code>VALUES</code> clause for the following data: ('Gadget', 50.00), ('Widget', 75.50), ('Sprocket', 25.00). Then, join this on-the-fly table with your <code>regionalSales</code> table to show the total sales for each of these products.</p>
 
 <h5>Solution</h5>
-<pre><code>SELECT
+
+```sql
+SELECT
     p.productName,
     p.price,
     SUM(rs.salesAmount) AS totalSales
@@ -278,7 +301,7 @@ GROUP BY
     p.productName, p.price
 ORDER BY
     p.productName;
-</code></pre>
+```
 
 <h5>Explanation</h5>
 <div class="oracle-specific">
@@ -296,7 +319,9 @@ ORDER BY
 <p class="problem-label">Try to filter the results of an aggregate query using the <code>GROUP BY</code> alias in the `WHERE` clause. For example, calculate total sales by region and only show regions where the aliased <code>totalSales</code> is greater than 4000. Why does this fail? How do you correctly filter on an aggregate result?</p>
 
 <h5>Solution</h5>
-<pre><code>-- This query will fail with ORA-00904: "TOTALSALES": invalid identifier
+
+```sql
+-- This query will fail with ORA-00904: "TOTALSALES": invalid identifier
 SELECT
     region,
     SUM(salesAmount) AS totalSales
@@ -304,8 +329,10 @@ FROM
     future.regionalSales
 WHERE
     totalSales > 4000;
-</code></pre>
-<pre><code>-- This is the correct approach
+```
+
+```sql
+-- This is the correct approach
 SELECT
     region,
     SUM(salesAmount) AS totalSales
@@ -315,7 +342,7 @@ GROUP BY
     region
 HAVING
     SUM(salesAmount) > 4000;
-</code></pre>
+```
 
 <h5>Explanation</h5>
 <div class="caution">
@@ -337,10 +364,12 @@ HAVING
 <p class="problem-label">Query the <code>future.projectTasks</code> table to show the names of all tasks that have been marked as completed.</p>
 
 <h5>Solution</h5>
-<pre><code>SELECT taskName
+
+```sql
+SELECT taskName
 FROM future.projectTasks
 WHERE isCompleted;
-</code></pre>
+```
 
 <h5>Explanation</h5>
 <div class="postgresql-bridge">
@@ -353,14 +382,16 @@ WHERE isCompleted;
 <p class="problem-label">For all completed tasks, calculate the total duration and the average duration. The duration of a task is the difference between its <code>endDate</code> and <code>startDate</code>.</p>
 
 <h5>Solution</h5>
-<pre><code>SELECT
+
+```sql
+SELECT
     SUM(endDate - startDate) AS totalDuration,
     AVG(endDate - startDate) AS averageDuration
 FROM
     future.projectTasks
 WHERE
     isCompleted = TRUE;
-</code></pre>
+```
 
 <h5>Explanation</h5>
 <div class="oracle-specific">
@@ -376,7 +407,9 @@ WHERE
 <p class="problem-label">You want to see how many tasks started in each 15-day period throughout the project's timeline. Use the <code>TIME_BUCKET</code> function to group the tasks. The "origin" of the bucketing should be the earliest task start date in the table.</p>
 
 <h5>Solution</h5>
-<pre><code>WITH origin_point AS (
+
+```sql
+WITH origin_point AS (
     SELECT MIN(startDate) as minStartDate FROM future.projectTasks
 )
 SELECT
@@ -389,7 +422,7 @@ GROUP BY
     TIME_BUCKET(pt.startDate, INTERVAL '15' DAY, o.minStartDate)
 ORDER BY
     bucketStart;
-</code></pre>
+```
 
 <h5>Explanation</h5>
 <div class="oracle-specific">
@@ -409,7 +442,9 @@ ORDER BY
 <p class="problem-label">Imagine the <code>projectTasks</code> table was designed in Oracle 19c. The <code>isCompleted</code> column would likely be <code>isCompletedLegacy CHAR(1) CHECK (isCompletedLegacy IN ('Y', 'N'))</code>. Add this legacy column, populate it, and write a query to find completed tasks. Compare it with the native <code>BOOLEAN</code> query.</p>
 
 <h5>Solution</h5>
-<pre><code>-- Step 1: Add and populate the legacy column
+
+```sql
+-- Step 1: Add and populate the legacy column
 ALTER TABLE future.projectTasks ADD (isCompletedLegacy CHAR(1));
 UPDATE future.projectTasks SET isCompletedLegacy = CASE WHEN isCompleted THEN 'Y' ELSE 'N' END;
 COMMIT;
@@ -418,7 +453,7 @@ COMMIT;
 SELECT taskName
 FROM future.projectTasks
 WHERE isCompletedLegacy = 'Y';
-</code></pre>
+```
 
 <h5>Explanation</h5>
 <div class="caution">
@@ -437,7 +472,9 @@ WHERE isCompletedLegacy = 'Y';
 <p class="problem-label">A multi-step year-end analysis and cleanup is required. It involves conditionally creating a log table, performing various calculations, updating active employees in a specific department based on a join, logging those changes using <code>RETURNING</code>, and finally deleting employees from a decommissioned department.</p>
 
 <h5>Solution</h5>
-<pre><code>-- Step 1: Conditionally create the audit log table
+
+```sql
+-- Step 1: Conditionally create the audit log table
 CREATE TABLE IF NOT EXISTS future.hcAuditLog (
     logData VARCHAR2(200)
 );
@@ -499,7 +536,8 @@ BEGIN
     COMMIT;
 END;
 /
-</code></pre>
+
+```
 
 <h5>Explanation</h5>
 <div class="oracle-specific">

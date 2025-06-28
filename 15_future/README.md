@@ -56,7 +56,7 @@
 <h2 id="introduction">Introduction: The Evolving SQL Landscape</h2>
 
 <p>
-Welcome to a future where SQL is more intuitive, powerful, and less prone to scripting strife. Oracle Database 23ai doesn't just add features; it refines the very grammar of how we interact with data, making our code cleaner and our logic clearer. This lecture explores a suite of enhancements that modernize DML, simplify DDL, and introduce powerful new ways to handle data, from simple truth values to complex time-based analysis.
+Welcome to a practical_future where SQL is more intuitive, powerful, and less prone to scripting strife. Oracle Database 23ai doesn't just add features; it refines the very grammar of how we interact with data, making our code cleaner and our logic clearer. This lecture explores a suite of enhancements that modernize DML, simplify DDL, and introduce powerful new ways to handle data, from simple truth values to complex time-based analysis.
 </p>
 <p>
 For those transitioning from PostgreSQL, many of these <em>new</em> features will feel like a welcome sight, a familiar tune in a different concert hall. Oracle has embraced several ISO SQL standard features that align its syntax more closely with other modern RDBMSs, making your transition smoother and your skills more portable. We will explore these innovations not just as new tools, but as bridges connecting your existing expertise to Oracle's powerful, evolving platform.
@@ -76,55 +76,8 @@ Before diving into the exercises, ensure you have a solid grasp of the concepts 
 
 <h3>Dataset Setup</h3>
 <p>
-The following script creates and populates a small, cohesive set of tables within the <code>future</code> schema. These tables are designed specifically to demonstrate the features in this section. Please execute this entire script in your Oracle 23ai environment (such as SQL Developer or SQL*Plus) before beginning the exercises.
+The following script creates and populates a small, cohesive set of tables within the <code>practical_future</code> schema. These tables are designed specifically to demonstrate the features in this section. Please execute this entire script <code>practical_dataset.sql</code> in your Oracle 23ai environment (such as SQL Developer or SQL*Plus) before beginning the exercises.
 </p>
-
-
-```sql
--- Main Dataset for 23ai SQL Features
-CREATE TABLE future.employees (
-    employeeId      NUMBER PRIMARY KEY,
-    firstName       VARCHAR2(50),
-    lastName        VARCHAR2(50),
-    departmentId    NUMBER,
-    salary          NUMBER(10, 2),
-    hireDate        DATE
-);
-
-CREATE TABLE future.departments (
-    departmentId    NUMBER PRIMARY KEY,
-    departmentName  VARCHAR2(100),
-    locationCity    VARCHAR2(100)
-);
-
-CREATE TABLE future.projectTasks (
-    taskId        NUMBER PRIMARY KEY,
-    taskName      VARCHAR2(100),
-    isCompleted   BOOLEAN, -- New 23ai Feature
-    startDate     TIMESTAMP,
-    endDate       TIMESTAMP
-);
-
-CREATE TABLE future.archivedEmployees (
-    employeeId      NUMBER,
-    lastName        VARCHAR2(50),
-    archiveDate     DATE
-);
-
--- Populate Data
-INSERT INTO future.departments VALUES (10, 'Sales', 'New York');
-INSERT INTO future.departments VALUES (20, 'Engineering', 'San Francisco');
-
-INSERT INTO future.employees VALUES (101, 'Alice', 'Smith', 10, 75000, DATE '2022-01-15');
-INSERT INTO future.employees VALUES (102, 'Bob', 'Johnson', 10, 80000, DATE '2021-03-22');
-INSERT INTO future.employees VALUES (103, 'Charlie', 'Williams', 20, 120000, DATE '2020-05-10');
-
-INSERT INTO future.projectTasks VALUES (1, 'Initial Analysis', TRUE, TIMESTAMP '2023-01-10 09:00:00', TIMESTAMP '2023-01-15 17:00:00');
-INSERT INTO future.projectTasks VALUES (2, 'Design Phase', TRUE, TIMESTAMP '2023-01-16 09:00:00', TIMESTAMP '2023-01-28 18:00:00');
-INSERT INTO future.projectTasks VALUES (3, 'Development Sprint 1', FALSE, TIMESTAMP '2023-02-01 09:00:00', NULL);
-
-COMMIT;
-```
 
 
 <h2 id="section1">Section 1: What Are They? (Meanings & Values)</h2>
@@ -235,7 +188,7 @@ They're all connected, intertwined.
         <strong><code>RETURNING</code> Clause:</strong> You know this one well. PostgreSQL's <code>RETURNING</code> clause is a beloved feature for getting data back from DML. Oracle's <code>RETURNING INTO</code> is its PL/SQL counterpart, allowing you to capture those returned values directly into variables or collections within a PL/SQL block.
     </li>
     <li>
-        <strong><code>SELECT</code> without <code>FROM</code>:</strong> In PostgreSQL, <code>SELECT 1 + 1;</code> just works. In Oracle, you historically needed <code>SELECT 1 + 1 FROM dual;</code>. With 23ai, Oracle now behaves like PostgreSQL in this regard, making simple calculations much cleaner. Why did the SQL query break up with the <code>DUAL</code> table? It said, <em>I just need some space, I don't always have to be <code>FROM</code> somewhere</em>"
+        <strong><code>SELECT</code> without <code>FROM</code>:</strong> In PostgreSQL, <code>SELECT 1 + 1;</code> just works. In Oracle, you historically needed <code>SELECT 1 + 1 FROM dual;</code>. With 23ai, Oracle now behaves like PostgreSQL in this regard, making simple calculations much cleaner. Why did the SQL query break up with the <code>DUAL</code> table? It said, <em>I just need some space, I don't always have to be <code>FROM</code> somewhere</em>
     </li>
     <li>
         <strong><code>VALUES</code> Clause:</strong> PostgreSQL's <code>VALUES</code> list is a powerful tool for creating ad-hoc rowsets. Oracle's 23ai Table Value Constructor brings this same capability, allowing you to define inline tables for joins, inserts, or simple lookups.
@@ -252,19 +205,19 @@ They're all connected, intertwined.
 
 ```sql
 -- In DDL
-CREATE TABLE future.Tasks (
+CREATE TABLE practical_future.Tasks (
     taskId      NUMBER,
     description VARCHAR2(200),
     isUrgent    BOOLEAN
 );
 
 -- In DML
-INSERT INTO future.Tasks (taskId, description, isUrgent)
+INSERT INTO practical_future.Tasks (taskId, description, isUrgent)
 VALUES (1, 'Finalize report', TRUE);
 
 -- In a Query
 SELECT description
-FROM future.Tasks
+FROM practical_future.Tasks
 WHERE isUrgent; -- No need for 'isUrgent = ''Y''' or 'isUrgent = 1'
 ```
 
@@ -274,10 +227,10 @@ WHERE isUrgent; -- No need for 'isUrgent = ''Y''' or 'isUrgent = 1'
 
 ```sql
 -- Safely drop a table
-DROP TABLE IF EXISTS future.oldData;
+DROP TABLE IF EXISTS practical_future.oldData;
 
 -- Safely create a table
-CREATE TABLE IF NOT EXISTS future.newLog (
+CREATE TABLE IF NOT EXISTS practical_future.newLog (
     logId       NUMBER,
     logMessage  VARCHAR2(500)
 );
@@ -289,15 +242,15 @@ CREATE TABLE IF NOT EXISTS future.newLog (
 
 ```sql
 -- UPDATE: Give a 10% raise to all employees in the 'Engineering' department.
-UPDATE future.employees e
+UPDATE practical_future.employees e
 SET    e.salary = e.salary * 1.10
-WHERE  e.departmentId = (SELECT d.departmentId FROM future.departments d WHERE d.departmentName = 'Engineering');
+WHERE  e.departmentId = (SELECT d.departmentId FROM practical_future.departments d WHERE d.departmentName = 'Engineering');
 
 -- DELETE: Remove all employees located in 'New York'.
-DELETE FROM future.employees e
+DELETE FROM practical_future.employees e
 WHERE  e.departmentId IN (
     SELECT d.departmentId
-    FROM future.departments d
+    FROM practical_future.departments d
     WHERE d.locationCity = 'New York'
 );
 ```
@@ -311,7 +264,7 @@ SELECT
     SUBSTR(departmentName, 1, 5) AS deptPrefix,
     COUNT(*) AS employeeCount
 FROM
-    future.departments
+    practical_future.departments
 GROUP BY
     deptPrefix; -- Uses the alias, not the full SUBSTR expression
 ```
@@ -323,9 +276,9 @@ GROUP BY
 ```sql
 -- Capture a single value
 DECLARE
-    vUpdatedSalary future.employees.salary%TYPE;
+    vUpdatedSalary practical_future.employees.salary%TYPE;
 BEGIN
-    UPDATE future.employees
+    UPDATE practical_future.employees
     SET salary = salary + 5000
     WHERE employeeId = 101
     RETURNING salary INTO vUpdatedSalary;
@@ -339,7 +292,7 @@ DECLARE
     TYPE t_emp_ids IS TABLE OF NUMBER;
     v_updated_ids t_emp_ids;
 BEGIN
-    UPDATE future.employees
+    UPDATE practical_future.employees
     SET salary = salary * 1.05
     WHERE departmentId = 10
     RETURNING employeeId BULK COLLECT INTO v_updated_ids;
@@ -364,12 +317,9 @@ SELECT SYSTIMESTAMP;
 <p>Create an ad-hoc table directly in your query.</p>
 
 ```sql
--- Use as a standalone query
-SELECT * FROM (VALUES (1, 'Apple'), (2, 'Banana'));
-
 -- Use in a join to find employees in specific departments
 SELECT e.firstName, e.lastName, d.deptName
-FROM future.employees e
+FROM practical_future.employees e
 JOIN (VALUES (10, 'Sales'), (30, 'HR')) d(deptId, deptName)
   ON e.departmentId = d.deptId;
 ```
@@ -383,7 +333,7 @@ JOIN (VALUES (10, 'Sales'), (30, 'HR')) d(deptId, deptName)
 SELECT
     AVG(endDate - startDate) AS averageDuration
 FROM
-    future.projectTasks
+    practical_future.projectTasks
 WHERE
     isCompleted = TRUE;
 ```
@@ -398,7 +348,7 @@ SELECT
     TIME_BUCKET(startDate, INTERVAL '7' DAY, DATE '2023-01-01') AS weekBucket,
     COUNT(*) as taskCount
 FROM
-    future.projectTasks
+    practical_future.projectTasks
 GROUP BY
     TIME_BUCKET(startDate, INTERVAL '7' DAY, DATE '2023-01-01')
 ORDER BY
@@ -442,7 +392,7 @@ These new features are built to last.
         <strong><code>GROUP BY</code> Alias:</strong> A common pitfall is attempting to use the column alias in the <code>WHERE</code> clause. This will fail because the <code>WHERE</code> clause is logically processed *before* the <code>SELECT</code> list (and thus before the alias is created). Filtering on aggregate results must still be done in the <code>HAVING</code> clause.
     </li>
     <li>
-        <strong><code>RETURNING INTO</code>:</strong> When capturing data into a scalar variable (not a collection), your DML statement **must** affect exactly one row. If it affects zero rows, <code>NO_DATA_FOUND</code> is raised. If it affects more than one row, <code>TOO_MANY_ROWS</code> is raised. Always use <code>BULK COLLECT INTO</code> when multiple rows could be affected.
+        <strong><code>RETURNING INTO</code>:</strong> When capturing data into a scalar variable (not a collection), your DML statement <strong>must</strong> affect exactly one row. If it affects zero rows, <code>NO_DATA_FOUND</code> is raised. If it affects more than one row, <code>TOO_MANY_ROWS</code> is raised. Always use <code>BULK COLLECT INTO</code> when multiple rows could be affected.
     </li>
     <li>
         <strong><code>IF EXISTS</code>:</strong> This clause can mask problems. For example, <code>DROP TABLE IF EXISTS myApp.importantConfig</code> will run silently if <code>myApp.importantConfig</code> doesn't exist, which might be a critical error in your deployment logic. It suppresses the error, but doesn't fix the underlying problem of a missing object. Use it for idempotency, not to hide configuration errors.
@@ -464,31 +414,31 @@ With these foundations set, you are now prepared to explore more of Oracle's ric
 <hr>
 <ol>
 <li id="fn1_1">
-<p><a href="/books/oracle-database-23ai-new-features-guide/03_Application_Development.pdf"title="Oracle Database 23ai New Features Guide">Oracle Database 23ai New Features Guide, <em>SQL BOOLEAN Data Type"</a>. This section introduces the native, ISO SQL standard-compliant boolean type. <a href="#fnref1_1"title="Jump back to footnote 1 in the text">↩</a></p>
+<p><a href="/books/oracle-database-23ai-new-features-guide/03_Application_Development.pdf"title="Oracle Database 23ai New Features Guide">Oracle Database 23ai New Features Guide, <em>SQL BOOLEAN Data Type</em></a>. This section introduces the native, ISO SQL standard-compliant boolean type. <a href="#fnref1_1"title="Jump back to footnote 1 in the text">↩</a></p>
 </li>
 <li id="fn1_2">
-<p><a href="/books/oracle-database-23ai-new-features-guide/03_Application_Development.pdf"title="Oracle Database 23ai New Features Guide">Oracle Database 23ai New Features Guide, <em>IF [NOT] EXISTS Syntax Support"</a>. Describes the conditional DDL modifiers for objects. <a href="#fnref1_2"title="Jump back to footnote 2 in the text">↩</a></p>
+<p><a href="/books/oracle-database-23ai-new-features-guide/03_Application_Development.pdf"title="Oracle Database 23ai New Features Guide">Oracle Database 23ai New Features Guide, <em>IF [NOT] EXISTS Syntax Support</em></a>. Describes the conditional DDL modifiers for objects. <a href="#fnref1_2"title="Jump back to footnote 2 in the text">↩</a></p>
 </li>
 <li id="fn1_3">
-<p><a href="/books/oracle-database-23ai-new-features-guide/03_Application_Development.pdf"title="Oracle Database 23ai New Features Guide">Oracle Database 23ai New Features Guide, <em>Direct Joins for UPDATE and DELETE Statements"</a>. Explains the use of the FROM clause in DML. <a href="#fnref1_3"title="Jump back to footnote 3 in the text">↩</a></p>
+<p><a href="/books/oracle-database-23ai-new-features-guide/03_Application_Development.pdf"title="Oracle Database 23ai New Features Guide">Oracle Database 23ai New Features Guide, <em>Direct Joins for UPDATE and DELETE Statements</em></a>. Explains the use of the FROM clause in DML. <a href="#fnref1_3"title="Jump back to footnote 3 in the text">↩</a></p>
 </li>
 <li id="fn1_4">
 <p><a href="/books/sql-language-reference/11_ch09_sql-queries-and-subqueries.pdf"title="Oracle Database SQL Language Reference, 23ai">SQL Language Reference, 23ai, Chapter 9: SQL Queries and Subqueries</a>. While the <code>GROUP BY</code> alias is a new feature, this chapter covers the fundamentals of grouping. The new functionality is also detailed in the 23ai New Features guide. <a href="#fnref1_4"title="Jump back to footnote 4 in the text">↩</a></p>
 </li>
 <li id="fn1_5">
-<p><a href="/books/sql-language-reference/15_ch13_sql-statements-commit-to-create-json-relational-duality-view.pdf"title="Oracle Database SQL Language Reference, 23ai">SQL Language Reference, 23ai, Chapter 13: <em>SQL UPDATE RETURN Clause Enhancements"</a>. Details the enhanced functionality of the RETURNING clause for various DML statements. <a href="#fnref1_5"title="Jump back to footnote 5 in the text">↩</a></p>
+<p><a href="/books/sql-language-reference/15_ch13_sql-statements-commit-to-create-json-relational-duality-view.pdf"title="Oracle Database SQL Language Reference, 23ai">SQL Language Reference, 23ai, Chapter 13: <em>SQL UPDATE RETURN Clause Enhancements</em></a>. Details the enhanced functionality of the RETURNING clause for various DML statements. <a href="#fnref1_5"title="Jump back to footnote 5 in the text">↩</a></p>
 </li>
 <li id="fn1_6">
-<p><a href="/books/oracle-database-23ai-new-features-guide/03_Application_Development.pdf"title="Oracle Database 23ai New Features Guide">Oracle Database 23ai New Features Guide, <em>SELECT Without FROM Clause"</a>. Describes expression-only queries without needing the DUAL table. <a href="#fnref1_6"title="Jump back to footnote 6 in the text">↩</a></p>
+<p><a href="/books/oracle-database-23ai-new-features-guide/03_Application_Development.pdf"title="Oracle Database 23ai New Features Guide">Oracle Database 23ai New Features Guide, <em>SELECT Without FROM Clause</em></a>. Describes expression-only queries without needing the DUAL table. <a href="#fnref1_6"title="Jump back to footnote 6 in the text">↩</a></p>
 </li>
 <li id="fn1_7">
-<p><a href="/books/oracle-database-23ai-new-features-guide/03_Application_Development.pdf"title="Oracle Database 23ai New Features Guide">Oracle Database 23ai New Features Guide, <em>Table Value Constructor"</a>. Explains the use of the VALUES clause to create inline rowsets. <a href="#fnref1_7"title="Jump back to footnote 7 in the text">↩</a></p>
+<p><a href="/books/oracle-database-23ai-new-features-guide/03_Application_Development.pdf"title="Oracle Database 23ai New Features Guide">Oracle Database 23ai New Features Guide, <em>Table Value Constructor</em></a>. Explains the use of the VALUES clause to create inline rowsets. <a href="#fnref1_7"title="Jump back to footnote 7 in the text">↩</a></p>
 </li>
 <li id="fn1_8">
-<p><a href="/books/oracle-database-23ai-new-features-guide/03_Application_Development.pdf"title="Oracle Database 23ai New Features Guide">Oracle Database 23ai New Features Guide, <em>Aggregation over INTERVAL Data Types"</a>. Details the use of SUM and AVG on interval types. <a href="#fnref1_8"title="Jump back to footnote 8 in the text">↩</a></p>
+<p><a href="/books/oracle-database-23ai-new-features-guide/03_Application_Development.pdf"title="Oracle Database 23ai New Features Guide">Oracle Database 23ai New Features Guide, <em>Aggregation over INTERVAL Data Types</em></a>. Details the use of SUM and AVG on interval types. <a href="#fnref1_8"title="Jump back to footnote 8 in the text">↩</a></p>
 </li>
 <li id="fn1_9">
-<p><a href="/books/sql-language-reference/09_ch07_functions.pdf"title="Oracle Database SQL Language Reference, 23ai">SQL Language Reference, 23ai, Chapter 7: Functions, <em>TIME_BUCKET (datetime)"</a>. This provides the full syntax and semantics for the time bucketing function. <a href="#fnref1_9"title="Jump back to footnote 9 in the text">↩</a></p>
+<p><a href="/books/sql-language-reference/09_ch07_functions.pdf"title="Oracle Database SQL Language Reference, 23ai">SQL Language Reference, 23ai, Chapter 7: Functions, <em>TIME_BUCKET (datetime)</em></a>. This provides the full syntax and semantics for the time bucketing function. <a href="#fnref1_9"title="Jump back to footnote 9 in the text">↩</a></p>
 </li>
 </ol>
 </div>
