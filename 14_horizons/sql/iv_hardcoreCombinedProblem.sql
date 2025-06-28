@@ -27,9 +27,6 @@
 -- Receive a message from the JMS topic.
 -- For the order, create a list of all required UPDATE statements for an assumed inventory table.
 -- Use the 23ai JDBC Pipelining API (executeUpdateAsyncOracle) to send all UPDATEs asynchronously within a single transaction.
--- Observability Explanation: Explain how the OpenTelemetry trace_id propagates through this entire system, from the initial JDBC call to the PL/SQL package, into the 
--- AQ message, and finally into the Java consumer. What is the key Oracle 23ai feature that makes this seamless?
-
 
 CREATE OR REPLACE PACKAGE HORIZONS.ORDERFULFILLMENT AS
     PROCEDURE PROCESSNEWORDER(p_orderId IN NUMBER);
@@ -86,3 +83,11 @@ CREATE OR REPLACE PACKAGE BODY HORIZONS.ORDERFULFILLMENT AS
     END PROCESSNEWORDER;
 END ORDERFULFILLMENT;
 /
+
+-- Observability Explanation: Explain how the OpenTelemetry trace_id propagates through this entire system, from the initial JDBC call to the PL/SQL package, into the 
+-- AQ message, and finally into the Java consumer. What is the key Oracle 23ai feature that makes this seamless?
+-- Answer: The OpenTelemetry is a sort of middleware with multiple confs to be connected with multiple technologies including all the ORACLE technologies, in this 
+-- context, a single trace_id belongs to a unique set of processes of different technologies, such centralization up to OpenTelemetry enables the observability of
+-- all the processes where ORACLE or other brands communicate
+-- ORACLE Diagnosibility features are centralized to be in a single log file for all the Java technologies in a single configurable path, scaling this with ORACLE
+-- Cloud we get a centralized version of logging for ease of diagnosability
