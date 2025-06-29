@@ -1,438 +1,424 @@
-✨ **Experience Tip:** For a better user experience, pull this repository and enjoy it with VS Code ✨
-
-# Server Programming with Oracle (DB 23ai) PL/SQL: A Transition Guide for PostgreSQL Users 🚀
-
-Welcome to the "Server Programming with Oracle PL/SQL" course! Dive deep into database development with this guide, holding keys to help individuals proficient in PostgreSQL and analytical SQL step smoothly into server-side programming using Oracle Database and its potent procedural partner, PL/SQL.
-
-Our journey bridges the gap, showing key differences, Oracle's own special features, and the very heart of PL/SQL development. Structured to help your skills blossom, we move from core SQL flavors to advanced PL/SQL patterns and performance puzzles, ultimately paving your way to a strong consulting or development role within the Oracle landscape. 🗺️
-
-## Who is this course for? 🤔
-
-*   Developers and analysts fluent in PostgreSQL seeking to master Oracle PL/SQL.
-*   Individuals transitioning roles where Oracle database development is key.
-*   Anyone wanting to grasp Oracle's specific SQL extensions and server-side coding prowess.
-
-## Prerequisites 📚
-
-*   A firm footing in SQL, especially PostgreSQL's shape and thought.
-*   Familiarity with relational database rules (tables, joins, keys, etc.).
-*   Basic programming flow (variables, loops, conditionals) is a friend, though PL/SQL's first steps are covered here.
-
-## Learning Objectives ✅
-
-Upon completing this course, you will find yourself able to:
-
-*   Grasp and employ Oracle's unique SQL style and data kinds.
-*   Craft capable PL/SQL code, building blocks, procedures, functions, packages, and triggers.
-*   Guide data effectively with Oracle's DML, transaction handling, and advanced queries like hierarchical and analytic patterns.
-*   Work with complex data types, notably XML, residing in Oracle.
-*   Understand and use Oracle's own concepts like the DUAL table, ROWNUM, and various functions.
-*   Manage exceptions gracefully and use collections in PL/SQL.
-*   Implement techniques boosting performance, like bulk operations.
-*   Walk through and utilize the Oracle Data Dictionary.
-*   Gain a solid sense of Oracle performance tuning, including indexing and reading EXPLAIN PLANs.
-*   Understand the conceptual weave of Oracle with tech like Java (JDBC) and XML.
-
-## Course Structure 🏗️
-
-The course is shaped into 15 study chunks, each lighting up a specific path:
-
----
-
-**General Note:** 
-*   The **`Oracle Database 23ai New Features Guide`** is a core compass pointing to new Oracle 23ai wonders. 🧭
-*   For books bundled as single PDF files (e.g., "SQL Language Reference," "Database Administrator's Guide"), I'll link to the main PDF. Use the PDF's own table of contents or search to find your way to specific spots. 🔍
-
----
-
-### Study Chunk 1: Crossing the Divide - Oracle SQL Basics for PostgreSQL Pros
-
-**Parental/Core Category:** ORACLE SQL & BRIDGING FROM POSTGRESQL
-Here, we step across, finding Oracle's SQL voice for those who know PostgreSQL best.
-
-*Categories to be Studied:* 
-- Key Differences & Core Syntax
-- Data Types *(Oracle Specific)* (VARCHAR2, NVARCHAR2, NUMBER, DATE, TIMESTAMP, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH LOCAL TIME ZONE)
-- DUAL Table *(Oracle Specific)* 
-- NULL Handling *(Practice in Oracle)* (NVL, NVL2, COALESCE)
-- Conditional Expressions *(Practice in Oracle)* (DECODE function, CASE)
-- ROWNUM Pseudo-column *(Oracle Specific)* 
-- Comments
-
----
-
-### Study Chunk 2: Essential Oracle Functions & DML Basics
-
-**Parental/Core Category:** ORACLE SQL & BRIDGING FROM POSTGRESQL
-Unlock key Oracle functions and master the foundational dance of Data Manipulation Language (DML).
-
-*Categories to be Studied:* 
-- Date Functions *(Oracle Specifics & Practice)* (SYSDATE, CURRENT_DATE, SYSTIMESTAMP, CURRENT_TIMESTAMP, TO_DATE, TO_CHAR, ADD_MONTHS, MONTHS_BETWEEN, LAST_DAY, NEXT_DAY, TRUNC, ROUND (for dates), Date Arithmetic)
-- String Functions *(Practice in Oracle)* 
-- Set Operators *(Practice in Oracle)* (MINUS)
-- Data Manipulation Language (DML) & Transaction Control *(Practice in Oracle)* (INSERT, UPDATE, DELETE, SELECT, COMMIT, ROLLBACK, SAVEPOINT)
-
----
-
-### Study Chunk 3: Advanced Oracle SQL Querying Techniques
-
-**Parental/Core Category:** *ORACLE SQL & BRIDGING FROM POSTGRESQL* 
-Ascend to advanced querying heights, tackling complex data patterns with Oracle's unique tools. 🏔️
-
-*Categories to be Studied:* 
-- Hierarchical Queries *(Oracle Specific - Very Important)* (CONNECT BY clause, LEVEL pseudo-column, PRIOR operator, START WITH clause)
-- Analytic (Window) Functions *(Practice in Oracle Syntax)* (Ranking: RANK, DENSE_RANK, ROW_NUMBER; Navigation: LAG, LEAD; Aggregates: SUM() OVER (...), AVG() OVER (...))
-- Data Manipulation Language (DML) & Transaction Control *(Practice in Oracle)* (MERGE statement (Oracle Specific))
-
----
-
-### Study Chunk 4: Conquering Complexity: Oracle’s XML, JSON, and More
-
-**Parental/Core Category:** *ORACLE SQL & BRIDGING FROM POSTGRESQL* 
-Face the challenge of intricate data forms like XML and JSON, vital for systems like Flexcube, exploring Oracle's modern touch.
-
-*Categories to be Studied:* 
-- Handling Complex Data Types (Essential for job tasks like XML/JSON handling in Flexcube)
-- Data Types Revisited: CLOB, BLOB (Contextual recap from Chunk 1)
-- XMLTYPE Data Type: Basic storage, querying (XMLTABLE, XMLELEMENT, XMLFOREST, XMLAGG), XPath expressions
-- JSON Data Type: Native storage, indexing, querying (JSON_TABLE, JSON_VALUE, JSON_QUERY, JSON_OBJECT, JSON_ARRAY)
-- Large Objects (CLOB, BLOB): Practical use and link to DBMS_LOB
-- *Oracle 23ai Features:* 
-  - JSON Relational Duality Views: Unified relational and JSON access ✨
-  - JSON Binary Data Type: Optimized storage for JSON 💾
-  - JSON Collection Tables: Document-style storage 📄
-  - Transportable Binary XML (TBX): Enhanced XML storage and portability 🚚
-
----
-
-### Study Chunk 5: PL/SQL Awakening: Foundations of Oracle Programming
-
-**Parental/Core Category:** *PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE* 
-Awaken your inner Oracle programmer. This chunk lays the ground for PL/SQL, from block shape to basic flow, introducing a new 23ai speed boost.
-
-*Categories to be Studied:* 
-- Fundamentals: Introduction to procedural logic in Oracle
-- PL/SQL Block Structure: DECLARE, BEGIN, EXCEPTION, END
-- Variables & Constants: Scalar types, %TYPE, %ROWTYPE attributes
-- Conditional Control: IF-THEN-ELSIF-ELSE, CASE statements/expressions
-- Iterative Control: Basic LOOP, WHILE, FOR loops
-- SQL within PL/SQL: Implicit SELECT INTO, DML operations
-- DBMS_OUTPUT.PUT_LINE: Basic output for debugging
-- **Oracle 23ai Feature:** 
-  - SQL Transpiler: Automatic conversion of PL/SQL to SQL for optimization ⏩
-
-*   📚 [Oracle® Database PL/SQL Language Reference](books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf)
-    *   _Relevance:_ The core guide for PL/SQL shape, block build, data kinds, flow control, and putting SQL inside PL/SQL.
-
-*   📚 [Oracle® Database Get Started with Oracle Database Development](books/get-started-oracle-database-development/get-started-oracle-database-development.pdf)
-    *   _Relevance:_ Offers a hands-on start to PL/SQL basics and using `DBMS_OUTPUT.PUT_LINE` for checks.
-
-*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf)
-    *   _Relevance:_ Details Oracle 23ai novelties like the SQL Transpiler, making PL/SQL run faster by turning it into SQL.
-
----
-
-### Study Chunk 6: PL/SQL Precision: Cursors, Procedures, and Data Flow
-
-**Parental/Core Category:** *PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE* 
-Gain precision with PL/SQL cursors for fetching data and shaping reusable code blocks with procedures and functions.
-
-*Categories to be Studied:* 
-- Cursors: Implicit cursors, explicit cursors, cursor FOR loops
-- Stored Procedures & Functions: Syntax, parameter modes (IN, OUT, IN OUT), execution, RETURN statement
-
-*   📚 [Oracle® Database PL/SQL Language Reference](books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf)
-    *   _Relevance:_ The must-have guide for detailed usage of cursors (hidden, open, cursor FOR loops) and defining/using stored procedures and functions, covering how parameters pass and the `RETURN` call.
-
-*   📚 [Oracle® Database Development Guide](books/database-development-guide/database-development-guide.pdf)
-    *   _Relevance:_ Gives real-world context and examples for making and using PL/SQL procedures and functions in your work.
-
----
-
-### Study Chunk 7: PL/SQL Resilience: Packages, Errors, and Automation
-
-**Parental/Core Category:** *PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE* 
-Build resilience in your code! Organize with packages, handle errors surely, and automate actions with triggers.🛡️
-
-*Categories to be Studied:* 
-- Packages: Specification, body, benefits, overloading
-- Exception Handling: Predefined exceptions, user-defined exceptions, SQLCODE, SQLERRM, PRAGMA EXCEPTION_INIT
-- Triggers: DML triggers, :NEW and :OLD qualifiers, conditional predicates
-
-*   📚 [Oracle® Database PL/SQL Language Reference](books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf)
-    *   _Relevance:_ A full guide to PL/SQL packages (what's inside, what it does, stacking methods), strong error handling (errors Oracle knows, errors you make, error codes, error messages, telling Oracle about errors), and making database triggers work (what's new, what was old, checking conditions).
-
-*   📚 [Oracle® Database PL/SQL Packages and Types Reference](books/database-pl-sql-packages-and-types-reference/database-pl-sql-packages-and-types-reference.pdf)
-    *   _Relevance:_ Peeks into Oracle's own package builds, good for seeing what works best and the errors these packages might throw.
-
----
-
-### Study Chunk 8: PL/SQL Mastery: Power Moves with Collections and Dynamic SQL
-
-**Parental/Core Category:** *PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE* 
-Master powerful PL/SQL moves! Handle complex data bunches and make things fly with bulk actions and dynamic SQL, key for big systems like Flexcube. 💪
-
-*Categories to be Studied:* 
-- Collections & Records: Associative arrays, nested tables, varrays, user-defined records
-- Bulk Operations for Performance: BULK COLLECT, FORALL
-- Dynamic SQL: EXECUTE IMMEDIATE, conceptual overview of DBMS_SQL
-
-*   📚 [Oracle® Database PL/SQL Language Reference](books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf)
-    *   _Relevance:_ The heart reference for higher PL/SQL data forms (groups like associative arrays, tables inside tables, varying arrays), making performance peak with bulk work (`BULK COLLECT`, `FORALL`), and SQL that moves (`EXECUTE IMMEDIATE`).
-
-*   📚 [Oracle® Database PL/SQL Packages and Types Reference](books/database-pl-sql-packages-and-types-reference/database-pl-sql-packages-and-types-reference.pdf)
-    *   _Relevance:_ Details the `DBMS_SQL` package for tricky dynamic SQL paths where `EXECUTE IMMEDIATE` might not be enough.
-
-*   📚 [Oracle® Database Get Started with Oracle Database Development](books/get-started-oracle-database-development/get-started-oracle-database-development.pdf)
-    *   _Relevance:_ Gives a practical start to bulk SQL and dynamic SQL ideas for writing apps that work fast.
-
----
-
-### Study Chunk 9: PL/SQL Fusion: Built-ins and JavaScript Synergy
-
-**Parental/Core Category:** *PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE* 
-Experience PL/SQL fusion! Explore standard packages for common tasks and see JavaScript step in as a code buddy in Oracle 23ai. 🤝
-
-*Categories to be Studied:* 
-- Built-in Packages: DBMS_LOB (LOB manipulation), DBMS_XMLGEN (XML generation), UTL_FILE (file handling, conceptual), DBMS_AQ (queuing, conceptual)
-*Oracle 23ai Feature:* 
-  - JavaScript Stored Procedures: Invoke JavaScript from SQL/PL/SQL 🌐
-
-*   📚 [Oracle® Database PL/SQL Packages and Types Reference](books/database-pl-sql-packages-and-types-reference/database-pl-sql-packages-and-types-reference.pdf)
-    *   _Relevance:_ The main guide for Oracle's built-in `DBMS_` and `UTL_` packages, vital for handling big data blocks (`DBMS_LOB`), making XML (`DBMS_XMLGEN`), file work (`UTL_FILE`), and advanced messaging (`DBMS_AQ`).
-
-*   📚 [Oracle Database SecureFiles and Large Objects Developer's Guide](books/securefiles-and-large-objects-developers-guide/securefiles-and-large-objects-developers-guide.pdf)
-    *   _Relevance:_ Offers deep knowledge on dealing with Large Objects (LOBs), key for managing XML and binary data, especially if XML sits in CLOBs.
-
-*   📚 [Oracle XML DB Developer's Guide](books/xml-db-developers-guide/xml-db-developers-guide.pdf)
-    *   _Relevance:_ Provides context for XML work, including storing and changing XML in the database using packages like `DBMS_XMLGEN` and `XMLDOM`.
-
-*   📚 [Oracle Database Transactional Event Queues and Advanced Queuing User's Guide](books/database-transactional-event-queues-and-advanced-queuing-users-guide/database-transactional-event-queues-and-advanced-queuing-users-guide.pdf)
-    *   _Relevance:_ Crucial for fully grasping Oracle's Advanced Queuing (AQ) message flow, directly touching your job's "JMS Queues" need.
-
-*   📚 [Oracle Database Advanced Queuing Java API Reference](books/database_advanced_queuing_java_api_reference/jajms/index.html)
-    *   _Relevance:_ Gives API specifics for using AQ from Java apps, which is a common way in JMS setups.
-
-*   📚 [Oracle Database JavaScript Developer's Guide](books/oracle-database-javascript-developers-guide/oracle-database-javascript-developers-guide.pdf)
-    *   _Relevance:_ The key guide for blending JavaScript as stored steps in Oracle Database, a cool Oracle 23ai trait.
-
-*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf)
-    *   _Relevance:_ Spells out the new JavaScript Stored Procedures feature in Oracle 23ai.
-
----
-
-### Study Chunk 10: Blueprint: Must-Know Concepts for Consultants
-
-**Parental/Core Category:** *ESSENTIAL ORACLE DATABASE CONCEPTS (FOR CONSULTING ROLE)* 
-Get the Oracle blueprint in your mind! This chunk brings vital database ideas for a consulting path – structure, data map, handling many users at once, transaction flow, and fresh 23ai touches for schema and data. 🏛️
-
-*Categories to be Studied:* 
-- Oracle Data Dictionary & Metadata Views: USER_, ALL_, DBA_ views (e.g., *_TABLES, *_INDEXES, *_OBJECTS, *_SOURCE)
-- Oracle Schema Objects Overview: Tables, views, indexes, sequences, synonyms (roles and basic DDL)
-- Concurrency Control & Locking: Multiversion concurrency control (MVCC), basic locking mechanisms
-- Transaction Management: Reinforce COMMIT, ROLLBACK, SAVEPOINT
-- *Oracle 23ai Features:* 
-  - Wide Tables: Room for up to 4,096 columns ↔️
-  - Value LOBs: Read-only large data blocks for short use 📖
-  - Usage Annotations: Your own notes for database items ✍️
-  - Usage Domains: Declaring how data should be used 🎯
-
-*   📚 [Oracle® Database Concepts](books/database-concepts/database-concepts.pdf)
-    *   _Relevance:_ Core for understanding Oracle's main build, including schema items, the data story, handling many users at once (MVCC), and managing transactions.
-
-*   📚 [Oracle® Database Reference](books/database-reference/database-reference.pdf)
-    *   _Relevance:_ The source of truth for deep info on all Data Dictionary views (`USER_`, `ALL_`, `DBA_`), vital for looking inside the database and knowing its story.
-
-*   📚 [Oracle® Database SQL Language Reference](books/sql-language-reference/sql-language-reference.pdf)
-    *   _Relevance:_ Gives the code shape for making and tending to all sorts of schema items (tables, views, indexes, etc.).
-
-*   📚 [Oracle® Database Administrator's Guide](books/database-administrators-guide/database-administrators-guide.pdf)
-    *   _Relevance:_ Offers an admin's look at managing database shapes and items, useful for a consultant to see how things work day-to-day.
-
-*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf)
-    *   _Relevance:_ Details new 23ai items related to database shape and data neatness, such as Wide Tables, Value LOBs, Usage Annotations, and Usage Domains.
-
-*   📚 [Oracle Database SecureFiles and Large Objects Developer's Guide](books/securefiles-and-large-objects-developers-guide/securefiles-and-large-objects-developers-guide.pdf)
-    *   _Relevance:_ Adds more context for knowing Value LOBs arriving in 23ai.
-
----
-
-### Study Chunk 11: Guardians of Oracle: Security Features That Protect
-
-**Parental/Core Category:** *ESSENTIAL ORACLE DATABASE CONCEPTS (FOR CONSULTING ROLE)* 
-Stand guardian over your data! This chunk highlights database safety rules and new Oracle 23ai security shields, crucial for keeping sensitive info and systems safe. 🔒🛡️
-
-*Categories to be Studied:* 
-- Database Security: Core principles for secure design
-- *Oracle 23ai Features:* 
-  - SQL Firewall: Kernel-level protection against SQL injection 🔥
-  - Column-Level Auditing: Watching specific data spots closely 🕵️
-  - Data Redaction: Making sensitive data seem different dynamically 🎭
-  - Multicloud Authentication: Connecting with OCI IAM, Microsoft Entra ID ☁️🔑
-  - Schema Privileges: Finer control over who does what with objects ✅
-
-*   📚 [Oracle® Database Security Guide](books/database-security-guide/database-security-guide.pdf)
-    *   _Relevance:_ The primary source for knowing Oracle database safety, covering who you are, what you can do, rights, roles, and watching actions.
-
-*   📚 [Oracle Database SQL Firewall User's Guide](books/oracle-database-sql-firewall-users-guide/oracle-database-sql-firewall-users-guide.pdf)
-    *   _Relevance:_ All about the SQL Firewall, a key 23ai safety net giving deep protection from SQL injections.
-
-*   📚 [Oracle® Database PL/SQL Packages and Types Reference](books/database-pl-sql-packages-and-types-reference/database-pl-sql-packages-and-types-reference.pdf)
-    *   _Relevance:_ Holds specifics on PL/SQL packages used for safety tools like hiding data (`DBMS_REDACT`) and the SQL Firewall (`DBMS_SQL_FIREWALL`).
-
-*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf)
-    *   _Relevance:_ Essential for grasping all the fresh 23ai safety features, including better watching, data hiding boosts, connecting across clouds, and schema rights.
-
----
-
-### Study Chunk 12: Speed Unleashed: Oracle Indexing and Query Insights
-
-**Parental/Core Category:** *ORACLE PERFORMANCE & OPTIMIZATION BASICS* 
-Unleash speed! This chunk digs into Oracle indexing tactics and how to peek into query speed using `EXPLAIN PLAN`, vital for making database work flow fast. 🏎️💨
-
-*Categories to be Studied:* 
-- Indexing in Oracle: B-Tree, bitmap, function-based, composite indexes (brief awareness of others)
-- Understanding Oracle’s EXPLAIN PLAN: Generating, reading, interpreting execution plans
-
-*   📚 [Oracle® Database SQL Tuning Guide](books/sql-tuning-guide/sql-tuning-guide.pdf)
-    *   _Relevance:_ The go-to guide for understanding query optimization, including how Oracle's optimizer thinks, how to make and read `EXPLAIN PLAN` output, and the part various indexing methods play.
-
-*   📚 [Oracle® Database Performance Tuning Guide](books/database-performance-tuning-guide/database-performance-tuning-guide.pdf)
-    *   _Relevance:_ Adds a wider view on database speed, including indexing choices.
-
-*   📚 [Oracle® Database Concepts](books/database-concepts/database-concepts.pdf)
-    *   _Relevance:_ Provides the core idea of different index kinds (B-tree, bitmap, function-based) and what makes them stand out.
-
-*   📚 [Oracle® Database SQL Language Reference](books/sql-language-reference/sql-language-reference.pdf)
-    *   _Relevance:_ Contains the code shape for `CREATE INDEX` and its many choices, needed for putting indexing methods in place.
-
----
-
-### Study Chunk 13: Performance Symphony: Tuning Oracle with Hints and Stats
-
-**Parental/Core Category:** *ORACLE PERFORMANCE & OPTIMIZATION BASICS* 
-Conduct a performance symphony! This chunk explores deeper query tuning, touching on optimizer hints and managing table stats, plus new 23ai speed gains. 🎼📈
-
-*Categories to be Studied:* 
-- Basic Query Tuning Considerations: SARGable predicates, efficient joins, minimizing data
-- Optimizer Hints: Awareness and cautious use
-- Table Statistics & DBMS_STATS: Importance, basic usage
-- *Oracle 23ai Features:* 
-  - Real-Time SQL Plan Management: Handling plan issues right away 🚦
-  - SQL Analysis Report: Spotting and fixing SQL problems 🩺
-
-*   📚 [Oracle® Database SQL Tuning Guide](books/sql-tuning-guide/sql-tuning-guide.pdf)
-    *   _Relevance:_ The main source for SQL query tuning, including using optimizer hints, understanding and managing stats (`DBMS_STATS`).
-
-*   📚 [Oracle® Database Performance Tuning Guide](books/database-performance-tuning-guide/database-performance-tuning-guide.pdf)
-    *   _Relevance:_ Complements the SQL Tuning Guide with general database speed-up rules and ways.
-
-*   📚 [Oracle® Database PL/SQL Packages and Types Reference](books/database-pl-sql-packages-and-types-reference/database-pl-sql-packages-and-types-reference.pdf)
-    *   _Relevance:_ Details the `DBMS_STATS` package, key for gathering and managing optimizer stats to ensure query plans sing perfectly.
-
-*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf)
-    *   _Relevance:_ Lights up new 23ai speed features like Real-Time SQL Plan Management, True Cache, Fast Ingest boosts, and SQL Analysis Report.
-
----
-
-### Study Chunk 14: Oracle Horizons: Connecting with Cutting-Edge Tech
-
-**Parental/Core Category:** *(CONCEPTUAL) ORACLE & INTERFACING TECHNOLOGIES* 
-Look to Oracle's horizons! This chunk explores how Oracle links with tech like Java and XML, message systems, and new 23ai bits making connections and visibility shine brighter, very key for your job role. ✨🔗
-
-*Categories to be Studied:* 
-- Oracle & Java Connectivity: JDBC basics
-- Oracle & XML Processing: Conceptual overview
-- Oracle Advanced Queuing (AQ) & JMS: Messaging fundamentals
-- *Oracle 23ai Features:* 
-  - Enhanced Connection Management: Implicit pooling, multi-pool DRCP 🏊‍♂️
-  - Database Driver Asynchronous Programming: Pipelining for efficiency 📊
-  - Multicloud Configuration: Azure App Config, OCI Object Storage 🌍
-  - Observability with OpenTelemetry: Better watching and fixing 🔭
-
-*   📚 [Oracle® Database JDBC Developer's Guide](books/jdbc-developers-guide/jdbc-developers-guide.pdf)
-    *   _Relevance:_ Essential for knowing how Java apps hook up and talk with Oracle databases using JDBC.
-
-*   📚 [Oracle® Database Java Developer's Guide](books/java-developers-guide/java-developers-guide.pdf)
-    *   _Relevance:_ Gives broader guidance on building Java apps that use Oracle Database power, including calling PL/SQL and general Java join-up.
-
-*   📚 [Oracle XML DB Developer's Guide](books/xml-db-developers-guide/xml-db-developers-guide.pdf)
-    *   _Relevance:_ Crucial for full knowledge of Oracle's XML DB ways, including keeping, asking about, and changing XML data, good for Flexcube.
-
-*   📚 [Oracle Database Transactional Event Queues and Advanced Queuing User's Guide](books/database-transactional-event-queues-and-advanced-queuing-users-guide/database-transactional-event-queues-and-advanced-queuing-users-guide.pdf)
-    *   _Relevance:_ This is the core paper for Oracle's Advanced Queuing (AQ), speaking directly to the "JMS Queues" need.
-
-*   📚 [Oracle Database Advanced Queuing Java API Reference](books/database_advanced_queuing_java_api_reference/jajms/index.html)
-    *   _Relevance:_ Provides API fine points for using AQ from Java apps, common in JMS setups.
-
-*   📚 [Oracle® Universal Connection Pool Developer's Guide](books/universal-connection-pool-developers-guide/universal-connection-pool-developers-guide.pdf)
-    *   _Relevance:_ Matters for knowing connection pools in Java apps, including ideas like Implicit Connection Pooling and Multi-Pool DRCP noted in 23ai parts.
-
-*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf)
-    *   _Relevance:_ Crucial for grasping all the bleeding-edge 23ai features tied to better connection care, async coding, multicloud shapes, and watching with OpenTelemetry.
-
----
-
-### Study Chunk 15: Future of Oracle: SQL Innovations in 23ai
-
-**Parental/Core Category:** *ORACLE SQL & BRIDGING FROM POSTGRESQL* 
-Peek into Oracle's future! This chunk shines solely on the vibrant new SQL features arriving in Oracle 23ai, showing Oracle's path towards modern, sharper SQL power. ⭐🔮
-
-*Categories to be Studied: New SQL Features in 23ai:* 
-  - Boolean Data Type: True/False live and breathe ✅❌
-  - Direct Joins for UPDATE/DELETE: Making changes simpler ➡️
-  - GROUP BY Column Alias: Easier reading for grouped data 🔡
-  - IF [NOT] EXISTS for DDL: Code only runs if something is/isn't there 🚦
-  - INTERVAL Data Type Aggregations: Time math gets easier ⏰➕
-  - RETURNING INTO Clause: Catching results as you make changes 🎣
-  - SELECT without FROM Clause: Simple asks need less code ✨
-  - SQL Time Buckets: Putting time data into neat bins 🧺
-  - Table Value Constructor: Building rows right there in the query 🛠️
-
-*   📚 [Oracle Database 23ai New Features Guide](books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf)
-    *   _Relevance:_ This is the **first and most vital** source for deep dives, how-to examples, and use cases for all the fresh SQL power born in Oracle 23ai.
-
-*   📚 [Oracle® Database SQL Language Reference](books/sql-language-reference/sql-language-reference.pdf)
-    *   _Relevance:_ While the New Features Guide shows them first, the full code shape, meaning, and complete examples for these new SQL powers will find their final home in the `SQL Language Reference`. This book is basic for all SQL use.
-
----
-
-### Learning Enhancements ✨
-
--   **Hands-on Exercises:** Get your hands dirty with real SQL/PL/SQL code. ⌨️
--   **Comparative Notes:** See how it stacks up against PostgreSQL for a smoother jump. ↔️
--   **Real-World Scenarios:** Apply skills to tasks like handling XML or tuning performance, just like in Flexcube. 💼
--   **Review Quizzes:** Test yourself, making key ideas stick fast. ✅
-
----
-
-## How to Use This Repository 👇
-
-1.  **Clone the repository:** `git clone <repository-url>` 📥
-2.  **Follow the Study Chunks step-by-step:** Each piece builds on the last, guiding your way. 🪜
-3.  **Explore subdirectories (if any):** Each chunk might have places for:
-    *   `notes/`: Words that teach and explain. 📝
-    *   `scripts/`: Code you can run and test. ▶️
-    *   `exercises/`: Problems to solve, making learning stronger. 💪
-4.  **Practice actively:** Doing is key to making Oracle PL/SQL truly yours. Run the code, twist it, try the problems. Action makes the master. 🏃‍♂️
-5.  **Refer to Oracle Documentation:** For the deepest truth, always turn to Oracle's own official words. 📖
-
-## Tools & Environment 🛠️
-
-*   **Oracle Database:** A place to run Oracle Database (maybe Oracle XE, a cloud spot, or your work's setup). 🖥️
-*   **SQL Client:** A tool for writing SQL code like Oracle SQL Developer (it's free, and we like it), DataGrip, Toad, or SQL*Plus. 📊
-*   **Git:** For pulling down and keeping track of course stuff. 🌲
-
-## Contributing 👋
-
-This course is shaped with care, but thoughts, ideas, or fixes are warmly welcome! Feel free to:
-*   Open an issue to tell us about errors or share ways to make it better.
-*   Fork this place and offer a pull request with your changes.
-
-## License 📄
-
-This course material is open for all under the [MIT License](LICENSE). Share the knowledge!
-
----
-
-Happy Learning! 😊
+<head>
+    <link rel="stylesheet" href="./styles/core.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&family=Lato:wght@400;900&family=Roboto:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="main-container">
+    <!-- HERO SECTION -->
+    <header class="hero-section">
+        <p class="experience-tip">✨ Experience Tip: Pull this repository and enjoy it with VS Code ✨</p>
+        <h1>Server Programming with Oracle (DB 23ai) PL/SQL</h1>
+        <p class="subtitle">A Transition Guide for PostgreSQL Users 🚀</p>
+        <p>Dive deep into database development with this guide, designed to help individuals proficient in PostgreSQL and analytical SQL step smoothly into server-side programming using Oracle Database and its potent procedural partner, PL/SQL.</p>
+    </header>
+    <!-- INFO GRID -->
+    <section class="info-grid">
+        <div class="info-card">
+            <h3><span class="icon">🤔</span>Who is this for?</h3>
+            <ul>
+                <li>Developers and analysts fluent in PostgreSQL seeking to master Oracle PL/SQL.</li>
+                <li>Individuals transitioning roles where Oracle database development is key.</li>
+                <li>Anyone wanting to grasp Oracle's specific SQL extensions and server-side coding prowess.</li>
+            </ul>
+        </div>
+        <div class="info-card">
+            <h3><span class="icon">📚</span>Prerequisites</h3>
+            <ul>
+                <li>A firm footing in SQL, especially PostgreSQL's shape and thought.</li>
+                <li>Familiarity with relational database rules (tables, joins, keys, etc.).</li>
+                <li>Basic programming flow (variables, loops, conditionals) is a friend.</li>
+            </ul>
+        </div>
+    </section>
+    <!-- LEARNING OBJECTIVES -->
+    <section>
+        <h2 class="grid-header">✅ Learning Objectives</h2>
+        <div class="feature-list-container">
+            <ul>
+                <li>Grasp and employ Oracle's unique SQL style and data kinds.</li>
+                <li>Craft capable PL/SQL code, building blocks, procedures, functions, packages, and triggers.</li>
+                <li>Guide data effectively with Oracle's DML, transaction handling, and advanced queries.</li>
+                <li>Work with complex data types, notably XML, residing in Oracle.</li>
+                <li>Understand and use Oracle's own concepts like the DUAL table and ROWNUM.</li>
+                <li>Manage exceptions gracefully and use collections in PL/SQL.</li>
+                <li>Implement techniques boosting performance, like bulk operations.</li>
+                <li>Walk through and utilize the Oracle Data Dictionary.</li>
+                <li>Gain a solid sense of Oracle performance tuning and reading EXPLAIN PLANs.</li>
+                <li>Understand the conceptual weave of Oracle with tech like Java (JDBC) and XML.</li>
+            </ul>
+        </div>
+    </section>
+    <!-- COURSE STRUCTURE -->
+    <section>
+        <h2 class="grid-header">🏗️ Course Structure</h2>
+        <div class="accordion">
+            <!-- Chunk 1-4 -->
+            <details class="accordion-item">
+                <summary class="accordion-header">
+                    <span class="accordion-title"><span class="chunk-number">01</span>Crossing the Divide</span>
+                    <span class="accordion-icon">+</span>
+                </summary>
+                <div class="accordion-body">
+                    <span class="parent-category">ORACLE SQL & BRIDGING FROM POSTGRESQL</span>
+                    <p>Here, we step across, finding Oracle's SQL voice for those who know PostgreSQL best.</p>
+                    <h4>Categories to be Studied:</h4>
+                    <ul>
+                        <li>Key Differences & Core Syntax</li>
+                        <li>Data Types <i>(Oracle Specific)</i>: VARCHAR2, NUMBER, DATE, TIMESTAMPs</li>
+                        <li>DUAL Table <i>(Oracle Specific)</i></li>
+                        <li>NULL Handling: NVL, NVL2, COALESCE</li>
+                        <li>Conditional Expressions: DECODE, CASE</li>
+                        <li>ROWNUM Pseudo-column <i>(Oracle Specific)</i></li>
+                    </ul>
+                </div>
+            </details>
+            <details class="accordion-item">
+                <summary class="accordion-header">
+                    <span class="accordion-title"><span class="chunk-number">02</span>Essential Functions & DML</span>
+                    <span class="accordion-icon">+</span>
+                </summary>
+                <div class="accordion-body">
+                     <span class="parent-category">ORACLE SQL & BRIDGING FROM POSTGRESQL</span>
+                    <p>Unlock key Oracle functions and master the foundational dance of Data Manipulation Language (DML).</p>
+                    <h4>Categories to be Studied:</h4>
+                    <ul>
+                        <li>Date Functions: SYSDATE, TO_DATE, ADD_MONTHS, etc.</li>
+                        <li>String Functions</li>
+                        <li>Set Operators: MINUS</li>
+                        <li>DML & Transaction Control: INSERT, UPDATE, DELETE, COMMIT, ROLLBACK</li>
+                    </ul>
+                </div>
+            </details>
+            <details class="accordion-item">
+                <summary class="accordion-header">
+                    <span class="accordion-title"><span class="chunk-number">03</span>Advanced Querying</span>
+                    <span class="accordion-icon">+</span>
+                </summary>
+                <div class="accordion-body">
+                     <span class="parent-category">ORACLE SQL & BRIDGING FROM POSTGRESQL</span>
+                    <p>Ascend to advanced querying heights, tackling complex data patterns with Oracle's unique tools. 🏔️</p>
+                    <h4>Categories to be Studied:</h4>
+                    <ul>
+                        <li>Hierarchical Queries <i>(Oracle Specific - Very Important)</i>: CONNECT BY, LEVEL, PRIOR</li>
+                        <li>Analytic (Window) Functions: RANK, DENSE_RANK, LAG, LEAD</li>
+                        <li>MERGE statement <i>(Oracle Specific)</i></li>
+                    </ul>
+                </div>
+            </details>
+            <details class="accordion-item">
+                <summary class="accordion-header">
+                    <span class="accordion-title"><span class="chunk-number">04</span>Conquering Complexity</span>
+                    <span class="accordion-icon">+</span>
+                </summary>
+                <div class="accordion-body">
+                     <span class="parent-category">ORACLE SQL & BRIDGING FROM POSTGRESQL</span>
+                    <p>Face the challenge of intricate data forms like XML and JSON, vital for systems like Flexcube, exploring Oracle's modern touch.</p>
+                    <h4>Categories to be Studied:</h4>
+                    <ul>
+                        <li>Large Objects: CLOB, BLOB</li>
+                        <li>XMLTYPE Data Type: Storage and Querying</li>
+                        <li>JSON Data Type: Native Storage and Querying</li>
+                        <li><b>Oracle 23ai Features</b>: JSON Relational Duality Views ✨, JSON Binary Type 💾</li>
+                    </ul>
+                </div>
+            </details>
+            <!-- Chunk 5-9 -->
+            <details class="accordion-item">
+                <summary class="accordion-header">
+                    <span class="accordion-title"><span class="chunk-number">05</span>PL/SQL Awakening</span>
+                    <span class="accordion-icon">+</span>
+                </summary>
+                <div class="accordion-body">
+                    <span class="parent-category">PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE</span>
+                    <p>Awaken your inner Oracle programmer. This chunk lays the ground for PL/SQL, from block shape to basic flow, introducing a new 23ai speed boost.</p>
+                    <h4>Categories to be Studied:</h4>
+                    <ul>
+                        <li>PL/SQL Block Structure: DECLARE, BEGIN, EXCEPTION, END</li>
+                        <li>Variables & Constants: %TYPE, %ROWTYPE</li>
+                        <li>Control Flow: IF, CASE, LOOPs</li>
+                        <li>SQL within PL/SQL</li>
+                        <li><b>Oracle 23ai Feature</b>: SQL Transpiler for optimization ⏩</li>
+                    </ul>
+                    <h4>Essential Reading:</h4>
+                    <ul class="book-list">
+                        <li><a href="books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf"><strong>Oracle® Database PL/SQL Language Reference</strong></a><span class="relevance">_Relevance:_ The core guide for PL/SQL syntax, block structure, and control flow.</span></li>
+                        <li><a href="books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf"><strong>Oracle Database 23ai New Features Guide</strong></a><span class="relevance">_Relevance:_ Details the new SQL Transpiler feature.</span></li>
+                    </ul>
+                </div>
+            </details>
+            <details class="accordion-item">
+                <summary class="accordion-header">
+                    <span class="accordion-title"><span class="chunk-number">06</span>PL/SQL Precision</span>
+                    <span class="accordion-icon">+</span>
+                </summary>
+                <div class="accordion-body">
+                    <span class="parent-category">PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE</span>
+                    <p>Gain precision with PL/SQL cursors for fetching data and shaping reusable code blocks with procedures and functions.</p>
+                    <h4>Categories to be Studied:</h4>
+                    <ul>
+                        <li>Cursors: Implicit, Explicit, Cursor FOR loops</li>
+                        <li>Stored Procedures & Functions: Syntax, Parameter Modes (IN, OUT, IN OUT)</li>
+                    </ul>
+                    <h4>Essential Reading:</h4>
+                    <ul class="book-list">
+                        <li><a href="books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf"><strong>Oracle® Database PL/SQL Language Reference</strong></a><span class="relevance">_Relevance:_ The definitive reference for cursors and subprogram definitions.</span></li>
+                        <li><a href="books/database-development-guide/database-development-guide.pdf"><strong>Oracle® Database Development Guide</strong></a><span class="relevance">_Relevance:_ Provides practical context and design patterns for procedures and functions.</span></li>
+                    </ul>
+                </div>
+            </details>
+            <details class="accordion-item">
+                <summary class="accordion-header">
+                    <span class="accordion-title"><span class="chunk-number">07</span>PL/SQL Resilience</span>
+                    <span class="accordion-icon">+</span>
+                </summary>
+                <div class="accordion-body">
+                    <span class="parent-category">PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE</span>
+                    <p>Build resilience in your code! Organize with packages, handle errors surely, and automate actions with triggers.🛡️</p>
+                    <h4>Categories to be Studied:</h4>
+                    <ul>
+                        <li>Packages: Specification & Body, Overloading</li>
+                        <li>Exception Handling: Predefined, User-defined, SQLCODE, SQLERRM</li>
+                        <li>Triggers: DML Triggers, :NEW & :OLD qualifiers</li>
+                    </ul>
+                    <h4>Essential Reading:</h4>
+                    <ul class="book-list">
+                        <li><a href="books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf"><strong>Oracle® Database PL/SQL Language Reference</strong></a><span class="relevance">_Relevance:_ The complete guide to packages, exception handling syntax, and trigger creation.</span></li>
+                    </ul>
+                </div>
+            </details>
+            <details class="accordion-item">
+                <summary class="accordion-header">
+                    <span class="accordion-title"><span class="chunk-number">08</span>PL/SQL Mastery</span>
+                    <span class="accordion-icon">+</span>
+                </summary>
+                <div class="accordion-body">
+                    <span class="parent-category">PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE</span>
+                    <p>Master powerful PL/SQL moves! Handle complex data bunches and make things fly with bulk actions and dynamic SQL, key for big systems like Flexcube. 💪</p>
+                    <h4>Categories to be Studied:</h4>
+                    <ul>
+                        <li>Collections & Records: Associative Arrays, Nested Tables, Varrays</li>
+                        <li>Bulk Operations for Performance: BULK COLLECT, FORALL</li>
+                        <li>Dynamic SQL: EXECUTE IMMEDIATE</li>
+                    </ul>
+                    <h4>Essential Reading:</h4>
+                    <ul class="book-list">
+                        <li><a href="books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf"><strong>Oracle® Database PL/SQL Language Reference</strong></a><span class="relevance">_Relevance:_ Your primary source for advanced data structures and high-performance PL/SQL techniques.</span></li>
+                    </ul>
+                </div>
+            </details>
+            <details class="accordion-item">
+                <summary class="accordion-header">
+                    <span class="accordion-title"><span class="chunk-number">09</span>PL/SQL Fusion</span>
+                    <span class="accordion-icon">+</span>
+                </summary>
+                <div class="accordion-body">
+                    <span class="parent-category">PL/SQL: ORACLE'S PROCEDURAL POWERHOUSE</span>
+                    <p>Experience PL/SQL fusion! Explore standard packages for common tasks and see JavaScript step in as a code buddy in Oracle 23ai. 🤝</p>
+                    <h4>Categories to be Studied:</h4>
+                    <ul>
+                        <li>Built-in Packages: DBMS_LOB, DBMS_XMLGEN, UTL_FILE, DBMS_AQ</li>
+                        <li><b>Oracle 23ai Feature</b>: JavaScript Stored Procedures 🌐</li>
+                    </ul>
+                    <h4>Essential Reading:</h4>
+                    <ul class="book-list">
+                        <li><a href="books/database-pl-sql-packages-and-types-reference/database-pl-sql-packages-and-types-reference.pdf"><strong>Oracle® Database PL/SQL Packages and Types Reference</strong></a><span class="relevance">_Relevance:_ The encyclopedia for all `DBMS_` and `UTL_` packages.</span></li>
+                        <li><a href="books/oracle-database-javascript-developers-guide/oracle-database-javascript-developers-guide.pdf"><strong>Oracle Database JavaScript Developer's Guide</strong></a><span class="relevance">_Relevance:_ The key guide for integrating JavaScript into the Oracle database.</span></li>
+                    </ul>
+                </div>
+            </details>
+            <!-- Chunk 10-13 -->
+            <details class="accordion-item">
+                <summary class="accordion-header">
+                    <span class="accordion-title"><span class="chunk-number">10</span>The Oracle Blueprint</span>
+                    <span class="accordion-icon">+</span>
+                </summary>
+                <div class="accordion-body">
+                    <span class="parent-category">ESSENTIAL ORACLE DATABASE CONCEPTS</span>
+                    <p>Get the Oracle blueprint in your mind! This chunk brings vital database ideas for a consulting path – structure, data map, and fresh 23ai touches for schema and data. 🏛️</p>
+                    <h4>Categories to be Studied:</h4>
+                    <ul>
+                        <li>Data Dictionary & Metadata Views: USER_, ALL_, DBA_</li>
+                        <li>Schema Objects Overview: Tables, Views, Indexes, Sequences</li>
+                        <li>Concurrency Control (MVCC) & Transaction Management</li>
+                        <li><b>Oracle 23ai Features</b>: Usage Domains 🎯, Annotations ✍️, Wide Tables ↔️</li>
+                    </ul>
+                    <h4>Essential Reading:</h4>
+                    <ul class="book-list">
+                        <li><a href="books/database-concepts/database-concepts.pdf"><strong>Oracle® Database Concepts</strong></a><span class="relevance">_Relevance:_ Foundational knowledge on Oracle's architecture.</span></li>
+                        <li><a href="books/database-reference/database-reference.pdf"><strong>Oracle® Database Reference</strong></a><span class="relevance">_Relevance:_ The source of truth for all Data Dictionary views.</span></li>
+                    </ul>
+                </div>
+            </details>
+            <details class="accordion-item">
+                <summary class="accordion-header">
+                    <span class="accordion-title"><span class="chunk-number">11</span>Guardians of Oracle</span>
+                    <span class="accordion-icon">+</span>
+                </summary>
+                <div class="accordion-body">
+                    <span class="parent-category">ESSENTIAL ORACLE DATABASE CONCEPTS</span>
+                    <p>Stand guardian over your data! This chunk highlights database safety rules and new Oracle 23ai security shields, crucial for keeping sensitive info and systems safe. 🔒🛡️</p>
+                    <h4>Categories to be Studied:</h4>
+                    <ul>
+                        <li><b>Oracle 23ai Feature</b>: SQL Firewall 🔥</li>
+                        <li><b>Oracle 23ai Feature</b>: Column-Level Auditing 🕵️ & Data Redaction 🎭</li>
+                        <li><b>Oracle 23ai Feature</b>: Multicloud Authentication ☁️🔑</li>
+                        <li><b>Oracle 23ai Feature</b>: Schema Privileges ✅</li>
+                    </ul>
+                    <h4>Essential Reading:</h4>
+                    <ul class="book-list">
+                        <li><a href="books/database-security-guide/database-security-guide.pdf"><strong>Oracle® Database Security Guide</strong></a><span class="relevance">_Relevance:_ The primary source for all security-related features.</span></li>
+                        <li><a href="books/oracle-database-sql-firewall-users-guide/oracle-database-sql-firewall-users-guide.pdf"><strong>Oracle Database SQL Firewall User's Guide</strong></a><span class="relevance">_Relevance:_ A deep dive into the powerful new SQL Firewall.</span></li>
+                    </ul>
+                </div>
+            </details>
+            <details class="accordion-item">
+                <summary class="accordion-header">
+                    <span class="accordion-title"><span class="chunk-number">12</span>Speed Unleashed</span>
+                    <span class="accordion-icon">+</span>
+                </summary>
+                <div class="accordion-body">
+                    <span class="parent-category">ORACLE PERFORMANCE & OPTIMIZATION BASICS</span>
+                    <p>Unleash speed! This chunk digs into Oracle indexing tactics and how to peek into query speed using `EXPLAIN PLAN`, vital for making database work flow fast. 🏎️💨</p>
+                    <h4>Categories to be Studied:</h4>
+                    <ul>
+                        <li>Indexing in Oracle: B-Tree, Bitmap, Function-Based, Composite</li>
+                        <li>Understanding Oracle’s EXPLAIN PLAN: Generating & Interpreting</li>
+                    </ul>
+                    <h4>Essential Reading:</h4>
+                    <ul class="book-list">
+                        <li><a href="books/sql-tuning-guide/sql-tuning-guide.pdf"><strong>Oracle® Database SQL Tuning Guide</strong></a><span class="relevance">_Relevance:_ The go-to guide for understanding query optimization and execution plans.</span></li>
+                        <li><a href="books/database-concepts/database-concepts.pdf"><strong>Oracle® Database Concepts</strong></a><span class="relevance">_Relevance:_ Explains the fundamental concepts behind different index types.</span></li>
+                    </ul>
+                </div>
+            </details>
+            <details class="accordion-item">
+                <summary class="accordion-header">
+                    <span class="accordion-title"><span class="chunk-number">13</span>Performance Symphony</span>
+                    <span class="accordion-icon">+</span>
+                </summary>
+                <div class="accordion-body">
+                    <span class="parent-category">ORACLE PERFORMANCE & OPTIMIZATION BASICS</span>
+                    <p>Conduct a performance symphony! This chunk explores deeper query tuning, touching on optimizer hints and managing table stats, plus new 23ai speed gains. 🎼📈</p>
+                    <h4>Categories to be Studied:</h4>
+                    <ul>
+                        <li>Basic Query Tuning: SARGable predicates, join efficiency</li>
+                        <li>Optimizer Hints: Awareness and cautious use</li>
+                        <li>Table Statistics & DBMS_STATS</li>
+                        <li><b>Oracle 23ai Features</b>: Real-Time SQL Plan Management 🚦, SQL Analysis Report 🩺</li>
+                    </ul>
+                    <h4>Essential Reading:</h4>
+                    <ul class="book-list">
+                        <li><a href="books/sql-tuning-guide/sql-tuning-guide.pdf"><strong>Oracle® Database SQL Tuning Guide</strong></a><span class="relevance">_Relevance:_ The main source for advanced tuning, hints, and statistics management.</span></li>
+                        <li><a href="books/database-pl-sql-packages-and-types-reference/database-pl-sql-packages-and-types-reference.pdf"><strong>Oracle® Database PL/SQL Packages and Types Reference</strong></a><span class="relevance">_Relevance:_ Details the `DBMS_STATS` package for statistics gathering.</span></li>
+                    </ul>
+                </div>
+            </details>
+            <!-- Chunk 14-15 -->
+            <details class="accordion-item">
+                <summary class="accordion-header">
+                    <span class="accordion-title"><span class="chunk-number">14</span>Oracle Horizons</span>
+                    <span class="accordion-icon">+</span>
+                </summary>
+                <div class="accordion-body">
+                    <span class="parent-category">(CONCEPTUAL) ORACLE & INTERFACING TECHNOLOGIES</span>
+                    <p>Look to Oracle's horizons! This chunk explores how Oracle links with tech like Java and XML, message systems, and new 23ai bits making connections shine brighter. ✨🔗</p>
+                    <h4>Categories to be Studied:</h4>
+                    <ul>
+                        <li>Oracle & Java Connectivity (JDBC)</li>
+                        <li>Oracle & XML Processing</li>
+                        <li>Oracle Advanced Queuing (AQ) & JMS</li>
+                        <li><b>Oracle 23ai Features</b>: Enhanced Connection Pooling 🏊‍♂️, Async Pipelining 📊, OpenTelemetry 🔭</li>
+                    </ul>
+                     <h4>Essential Reading:</h4>
+                    <ul class="book-list">
+                        <li><a href="books/jdbc-developers-guide/jdbc-developers-guide.pdf"><strong>Oracle® Database JDBC Developer's Guide</strong></a><span class="relevance">_Relevance:_ Essential for understanding Java-to-Oracle connectivity.</span></li>
+                        <li><a href="books/database-transactional-event-queues-and-advanced-queuing-users-guide/database-transactional-event-queues-and-advanced-queuing-users-guide.pdf"><strong>Oracle ... Advanced Queuing User's Guide</strong></a><span class="relevance">_Relevance:_ The core document for understanding Oracle's messaging system.</span></li>
+                        <li><a href="books/universal-connection-pool-developers-guide/universal-connection-pool-developers-guide.pdf"><strong>Oracle® Universal Connection Pool Developer's Guide</strong></a><span class="relevance">_Relevance:_ Key for understanding modern connection pooling features.</span></li>
+                    </ul>
+                </div>
+            </details>
+            <details class="accordion-item">
+                <summary class="accordion-header">
+                    <span class="accordion-title"><span class="chunk-number">15</span>Future of Oracle</span>
+                    <span class="accordion-icon">+</span>
+                </summary>
+                <div class="accordion-body">
+                    <span class="parent-category">ORACLE SQL & BRIDGING FROM POSTGRESQL</span>
+                    <p>Peek into Oracle's future! This chunk shines solely on the vibrant new SQL features arriving in Oracle 23ai, showing Oracle's path towards modern, sharper SQL power. ⭐🔮</p>
+                    <h4>New SQL Features in 23ai to be Studied:</h4>
+                    <ul>
+                        <li>Boolean Data Type ✅❌</li>
+                        <li>Direct Joins for UPDATE/DELETE ➡️</li>
+                        <li>GROUP BY Column Alias 🔡</li>
+                        <li>IF [NOT] EXISTS for DDL 🚦</li>
+                        <li>SELECT without FROM Clause ✨</li>
+                        <li>Table Value Constructor 🛠️</li>
+                    </ul>
+                    <h4>Essential Reading:</h4>
+                    <ul class="book-list">
+                        <li><a href="books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf"><strong>Oracle Database 23ai New Features Guide</strong></a><span class="relevance">_Relevance:_ The first and most vital source for all new SQL power in Oracle 23ai.</span></li>
+                        <li><a href="books/sql-language-reference/sql-language-reference.pdf"><strong>Oracle® Database SQL Language Reference</strong></a><span class="relevance">_Relevance:_ The definitive reference where these new features will be fully documented.</span></li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+    </section>
+    <!-- HOW TO USE -->
+    <section>
+        <h2 class="grid-header">👇 How to Use This Repository</h2>
+        <div class="how-to-guide">
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <strong>Clone the Repository 📥</strong>
+                        <p>Get a local copy of all the course materials and the essential PDF library.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <strong>Follow the Chunks 🪜</strong>
+                        <p>Progress sequentially through the 15 numbered directories, as concepts build on each other.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <strong>Run Setup Scripts 🗂️</strong>
+                        <p>In each chunk's directory, run `dataset.sql` or `NewSchema.sql` to prepare your database environment.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <strong>Do the Exercises 💪</strong>
+                        <p>Tackle the problems in `exercises.md` to solidify your understanding. Then check your work in the `solutions/` folder.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <strong>Consult the Library 🏛️</strong>
+                        <p>Use the included `books/` directory. It's your offline, comprehensive source for deep dives into any Oracle topic.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <strong>Practice Actively 🏃‍♂️</strong>
+                        <p>The key to mastery is doing. Experiment, modify, and break the code. This is how you'll truly learn.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <p>This course material is open for all under the MIT License. Share the knowledge!</p>
+        <p>Happy Learning! 😊</p>
+    </footer>
+</div>
+</body>

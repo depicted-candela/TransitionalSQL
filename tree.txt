@@ -1,11 +1,140 @@
 .
+├── 10_bluePrint
+│   ├── 1_meaningsValuesRelations.sql
+│   ├── 2_disadvantagesAndPitfalls.sql
+│   ├── 3_contrastingWithInefficientCommonSolutions.sql
+│   ├── 4_hardcoreCombinedProblem.sql
+│   ├── dataset.sql
+│   ├── exercises.md
+│   └── README.md
 ├── 10_blueprint.md
-├── 10_blueprint_paretto.md
-├── 10_plSqlOracleBluePrint
+├── 11_guardians
+│   ├── 1_sqlFirewallKernelLevel.sql
+│   ├── 2_dataRedaction&ColumnLevel.sql
+│   ├── 3_schemaPrivilegesAndMulticloudAuthentication.sql
+│   ├── 4_hardcoreCombinedProblem.sql
+│   ├── dataset.sql
+│   ├── exercises.md
+│   └── README.md
 ├── 11_guardians.md
+├── 12_speedUnleash
+│   ├── 1_meaningsValuesRelationsAdvantages.sql
+│   ├── 2_disadvantages.sql
+│   ├── 3_inefficientAlternatives.sql
+│   ├── 4_hardcoreCombinedProblem.sql
+│   ├── dataset.sql
+│   ├── exercises.md
+│   ├── i_1_indexed.html
+│   ├── i_1_raw.html
+│   ├── i_2_indexed.html
+│   ├── i_2_raw.html
+│   ├── i_3_index.html
+│   ├── i_3_raw.html
+│   ├── i_4_1_raw.html
+│   ├── i_4_2_both.html
+│   ├── i_4_3_customerid.html
+│   ├── i_4_4_orderdate.html
+│   ├── ii_2_1_date_indexed.html
+│   ├── ii_2_2_yearly_indexed.html
+│   ├── iii_1_1_inefficient_approach.html
+│   ├── iii_1_2_efficient_approach.html
+│   ├── iv_1_indexed.html
+│   ├── iv_1_raw.html
+│   ├── README.md
+│   └── styles.css
 ├── 12_speedUnleash.md
+├── 13_performanceSymphony
+│   ├── 1_meaningsValuesRelationsAdvantages.sql
+│   ├── 2_disadvantages.sql
+│   ├── 3_contrastingWithInefficientCommonSolutions.sql
+│   ├── 4_hardcoreCombinedProblem.sql
+│   ├── dataset.sql
+│   ├── exercises.md
+│   ├── i_1_raw.html
+│   ├── i_1_sargable.html
+│   ├── i_2_raw.html
+│   ├── i_2_statisticsGathered.html
+│   ├── i_3_detectedAntiPatttern.html
+│   ├── ii_1_badlyGatheredStatistics.html
+│   ├── iii_1_big_gathered.html
+│   ├── iv_1_raw.html
+│   ├── iv_2_nl.html
+│   ├── iv_3_gathered_updating.html
+│   ├── README.md
+│   └── styles.css
 ├── 13_performanceSymphony.md
-├── 14_oracleHorizons.md
+├── 14_horizons
+│   ├── additionalContextForExercises.md
+│   ├── dataset.sql
+│   ├── exercises.md
+│   ├── java
+│   │   ├── bin
+│   │   │   ├── i_meaningsValuesRelationsAdvantages
+│   │   │   │   ├── i
+│   │   │   │   │   └── Pooler.class
+│   │   │   │   └── iii
+│   │   │   │       └── MultipleUpdatingPipeliner.class
+│   │   │   └── iv_hardcoreCombinedProblem
+│   │   │       └── i
+│   │   │           ├── AppConfig.class
+│   │   │           ├── FulfillmentClient$OrdersHandler.class
+│   │   │           ├── FulfillmentClient$ProcessOrderHandler.class
+│   │   │           ├── FulfillmentClient$RootHandler.class
+│   │   │           ├── FulfillmentClient.class
+│   │   │           ├── HorizonsConfig.class
+│   │   │           ├── OrderProcessorClient.class
+│   │   │           ├── OrderService.class
+│   │   │           ├── PartRequest.class
+│   │   │           ├── Reserver$LogLevel.class
+│   │   │           ├── Reserver.class
+│   │   │           ├── WebServer$OrdersHandler.class
+│   │   │           ├── WebServer$ProcessOrderHandler.class
+│   │   │           ├── WebServer$RootHandler.class
+│   │   │           └── WebServer.class
+│   │   ├── index.html
+│   │   ├── lib
+│   │   │   ├── aqapi-19.3.0.0.jar
+│   │   │   ├── javax.jms-api-2.0.1.jar
+│   │   │   ├── javax.transaction-api-1.3.jar
+│   │   │   ├── ojdbc17.jar
+│   │   │   └── ucp17.jar
+│   │   └── src
+│   │       ├── i_meaningsValuesRelationsAdvantages
+│   │       │   ├── i
+│   │       │   │   └── Pooler.java
+│   │       │   └── iii
+│   │       │       └── MultipleUpdatingPipeliner.java
+│   │       └── iv_hardcoreCombinedProblem
+│   │           └── i
+│   │               ├── FulfillmentClient.java
+│   │               ├── HorizonsConfig.java
+│   │               ├── OrderProcessorClient.java
+│   │               ├── OrderService.java
+│   │               ├── PartRequest.java
+│   │               ├── Reserver.java
+│   │               └── WebServer.java
+│   ├── README.md
+│   ├── sql
+│   │   ├── ii_disadvantagesAndPitfalls.sql
+│   │   ├── iii_contrastingInefficientCommonSolutions.sql
+│   │   ├── i_meaningsValuesRelationsAdvantages.sql
+│   │   └── iv_hardcoreCombinedProblem.sql
+│   └── whisperingGuides
+│       ├── theAlchemistsScroll:NativeXMLManipulation.md
+│       ├── theConductorsBaton:HighPerformanceJavaConnectivity.md
+│       ├── theFortifiedKingdom:IntegratedDatabaseServices.md
+│       └── theGrandSymphony:endToEndSystemIntegration.md
+├── 14_horizons.md
+├── 15_future
+│   ├── dataset.sql
+│   ├── exercises.md
+│   ├── ii_disadvantagesAndPitfalls.sql
+│   ├── iii_contrastingInefficientCommonSolution.sql
+│   ├── i_meaningsValuesRelationsAdvantages.sql
+│   ├── iv_hardcoreCombinedProblem.sql
+│   ├── practical_dataset.sql
+│   ├── practices.sql
+│   └── README.md
 ├── 15_future.md
 ├── 1_fromPostgreSQLtoSQLOracle
 │   ├── 1_meaningsValuesRelationsAdvantages.sql
@@ -95,8 +224,8 @@
 ├── 8_plSqlMastery.md
 ├── 9_plSqlFusion
 │   ├── 1_handlingLargeObjects.sql
-│   ├── 2_dbms_xmlgen.sql
-│   ├── 3_utl_file.sql
+│   ├── 2_dbmsXMLGen.sql
+│   ├── 3_utlFile.sql
 │   ├── 4_dbmsAQ.sql
 │   ├── 5_javascriptStoredProcedures.sql
 │   ├── 6_hardcoreCombinedProblem.sql
@@ -104,6 +233,7 @@
 │   ├── README.md
 │   └── setup.sql
 ├── 9_plSqlFusion.md
+├── a.md
 ├── books
 │   ├── database-administrators-guide
 │   │   ├── 00a_contents.pdf
@@ -1268,6 +1398,12 @@
 ├── run_all_extractions.sh
 ├── setup.pdf
 ├── solutions
+│   ├── 10_blueprint.md
+│   ├── 11_guardians.md
+│   ├── 12_speedUnleash.md
+│   ├── 13_performanceSymphony.md
+│   ├── 14_horizons.md
+│   ├── 15_future.md
 │   ├── 1_fromPostgreSQLtoSQLOracle.pdf
 │   ├── 2_functionsAndDMLBasics.md
 │   ├── 3_advancedQueryingTechniques.md
@@ -1296,4 +1432,4 @@
 │   └── get-started-guide_ch04_creating-managing-schema-objects.pdf
 └── tree.txt
 
-44 directories, 1253 files
+65 directories, 1368 files

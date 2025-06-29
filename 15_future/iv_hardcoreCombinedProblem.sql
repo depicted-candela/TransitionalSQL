@@ -71,6 +71,7 @@ BEGIN
     RETURNING 'Employee ['||EMPLOYEEID||'] salary is now ['||SALARY * 1.1||'] auditingLog' BULK COLLECT INTO auditingLog; 
     FORALL i IN INDICES OF auditingLog
         INSERT INTO FUTURE.HCAUDITLOG(logData) VALUES(auditingLog(i));
+    DELETE FROM FUTURE.HCEMPLOYEES WHERE EMPLOYEEID = (SELECT EMPLOYEEID FROM FUTURE.HCEMPLOYEES NATURAL JOIN FUTURE.HCDEPARTMENTS WHERE DEPARTMENTNAME = 'Logistics');
 END;
 /
 
@@ -78,5 +79,3 @@ COMMIT;
 -- Log the Update: As you perform the update in step 6, use the RETURNING clause to capture a string for each updated row, formatted as 
 -- 'Employee [ID] salary is now [NEW]', and insert these strings into your hcAuditLog table.
 -- Decommission: The 'Logistics' department is being dissolved. Delete all employees belonging to this department from the hcEmployees table.
-DELETE FROM FUTURE.HCEMPLOYEES WHERE EMPLOYEEID = (SELECT EMPLOYEEID FROM FUTURE.HCEMPLOYEES NATURAL JOIN FUTURE.HCDEPARTMENTS WHERE DEPARTMENTNAME = 'Logistics');
-COMMIT;
