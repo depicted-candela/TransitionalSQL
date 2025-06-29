@@ -143,8 +143,8 @@
                     </ul>
                     <h4>Essential Reading:</h4>
                     <ul class="book-list">
-                        <li><a href="books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf"><strong>Oracle® Database PL/SQL Language Reference</strong></a><span class="relevance">_Relevance:_ The core guide for PL/SQL syntax, block structure, and control flow.</span></li>
-                        <li><a href="books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf"><strong>Oracle Database 23ai New Features Guide</strong></a><span class="relevance">_Relevance:_ Details the new SQL Transpiler feature.</span></li>
+                        <li><a href="books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf"><strong>Oracle® Database PL/SQL Language Reference</strong></a><span class="relevance">The core guide for PL/SQL syntax, block structure, and control flow.</span></li>
+                        <li><a href="books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf"><strong>Oracle Database 23ai New Features Guide</strong></a><span class="relevance">Details the new SQL Transpiler feature.</span></li>
                     </ul>
                 </div>
             </details>
@@ -163,8 +163,8 @@
                     </ul>
                     <h4>Essential Reading:</h4>
                     <ul class="book-list">
-                        <li><a href="books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf"><strong>Oracle® Database PL/SQL Language Reference</strong></a><span class="relevance">_Relevance:_ The definitive reference for cursors and subprogram definitions.</span></li>
-                        <li><a href="books/database-development-guide/database-development-guide.pdf"><strong>Oracle® Database Development Guide</strong></a><span class="relevance">_Relevance:_ Provides practical context and design patterns for procedures and functions.</span></li>
+                        <li><a href="books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf"><strong>Oracle® Database PL/SQL Language Reference</strong></a><span class="relevance">The definitive reference for cursors and subprogram definitions.</span></li>
+                        <li><a href="books/database-development-guide/database-development-guide.pdf"><strong>Oracle® Database Development Guide</strong></a><span class="relevance">Provides practical context and design patterns for procedures and functions.</span></li>
                     </ul>
                 </div>
             </details>
@@ -184,7 +184,7 @@
                     </ul>
                     <h4>Essential Reading:</h4>
                     <ul class="book-list">
-                        <li><a href="books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf"><strong>Oracle® Database PL/SQL Language Reference</strong></a><span class="relevance">_Relevance:_ The complete guide to packages, exception handling syntax, and trigger creation.</span></li>
+                        <li><a href="books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf"><strong>Oracle® Database PL/SQL Language Reference</strong></a><span class="relevance">The complete guide to packages, exception handling syntax, and trigger creation.</span></li>
                     </ul>
                 </div>
             </details>
@@ -204,7 +204,7 @@
                     </ul>
                     <h4>Essential Reading:</h4>
                     <ul class="book-list">
-                        <li><a href="books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf"><strong>Oracle® Database PL/SQL Language Reference</strong></a><span class="relevance">_Relevance:_ Your primary source for advanced data structures and high-performance PL/SQL techniques.</span></li>
+                        <li><a href="books/oracle-database-pl-sql-language-reference/database-pl-sql-language-reference.pdf"><strong>Oracle® Database PL/SQL Language Reference</strong></a><span class="relevance">Your primary source for advanced data structures and high-performance PL/SQL techniques.</span></li>
                     </ul>
                 </div>
             </details>
@@ -223,8 +223,8 @@
                     </ul>
                     <h4>Essential Reading:</h4>
                     <ul class="book-list">
-                        <li><a href="books/database-pl-sql-packages-and-types-reference/database-pl-sql-packages-and-types-reference.pdf"><strong>Oracle® Database PL/SQL Packages and Types Reference</strong></a><span class="relevance">_Relevance:_ The encyclopedia for all `DBMS_` and `UTL_` packages.</span></li>
-                        <li><a href="books/oracle-database-javascript-developers-guide/oracle-database-javascript-developers-guide.pdf"><strong>Oracle Database JavaScript Developer's Guide</strong></a><span class="relevance">_Relevance:_ The key guide for integrating JavaScript into the Oracle database.</span></li>
+                        <li><a href="books/database-pl-sql-packages-and-types-reference/database-pl-sql-packages-and-types-reference.pdf"><strong>Oracle® Database PL/SQL Packages and Types Reference</strong></a><span class="relevance">The encyclopedia for all `DBMS_` and `UTL_` packages.</span></li>
+                        <li><a href="books/oracle-database-javascript-developers-guide/oracle-database-javascript-developers-guide.pdf"><strong>Oracle Database JavaScript Developer's Guide</strong></a><span class="relevance">The key guide for integrating JavaScript into the Oracle database.</span></li>
                     </ul>
                 </div>
             </details>
@@ -246,8 +246,8 @@
                     </ul>
                     <h4>Essential Reading:</h4>
                     <ul class="book-list">
-                        <li><a href="books/database-concepts/database-concepts.pdf"><strong>Oracle® Database Concepts</strong></a><span class="relevance">_Relevance:_ Foundational knowledge on Oracle's architecture.</span></li>
-                        <li><a href="books/database-reference/database-reference.pdf"><strong>Oracle® Database Reference</strong></a><span class="relevance">_Relevance:_ The source of truth for all Data Dictionary views.</span></li>
+                        <li><a href="books/database-concepts/database-concepts.pdf"><strong>Oracle® Database Concepts</strong></a><span class="relevance">Foundational knowledge on Oracle's architecture.</span></li>
+                        <li><a href="books/database-reference/database-reference.pdf"><strong>Oracle® Database Reference</strong></a><span class="relevance">The source of truth for all Data Dictionary views.</span></li>
                     </ul>
                 </div>
             </details>
@@ -268,8 +268,8 @@
                     </ul>
                     <h4>Essential Reading:</h4>
                     <ul class="book-list">
-                        <li><a href="books/database-security-guide/database-security-guide.pdf"><strong>Oracle® Database Security Guide</strong></a><span class="relevance">_Relevance:_ The primary source for all security-related features.</span></li>
-                        <li><a href="books/oracle-database-sql-firewall-users-guide/oracle-database-sql-firewall-users-guide.pdf"><strong>Oracle Database SQL Firewall User's Guide</strong></a><span class="relevance">_Relevance:_ A deep dive into the powerful new SQL Firewall.</span></li>
+                        <li><a href="books/database-security-guide/database-security-guide.pdf"><strong>Oracle® Database Security Guide</strong></a><span class="relevance">The primary source for all security-related features.</span></li>
+                        <li><a href="books/oracle-database-sql-firewall-users-guide/oracle-database-sql-firewall-users-guide.pdf"><strong>Oracle Database SQL Firewall User's Guide</strong></a><span class="relevance">A deep dive into the powerful new SQL Firewall.</span></li>
                     </ul>
                 </div>
             </details>
@@ -288,8 +288,8 @@
                     </ul>
                     <h4>Essential Reading:</h4>
                     <ul class="book-list">
-                        <li><a href="books/sql-tuning-guide/sql-tuning-guide.pdf"><strong>Oracle® Database SQL Tuning Guide</strong></a><span class="relevance">_Relevance:_ The go-to guide for understanding query optimization and execution plans.</span></li>
-                        <li><a href="books/database-concepts/database-concepts.pdf"><strong>Oracle® Database Concepts</strong></a><span class="relevance">_Relevance:_ Explains the fundamental concepts behind different index types.</span></li>
+                        <li><a href="books/sql-tuning-guide/sql-tuning-guide.pdf"><strong>Oracle® Database SQL Tuning Guide</strong></a><span class="relevance">The go-to guide for understanding query optimization and execution plans.</span></li>
+                        <li><a href="books/database-concepts/database-concepts.pdf"><strong>Oracle® Database Concepts</strong></a><span class="relevance">Explains the fundamental concepts behind different index types.</span></li>
                     </ul>
                 </div>
             </details>
@@ -310,8 +310,8 @@
                     </ul>
                     <h4>Essential Reading:</h4>
                     <ul class="book-list">
-                        <li><a href="books/sql-tuning-guide/sql-tuning-guide.pdf"><strong>Oracle® Database SQL Tuning Guide</strong></a><span class="relevance">_Relevance:_ The main source for advanced tuning, hints, and statistics management.</span></li>
-                        <li><a href="books/database-pl-sql-packages-and-types-reference/database-pl-sql-packages-and-types-reference.pdf"><strong>Oracle® Database PL/SQL Packages and Types Reference</strong></a><span class="relevance">_Relevance:_ Details the `DBMS_STATS` package for statistics gathering.</span></li>
+                        <li><a href="books/sql-tuning-guide/sql-tuning-guide.pdf"><strong>Oracle® Database SQL Tuning Guide</strong></a><span class="relevance">The main source for advanced tuning, hints, and statistics management.</span></li>
+                        <li><a href="books/database-pl-sql-packages-and-types-reference/database-pl-sql-packages-and-types-reference.pdf"><strong>Oracle® Database PL/SQL Packages and Types Reference</strong></a><span class="relevance">Details the `DBMS_STATS` package for statistics gathering.</span></li>
                     </ul>
                 </div>
             </details>
@@ -333,9 +333,9 @@
                     </ul>
                      <h4>Essential Reading:</h4>
                     <ul class="book-list">
-                        <li><a href="books/jdbc-developers-guide/jdbc-developers-guide.pdf"><strong>Oracle® Database JDBC Developer's Guide</strong></a><span class="relevance">_Relevance:_ Essential for understanding Java-to-Oracle connectivity.</span></li>
-                        <li><a href="books/database-transactional-event-queues-and-advanced-queuing-users-guide/database-transactional-event-queues-and-advanced-queuing-users-guide.pdf"><strong>Oracle ... Advanced Queuing User's Guide</strong></a><span class="relevance">_Relevance:_ The core document for understanding Oracle's messaging system.</span></li>
-                        <li><a href="books/universal-connection-pool-developers-guide/universal-connection-pool-developers-guide.pdf"><strong>Oracle® Universal Connection Pool Developer's Guide</strong></a><span class="relevance">_Relevance:_ Key for understanding modern connection pooling features.</span></li>
+                        <li><a href="books/jdbc-developers-guide/jdbc-developers-guide.pdf"><strong>Oracle® Database JDBC Developer's Guide</strong></a><span class="relevance">Essential for understanding Java-to-Oracle connectivity.</span></li>
+                        <li><a href="books/database-transactional-event-queues-and-advanced-queuing-users-guide/database-transactional-event-queues-and-advanced-queuing-users-guide.pdf"><strong>Oracle ... Advanced Queuing User's Guide</strong></a><span class="relevance">The core document for understanding Oracle's messaging system.</span></li>
+                        <li><a href="books/universal-connection-pool-developers-guide/universal-connection-pool-developers-guide.pdf"><strong>Oracle® Universal Connection Pool Developer's Guide</strong></a><span class="relevance">Key for understanding modern connection pooling features.</span></li>
                     </ul>
                 </div>
             </details>
@@ -358,8 +358,8 @@
                     </ul>
                     <h4>Essential Reading:</h4>
                     <ul class="book-list">
-                        <li><a href="books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf"><strong>Oracle Database 23ai New Features Guide</strong></a><span class="relevance">_Relevance:_ The first and most vital source for all new SQL power in Oracle 23ai.</span></li>
-                        <li><a href="books/sql-language-reference/sql-language-reference.pdf"><strong>Oracle® Database SQL Language Reference</strong></a><span class="relevance">_Relevance:_ The definitive reference where these new features will be fully documented.</span></li>
+                        <li><a href="books/oracle-database-23ai-new-features-guide/oracle-database-23ai-new-features-guide.pdf"><strong>Oracle Database 23ai New Features Guide</strong></a><span class="relevance">The first and most vital source for all new SQL power in Oracle 23ai.</span></li>
+                        <li><a href="books/sql-language-reference/sql-language-reference.pdf"><strong>Oracle® Database SQL Language Reference</strong></a><span class="relevance">The definitive reference where these new features will be fully documented.</span></li>
                     </ul>
                 </div>
             </details>
